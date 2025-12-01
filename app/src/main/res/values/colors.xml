@@ -1,5 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ============================================ -->
+    <!-- BASE COLORS -->
+    <!-- ============================================ -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <!-- ============================================ -->
+    <!-- PRIMARY & SECONDARY COLORS -->
+    <!-- iOS-style soft pastel blue & pink -->
+    <!-- ============================================ -->
+    <color name="primary">#6EC9FF</color>              <!-- Soft pastel blue (main accent) -->
+    <color name="primaryVariant">#5AB8F0</color>       <!-- Darker pastel blue -->
+    <color name="primaryLight">#A3DFFF</color>         <!-- Lighter blue tint -->
+    <color name="primaryPale">#D1EFFF</color>          <!-- Very pale blue -->
+
+    <color name="secondary">#F7B2D9</color>            <!-- Pastel pink -->
+    <color name="secondaryVariant">#F59DC8</color>     <!-- Deeper pastel pink -->
+    <color name="secondaryLight">#FDD4EA</color>       <!-- Light pink tint -->
+    <color name="secondaryPale">#FEEAF5</color>        <!-- Very pale pink -->
+
+    <!-- ============================================ -->
+    <!-- BACKGROUND COLORS -->
+    <!-- iOS-style gradient: sky blue → lavender -->
+    <!-- ============================================ -->
+    <color name="backgroundStart">#6EC9FF</color>      <!-- Soft sky blue (top gradient) -->
+    <color name="backgroundMid">#D1EFFF</color>        <!-- Mid-tone light blue -->
+    <color name="backgroundEnd">#F2F5FF</color>        <!-- Light blue/lavender (bottom gradient) -->
+    <color name="background">#F2F5FF</color>           <!-- Default background (light lavender-blue) -->
+    <color name="backgroundAlt">#F0F8FF</color>        <!-- Alternative background (Alice blue) -->
+
+    <!-- ============================================ -->
+    <!-- SURFACE & CARD COLORS -->
+    <!-- Pure white cards with subtle shadows -->
+    <!-- ============================================ -->
+    <color name="surface">#FFFFFF</color>              <!-- Pure white surface -->
+    <color name="cardBackground">#FFFFFF</color>       <!-- Pure white cards -->
+    <color name="cardShadow">#14000000</color>         <!-- Subtle shadow (8% black) -->
+    <color name="cardElevation">#0A000000</color>      <!-- Very subtle elevation (4% black) -->
+    <color name="cardStroke">#F0F0F0</color>           <!-- Optional card border -->
+
+    <!-- ============================================ -->
+    <!-- TEXT COLORS -->
+    <!-- iOS-style typography hierarchy -->
+    <!-- ============================================ -->
+    <color name="textPrimary">#334155</color>          <!-- Dark blue-gray (main text) -->
+    <color name="textSecondary">#64748B</color>        <!-- Gray-blue (secondary text) -->
+    <color name="textTertiary">#94A3B8</color>         <!-- Light gray-blue (tertiary text) -->
+    <color name="textDisabled">#94A3B8</color>         <!-- Disabled state text -->
+    <color name="textPlaceholder">#CBD5E1</color>      <!-- Placeholder text -->
+    <color name="textOnPrimary">#FFFFFF</color>        <!-- White text on primary color -->
+    <color name="textOnSecondary">#FFFFFF</color>      <!-- White text on secondary color -->
+    <color name="textOnDark">#FFFFFF</color>           <!-- White text on dark backgrounds -->
+
+    <!-- ============================================ -->
+    <!-- STATUS COLORS -->
+    <!-- Soft pastel status indicators -->
+    <!-- ============================================ -->
+    <color name="success">#AEE6C7</color>              <!-- Pastel green (success) -->
+    <color name="successDark">#8DD4A8</color>          <!-- Darker green -->
+    <color name="successLight">#D6F4E3</color>         <!-- Light green tint -->
+
+    <color name="error">#FFBDBD</color>                <!-- Pastel red/pink (error) -->
+    <color name="errorDark">#FF9999</color>            <!-- Darker red -->
+    <color name="errorLight">#FFEBEB</color>           <!-- Light red tint -->
+
+    <color name="warning">#FFE6A3</color>              <!-- Pastel yellow (warning) -->
+    <color name="warningDark">#FFD97D</color>          <!-- Darker yellow -->
+    <color name="warningLight">#FFF5D9</color>         <!-- Light yellow tint -->
+
+    <color name="info">#A3D9FF</color>                 <!-- Pastel blue (info) -->
+    <color name="infoDark">#7DC4FF</color>             <!-- Darker info blue -->
+    <color name="infoLight">#E0F3FF</color>            <!-- Light info blue -->
+
+    <!-- ============================================ -->
+    <!-- CATEGORY COLORS -->
+    <!-- Habit category soft pastels -->
+    <!-- ============================================ -->
+    <color name="categoryHealth">#FFB5C5</color>       <!-- Soft pink (health) -->
+    <color name="categoryStudy">#6EC9FF</color>        <!-- Soft blue (study) -->
+    <color name="categoryFinance">#FFE6A3</color>      <!-- Soft yellow (finance) -->
+    <color name="categoryMental">#D4B5F5</color>       <!-- Soft purple (mental) -->
+    <color name="categoryCareer">#6EC9FF</color>       <!-- Soft cyan/blue (career) -->
+    <color name="categoryNutrition">#FFCBA3</color>    <!-- Soft orange (nutrition) -->
+    <color name="categoryPersonalGrowth">#AEE6C7</color> <!-- Soft green (personal growth) -->
+
+    <!-- ============================================ -->
+    <!-- ICON BACKGROUND TINTS -->
+    <!-- Very light pastel backgrounds for icons -->
+    <!-- ============================================ -->
+    <color name="iconHealthBg">#FFEBF0</color>         <!-- Very light pink (15% opacity) -->
+    <color name="iconStudyBg">#E8F6FF</color>          <!-- Very light blue (15% opacity) -->
+    <color name="iconFinanceBg">#FFF8E5</color>        <!-- Very light yellow (15% opacity) -->
+    <color name="iconMentalBg">#F2E8FF</color>         <!-- Very light purple (15% opacity) -->
+    <color name="iconCareerBg">#E8F6FF</color>         <!-- Very light cyan (15% opacity) -->
+    <color name="iconNutritionBg">#FFF0E5</color>      <!-- Very light orange (15% opacity) -->
+    <color name="iconPersonalGrowthBg">#E8F9EF</color> <!-- Very light green (15% opacity) -->
+
+    <!-- ============================================ -->
+    <!-- BUTTON COLORS -->
+    <!-- Button states and variants -->
+    <!-- ============================================ -->
+    <color name="buttonPrimary">#6EC9FF</color>        <!-- Primary button background -->
+    <color name="buttonPrimaryPressed">#5AB8F0</color> <!-- Primary button pressed -->
+    <color name="buttonSecondary">#F7B2D9</color>      <!-- Secondary button background -->
+    <color name="buttonSecondaryPressed">#F59DC8</color> <!-- Secondary button pressed -->
+    <color name="buttonSuccess">#AEE6C7</color>        <!-- Success/Complete button -->
+    <color name="buttonSuccessPressed">#8DD4A8</color> <!-- Success button pressed -->
+    <color name="buttonDisabled">#E2E8F0</color>       <!-- Disabled button background -->
+    <color name="buttonTextDisabled">#94A3B8</color>   <!-- Disabled button text -->
+
+    <!-- ============================================ -->
+    <!-- INTERACTIVE STATES -->
+    <!-- Ripple, selection, and UI element colors -->
+    <!-- ============================================ -->
+    <color name="ripple">#1A6EC9FF</color>             <!-- Ripple effect (10% primary) -->
+    <color name="rippleSecondary">#1AF7B2D9</color>    <!-- Secondary ripple (10% secondary) -->
+    <color name="selectedDateBg">#E8F6FF</color>       <!-- Selected date background -->
+    <color name="selectedItemBg">#F0F9FF</color>       <!-- Selected item background -->
+    <color name="hoverBg">#F8FBFF</color>              <!-- Hover state background -->
+    <color name="pressedBg">#E0F2FF</color>            <!-- Pressed state background -->
+
+    <!-- ============================================ -->
+    <!-- DIVIDERS & BORDERS -->
+    <!-- Subtle separation elements -->
+    <!-- ============================================ -->
+    <color name="divider">#E2E8F0</color>              <!-- Divider lines -->
+    <color name="dividerLight">#F1F5F9</color>         <!-- Lighter divider -->
+    <color name="border">#CBD5E1</color>               <!-- Border color (medium) -->
+    <color name="borderLight">#E2E8F0</color>          <!-- Light border -->
+    <color name="borderDark">#94A3B8</color>           <!-- Darker border -->
+
+    <!-- ============================================ -->
+    <!-- OVERLAYS & SCRIMS -->
+    <!-- Transparent layers for modals/dialogs -->
+    <!-- ============================================ -->
+    <color name="overlay">#80000000</color>            <!-- 50% black overlay -->
+    <color name="overlayLight">#40000000</color>       <!-- 25% black overlay -->
+    <color name="overlayDark">#B3000000</color>        <!-- 70% black overlay -->
+    <color name="scrim">#B3000000</color>              <!-- Modal scrim (70% black) -->
+    <color name="shimmer">#1A000000</color>            <!-- Shimmer effect (10% black) -->
+
+    <!-- ============================================ -->
+    <!-- ADDITIONAL UI COLORS -->
+    <!-- Special purpose colors -->
+    <!-- ============================================ -->
+    <color name="badgeRed">#FF6B6B</color>             <!-- Notification badge red -->
+    <color name="badgeBg">#FF3B3B</color>              <!-- Badge background -->
+    <color name="linkBlue">#5AB8F0</color>             <!-- Hyperlink blue -->
+    <color name="checkboxChecked">#6EC9FF</color>      <!-- Checked checkbox -->
+    <color name="checkboxUnchecked">#CBD5E1</color>    <!-- Unchecked checkbox -->
+    <color name="switchTrackOn">#A3DFFF</color>        <!-- Switch track (on) -->
+    <color name="switchTrackOff">#E2E8F0</color>       <!-- Switch track (off) -->
+    <color name="switchThumb">#FFFFFF</color>          <!-- Switch thumb -->
+
 </resources>

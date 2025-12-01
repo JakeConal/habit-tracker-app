@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/date_item_size"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    app:cardBackgroundColor="@color/cardBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_small"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/dayNumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textPrimary"
+            android:textSize="@dimen/text_body"
+            android:textStyle="bold"
+            tools:text="16" />
+
+        <TextView
+            android:id="@+id/dayName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:textColor="@color/textSecondary"
+            android:textSize="@dimen/text_caption"
+            tools:text="Tue" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

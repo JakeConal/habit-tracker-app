@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+
+    <!-- Card -->
+    <dimen name="card_corner_radius">16dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+
+    <!-- Icon -->
+    <dimen name="icon_small">24dp</dimen>
+    <dimen name="icon_medium">40dp</dimen>
+    <dimen name="icon_large">48dp</dimen>
+
+    <!-- Text -->
+    <dimen name="text_greeting">24sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_small">14sp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+
+    <!-- Date selector -->
+    <dimen name="date_item_size">56dp</dimen>
+
+    <!-- Habit item -->
+    <dimen name="habit_icon_background_size">48dp</dimen>
+    <dimen name="habit_icon_background_radius">12dp</dimen>
+    <dimen name="check_button_size">32dp</dimen>
+</resources>
+

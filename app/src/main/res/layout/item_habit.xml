@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_medium"
+    android:layout_marginVertical="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    app:cardBackgroundColor="@color/cardBackground">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_medium">
+
+        <!-- Icon background -->
+        <View
+            android:id="@+id/iconBackground"
+            android:layout_width="@dimen/habit_icon_background_size"
+            android:layout_height="@dimen/habit_icon_background_size"
+            android:background="@drawable/habit_icon_background"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Icon placeholder (using emoji/text for simplicity) -->
+        <TextView
+            android:id="@+id/habitIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_body"
+            tools:text="💪"
+            app:layout_constraintStart_toStartOf="@id/iconBackground"
+            app:layout_constraintEnd_toEndOf="@id/iconBackground"
+            app:layout_constraintTop_toTopOf="@id/iconBackground"
+            app:layout_constraintBottom_toBottomOf="@id/iconBackground" />
+
+        <!-- Habit title -->
+        <TextView
+            android:id="@+id/habitTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_medium"
+            android:textColor="@color/textPrimary"
+            android:textSize="@dimen/text_body"
+            android:textStyle="bold"
+            tools:text="Praying Namaz"
+            app:layout_constraintStart_toEndOf="@id/iconBackground"
+            app:layout_constraintEnd_toStartOf="@id/checkButton"
+            app:layout_constraintTop_toTopOf="@id/iconBackground" />
+
+        <!-- Status text -->
+        <TextView
+            android:id="@+id/habitStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_tiny"
+            android:textColor="@color/textSecondary"
+            android:textSize="@dimen/text_small"
+            tools:text="Completed"
+            app:layout_constraintStart_toStartOf="@id/habitTitle"
+            app:layout_constraintEnd_toEndOf="@id/habitTitle"
+            app:layout_constraintTop_toBottomOf="@id/habitTitle"
+            app:layout_constraintBottom_toBottomOf="@id/iconBackground" />
+
+        <!-- Check button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/checkButton"
+            android:layout_width="@dimen/check_button_size"
+            android:layout_height="@dimen/check_button_size"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/complete_button"
+            android:textSize="@dimen/text_body"
+            app:cornerRadius="@dimen/spacing_small"
+            app:backgroundTint="@color/success"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

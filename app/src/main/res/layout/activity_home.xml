@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_home_gradient"
+    tools:context=".HomeActivity">
+
+    <!-- Greeting section -->
+    <TextView
+        android:id="@+id/greetingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_large"
+        android:text="@string/greeting_default"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/text_greeting"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/feelingText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_tiny"
+        android:text="@string/feeling_question"
+        android:textColor="@color/textSecondary"
+        android:textSize="@dimen/text_small"
+        app:layout_constraintStart_toStartOf="@id/greetingText"
+        app:layout_constraintTop_toBottomOf="@id/greetingText" />
+
+    <!-- Quote card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/quoteCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        android:layout_marginTop="@dimen/spacing_medium"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:cardElevation="@dimen/card_elevation"
+        app:cardBackgroundColor="@color/cardBackground"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/feelingText">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_medium">
+
+            <TextView
+                android:id="@+id/quoteIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="💬"
+                android:textSize="@dimen/text_greeting" />
+
+            <TextView
+                android:id="@+id/quoteText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:text="Believe in yourself and all that you are."
+                android:textColor="@color/primary"
+                android:textSize="@dimen/text_body"
+                android:textStyle="italic" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Date selector -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dateRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_small"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quoteCard"
+        tools:itemCount="7"
+        tools:listitem="@layout/item_date" />
+
+    <!-- Your Habits label -->
+    <TextView
+        android:id="@+id/habitsLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_large"
+        android:layout_marginTop="@dimen/spacing_medium"
+        android:text="@string/your_habits"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/text_body"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateRecyclerView" />
+
+    <!-- Habits list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/habitsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/spacing_medium"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/habitsLabel"
+        tools:itemCount="3"
+        tools:listitem="@layout/item_habit" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+

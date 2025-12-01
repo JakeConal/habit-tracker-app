@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Habit Tracker</string>
+
+    <!-- Home Screen -->
+    <string name="greeting_template">Hi, %1$s</string>
+    <string name="greeting_default">Hi, Tanzir</string>
+    <string name="feeling_question">How are you feeling today?</string>
+    <string name="your_habits">Your Habits</string>
+    <string name="completed">Completed</string>
+    <string name="pending">Pending</string>
+    <string name="complete_button">✓</string>
 </resources>
