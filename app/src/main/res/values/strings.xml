@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">Habit Tracker</string>
+
+    <!-- Home screen strings -->
+    <string name="greeting_text">Hi, %s</string>
+    <string name="default_username">User</string>
+    <string name="motivational_quote">"Small steps every day lead to big results."</string>
+    <string name="today_habits_title">Today\'s Habits</string>
+
+    <!-- Habit status -->
+    <string name="status_completed">Completed</string>
+    <string name="status_pending">Pending</string>
+
+    <!-- Buttons and actions -->
+    <string name="complete_habit">Complete</string>
+    <string name="undo_complete">Undo</string>
+
+    <!-- Content descriptions -->
+    <string name="habit_icon_description">Habit icon</string>
+    <string name="complete_button_description">Mark habit as complete</string>
 </resources>

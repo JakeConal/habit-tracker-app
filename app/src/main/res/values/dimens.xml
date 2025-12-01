@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_xs">4dp</dimen>
+    <dimen name="spacing_sm">8dp</dimen>
+    <dimen name="spacing_md">16dp</dimen>
+    <dimen name="spacing_lg">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+
+    <!-- Text sizes -->
+    <dimen name="text_size_sm">12sp</dimen>
+    <dimen name="text_size_md">14sp</dimen>
+    <dimen name="text_size_lg">16sp</dimen>
+    <dimen name="text_size_xl">20sp</dimen>
+    <dimen name="text_size_xxl">24sp</dimen>
+
+    <!-- Card properties -->
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_corner_radius">12dp</dimen>
+
+    <!-- Icon sizes -->
+    <dimen name="icon_size_sm">24dp</dimen>
+    <dimen name="icon_size_md">32dp</dimen>
+    <dimen name="icon_size_lg">48dp</dimen>
+
+    <!-- Date selector -->
+    <dimen name="date_item_width">48dp</dimen>
+    <dimen name="date_item_height">64dp</dimen>
+
+    <!-- Habit item -->
+    <dimen name="habit_item_height">72dp</dimen>
+    <dimen name="habit_item_icon_size">40dp</dimen>
+</resources>

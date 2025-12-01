@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="@dimen/spacing_md"
+    android:layout_marginVertical="@dimen/spacing_xs"
+    app:cardBackgroundColor="@color/surface"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/habit_item_height"
+        android:padding="@dimen/spacing_md">
+
+        <!-- Habit Icon -->
+        <ImageView
+            android:id="@+id/habitIcon"
+            android:layout_width="@dimen/habit_item_icon_size"
+            android:layout_height="@dimen/habit_item_icon_size"
+            android:contentDescription="@string/habit_icon_description"
+            android:src="@drawable/ic_habit_default"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/primary" />
+
+        <!-- Habit Title -->
+        <TextView
+            android:id="@+id/habitTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/textPrimary"
+            android:textSize="@dimen/text_size_lg"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/habitStatus"
+            app:layout_constraintEnd_toStartOf="@id/completeButton"
+            app:layout_constraintStart_toEndOf="@id/habitIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            tools:text="Morning Exercise" />
+
+        <!-- Habit Status -->
+        <TextView
+            android:id="@+id/habitStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:textColor="@color/textSecondary"
+            android:textSize="@dimen/text_size_md"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/completeButton"
+            app:layout_constraintStart_toEndOf="@id/habitIcon"
+            app:layout_constraintTop_toBottomOf="@id/habitTitle"
+            tools:text="@string/status_pending" />
+
+        <!-- Complete Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/completeButton"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/complete_button_description"
+            android:text="@string/complete_habit"
+            android:textSize="@dimen/text_size_sm"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

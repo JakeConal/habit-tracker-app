@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/homeRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    tools:context=".HomeActivity">
+
+    <!-- Greeting Text -->
+    <TextView
+        android:id="@+id/greetingText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_lg"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/text_size_xxl"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Hi, User" />
+
+    <!-- Motivational Quote Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/quoteCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_md"
+        app:cardBackgroundColor="@color/primary"
+        app:cardCornerRadius="@dimen/card_corner_radius"
+        app:cardElevation="@dimen/card_elevation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/greetingText">
+
+        <TextView
+            android:id="@+id/quoteText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_md"
+            android:text="@string/motivational_quote"
+            android:textColor="@color/onPrimary"
+            android:textSize="@dimen/text_size_lg"
+            android:textStyle="italic" />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Date Selector Label -->
+    <TextView
+        android:id="@+id/dateSelectorLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_lg"
+        android:text="@string/today_habits_title"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/text_size_xl"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/quoteCard" />
+
+    <!-- Horizontal Date Selector -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dateSelector"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_sm"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/spacing_sm"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateSelectorLabel"
+        tools:itemCount="7"
+        tools:listitem="@layout/item_date" />
+
+    <!-- Habits RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/habitsRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:clipToPadding="false"
+        android:paddingVertical="@dimen/spacing_sm"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dateSelector"
+        tools:itemCount="5"
+        tools:listitem="@layout/item_habit" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="@dimen/date_item_width"
+    android:layout_height="@dimen/date_item_height"
+    android:layout_marginHorizontal="@dimen/spacing_xs"
+    android:background="@drawable/date_item_background"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_sm">
+
+    <!-- Day of Week (e.g., Mon, Tue) -->
+    <TextView
+        android:id="@+id/dayOfWeek"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textSecondary"
+        android:textSize="@dimen/text_size_sm"
+        tools:text="Mon" />
+
+    <!-- Day Number -->
+    <TextView
+        android:id="@+id/dayNumber"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textPrimary"
+        android:textSize="@dimen/text_size_lg"
+        android:textStyle="bold"
+        tools:text="15" />
+
+</LinearLayout>
