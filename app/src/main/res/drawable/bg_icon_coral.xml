@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Coral rounded square background for Walking habit icon -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/accent_health_bg" />
-    <corners android:radius="@dimen/habit_icon_background_radius" />
+    <corners android:radius="12dp" />
+    <solid android:color="#FFB7B2" />
 </shape>
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/baseline_home_24"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/nav_statistic"
+        android:icon="@drawable/baseline_bar_chart_24"
+        android:title="Statistic" />
+
+    <!-- Placeholder for center FAB -->
+    <item
+        android:id="@+id/nav_placeholder"
+        android:enabled="false"
+        android:title="" />
+
+    <item
+        android:id="@+id/nav_community"
+        android:icon="@drawable/outline_ad_group_24"
+        android:title="Community" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/outline_article_person_24"
+        android:title="Profile" />
+</menu>
+

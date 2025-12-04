@@ -1,22 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.HabitTracker" parent="Theme.Material3.Light.NoActionBar">
-        <!-- Primary colors -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primaryVariant</item>
-        <item name="colorSecondary">@color/secondary</item>
-
-        <!-- Background colors -->
-        <item name="android:colorBackground">@color/background</item>
-        <item name="colorSurface">@color/surface</item>
-
-        <!-- Text colors -->
-        <item name="android:textColorPrimary">@color/textPrimary</item>
-        <item name="android:textColorSecondary">@color/textSecondary</item>
-
-        <!-- Status bar -->
-        <item name="android:statusBarColor">@color/background</item>
-        <item name="android:windowLightStatusBar">true</item>
+    <style name="Base.Theme.HabitTracker" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Material 3 Color Attributes mapped to new semantic colors -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorSecondary">@color/button_secondary</item>
+        <item name="android:colorBackground">@color/surface_white</item>
+        <item name="colorSurface">@color/surface_white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorError">@color/status_error</item>
+        <item name="android:statusBarColor">@color/background_gradient_start</item>
     </style>
 
     <style name="Theme.HabitTracker" parent="Base.Theme.HabitTracker" />

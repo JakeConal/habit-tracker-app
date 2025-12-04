@@ -1,7 +1,13 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.HabitTracker" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <!-- Material 3 Color Attributes mapped to new semantic colors -->
+        <item name="colorPrimary">@color/primary_blue</item>
+        <item name="colorSecondary">@color/button_secondary</item>
+        <item name="android:colorBackground">@color/surface_white</item>
+        <item name="colorSurface">@color/surface_white</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorError">@color/status_error</item>
+        <item name="android:statusBarColor">@color/background_gradient_start</item>
     </style>
 </resources>

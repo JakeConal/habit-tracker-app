@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- State list drawable for habit completion checkbox -->
+<!-- Checked: Green circle with checkmark -->
+<!-- Unchecked: Grey outlined circle -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Checked/Completed State -->
+    <item android:state_checked="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/status_success" />
+            <size android:width="36dp" android:height="36dp" />
+        </shape>
+    </item>
+
+    <!-- Pressed State (Unchecked) -->
+    <item android:state_pressed="true">
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="@color/primary_blue" />
+            <solid android:color="@android:color/transparent" />
+            <size android:width="36dp" android:height="36dp" />
+        </shape>
+    </item>
+
+    <!-- Unchecked/Incomplete State -->
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="#BDBDBD" />
+            <solid android:color="@android:color/transparent" />
+            <size android:width="36dp" android:height="36dp" />
+        </shape>
+    </item>
+</selector>
+

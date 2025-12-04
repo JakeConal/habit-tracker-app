@@ -1,85 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- RecyclerView item layout for habit -->
+<!-- White card with icon, title, status, and check button -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_medium"
-    android:layout_marginVertical="@dimen/spacing_small"
-    app:cardCornerRadius="@dimen/card_corner_radius"
-    app:cardElevation="@dimen/card_elevation"
-    app:cardBackgroundColor="@color/cardBackground">
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_medium">
+        android:padding="16dp">
 
-        <!-- Icon background -->
-        <View
-            android:id="@+id/iconBackground"
-            android:layout_width="@dimen/habit_icon_background_size"
-            android:layout_height="@dimen/habit_icon_background_size"
-            android:background="@drawable/habit_icon_background"
+        <!-- Icon Container (Rounded Square Background) -->
+        <FrameLayout
+            android:id="@+id/iconContainer"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_icon_rounded_square"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Icon placeholder (using emoji/text for simplicity) -->
-        <TextView
-            android:id="@+id/habitIcon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="@dimen/text_body"
-            tools:text="💪"
-            app:layout_constraintStart_toStartOf="@id/iconBackground"
-            app:layout_constraintEnd_toEndOf="@id/iconBackground"
-            app:layout_constraintTop_toTopOf="@id/iconBackground"
-            app:layout_constraintBottom_toBottomOf="@id/iconBackground" />
+            <!-- Icon (Inside Container) -->
+            <TextView
+                android:id="@+id/tvHabitIcon"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:text="📝"
+                android:textSize="22sp"
+                tools:ignore="HardcodedText" />
 
-        <!-- Habit title -->
+        </FrameLayout>
+
+        <!-- Title (Middle) -->
         <TextView
-            android:id="@+id/habitTitle"
+            android:id="@+id/tvHabitTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_medium"
-            android:textColor="@color/textPrimary"
-            android:textSize="@dimen/text_body"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="12dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-medium"
+            android:maxLines="1"
+            android:text="Reading Book"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
             android:textStyle="bold"
-            tools:text="Praying Namaz"
-            app:layout_constraintStart_toEndOf="@id/iconBackground"
+            app:layout_constraintBottom_toTopOf="@id/tvHabitStatus"
             app:layout_constraintEnd_toStartOf="@id/checkButton"
-            app:layout_constraintTop_toTopOf="@id/iconBackground" />
+            app:layout_constraintStart_toEndOf="@id/iconContainer"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed" />
 
-        <!-- Status text -->
+        <!-- Status (Below Title) -->
         <TextView
-            android:id="@+id/habitStatus"
+            android:id="@+id/tvHabitStatus"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_tiny"
-            android:textColor="@color/textSecondary"
-            android:textSize="@dimen/text_small"
-            tools:text="Completed"
-            app:layout_constraintStart_toStartOf="@id/habitTitle"
-            app:layout_constraintEnd_toEndOf="@id/habitTitle"
-            app:layout_constraintTop_toBottomOf="@id/habitTitle"
-            app:layout_constraintBottom_toBottomOf="@id/iconBackground" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="12dp"
+            android:text="Completed"
+            android:textColor="@color/status_success"
+            android:textSize="13sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/checkButton"
+            app:layout_constraintStart_toEndOf="@id/iconContainer"
+            app:layout_constraintTop_toBottomOf="@id/tvHabitTitle" />
 
-        <!-- Check button -->
-        <com.google.android.material.button.MaterialButton
+        <!-- Check Button with State Selector (Right) -->
+        <CheckBox
             android:id="@+id/checkButton"
-            android:layout_width="@dimen/check_button_size"
-            android:layout_height="@dimen/check_button_size"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:text="@string/complete_button"
-            android:textSize="@dimen/text_body"
-            app:cornerRadius="@dimen/spacing_small"
-            app:backgroundTint="@color/success"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:button="@drawable/bg_checkbox_with_icon"
+            android:contentDescription="@string/check_habit"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            tools:ignore="ContentDescription" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

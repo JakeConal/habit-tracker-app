@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Light Orange rounded square background for Water habit icon -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/accent_health_bg" />
-    <corners android:radius="@dimen/habit_icon_background_radius" />
+    <corners android:radius="12dp" />
+    <solid android:color="#FFDAC1" />
 </shape>
 

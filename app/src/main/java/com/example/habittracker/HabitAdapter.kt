@@ -57,21 +57,21 @@ class HabitAdapter(
 
         fun bind(habit: Habit) {
             binding.apply {
-                habitIcon.text = habit.icon
-                habitTitle.text = habit.title
+                tvHabitIcon.text = habit.icon
+                tvHabitTitle.text = habit.title
 
                 // Update status text and color based on completion
                 if (habit.isCompleted) {
-                    habitStatus.text = root.context.getString(R.string.completed)
-                    habitStatus.setTextColor(
-                        ContextCompat.getColor(root.context, R.color.success)
+                    tvHabitStatus.text = root.context.getString(R.string.completed)
+                    tvHabitStatus.setTextColor(
+                        ContextCompat.getColor(root.context, R.color.status_success)
                     )
                     checkButton.alpha = 0.5f
                     checkButton.isEnabled = false
                 } else {
-                    habitStatus.text = root.context.getString(R.string.pending)
-                    habitStatus.setTextColor(
-                        ContextCompat.getColor(root.context, R.color.textSecondary)
+                    tvHabitStatus.text = root.context.getString(R.string.pending)
+                    tvHabitStatus.setTextColor(
+                        ContextCompat.getColor(root.context, R.color.text_secondary)
                     )
                     checkButton.alpha = 1.0f
                     checkButton.isEnabled = true

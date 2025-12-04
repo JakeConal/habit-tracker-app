@@ -9,4 +9,16 @@
     <string name="completed">Completed</string>
     <string name="pending">Pending</string>
     <string name="complete_button">✓</string>
+    <string name="motivational_quote">Believe in yourself and all that you are. Know that there is something inside you that is greater than any obstacle.</string>
+    <string name="add_habit">Add new habit</string>
+
+    <!-- Content Descriptions -->
+    <string name="habit_icon">Habit category icon</string>
+    <string name="check_habit">Mark habit as complete</string>
+    <string name="user_avatar">User profile picture</string>
+    <string name="notifications">Notifications</string>
+    <string name="quote_icon">Motivational quote icon</string>
+    <string name="category_icon">Category icon</string>
+    <string name="edit_category">Edit category</string>
+    <string name="delete_category">Delete category</string>
 </resources>
