@@ -1,3 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Habit Tracker</string>
+
+    <!-- Bottom Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_statistics">Statistics</string>
+    <string name="nav_community">Community</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_add">Add</string>
+
+    <!-- Tabs in Community -->
+    <string name="tab_feed">Feed</string>
+    <string name="tab_challenges">Challenges</string>
+    <string name="tab_leaderboard">Leaderboard</string>
 </resources>

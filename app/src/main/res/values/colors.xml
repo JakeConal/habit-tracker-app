@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="transparent">#00000000</color>
+
+    <color name="primary_blue">#1E2939</color>
+    <color name="secondary_gray">#99A1AF</color>
+    <color name="text_secondary">#4A5565</color>
+    <color name="background_light">#F5F5F5</color>
+
+    <color name="badge_7_days_cyan">#A2F4FD</color>
+    <color name="badge_30_days_green">#D8F999</color>
+
+    <color name="accent_blue">#8EC5FF</color>
+    <color name="accent_light_gray">#6A7282</color>
+
+    <color name="card_background">#80FFFFFF</color>
+    <color name="card_border">#99FFFFFF</color>
+    <color name="header_background">#4DFFFFFF</color>
+    <color name="button_background">#66FFFFFF</color>
+    <color name="button_border">#80FFFFFF</color>
+    <color name="bottom_nav_background">#99FFFFFF</color>
+    <color name="bottom_nav_border">#B3FFFFFF</color>
+
+    <color name="tab_selected">#1E2939</color>
+    <color name="tab_unselected">#6A7282</color>
+    <color name="tab_indicator">#8EC5FF</color>
+    
 </resources>
