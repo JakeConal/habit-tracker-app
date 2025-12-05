@@ -13,4 +13,6 @@
     <string name="tab_feed">Feed</string>
     <string name="tab_challenges">Challenges</string>
     <string name="tab_leaderboard">Leaderboard</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

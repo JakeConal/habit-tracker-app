@@ -26,6 +26,7 @@
             android:scaleType="centerCrop"
             android:background="@color/secondary_gray"
             android:contentDescription="Challenge image"
+            app:shapeAppearanceOverlay="@style/RoundedImageStyle"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
