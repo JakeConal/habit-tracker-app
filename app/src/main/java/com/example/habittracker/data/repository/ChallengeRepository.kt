@@ -1,7 +1,7 @@
 package com.example.habittracker.data.repository
 
 import com.example.habittracker.data.firebase.FirestoreManager
-import com.example.habittracker.data.models.Challenge
+import com.example.habittracker.data.model.Challenge
 
 class ChallengeRepository {
     private val collectionName = "challenges"

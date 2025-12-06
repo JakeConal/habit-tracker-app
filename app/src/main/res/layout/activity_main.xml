@@ -28,7 +28,7 @@
     <FrameLayout
         android:id="@+id/bottomNavigationContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="115dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         app:layout_constraintBottom_toBottomOf="parent"
