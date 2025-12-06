@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/nav_home">
+
+    <!-- Home/Dashboard Fragment -->
+    <fragment
+        android:id="@+id/nav_home"
+        android:name="com.example.habittracker.ui.dashboard.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <!-- Statistic Fragment -->
+    <fragment
+        android:id="@+id/nav_statistic"
+        android:name="com.example.habittracker.ui.progress.StatisticFragment"
+        android:label="Statistics"
+        tools:layout="@layout/fragment_statistic" />
+
+    <!-- Community Fragment -->
+    <fragment
+        android:id="@+id/nav_community"
+        android:name="com.example.habittracker.ui.social.CommunityFragment"
+        android:label="Community"
+        tools:layout="@layout/fragment_community" />
+
+    <!-- Profile Fragment -->
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.habittracker.ui.settings.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+</navigation>

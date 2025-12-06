@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.ksp)
-    id("com.google.gms.google-services")
 }
 
 android {
@@ -70,29 +69,9 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     ksp("com.github.bumptech.glide:ksp:4.16.0")
 
-    // Firebase BoM (Bill of Materials)
-    implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
-
-    // Firebase Authentication
-    implementation("com.google.firebase:firebase-auth-ktx")
-
-    // Firestore Database
-    implementation("com.google.firebase:firebase-firestore-ktx")
-
-    // Firebase Storage
-    implementation("com.google.firebase:firebase-storage-ktx")
-
-    // Firebase Cloud Messaging
-    implementation("com.google.firebase:firebase-messaging-ktx")
-
-    // Firebase Analytics
-    implementation("com.google.firebase:firebase-analytics-ktx")
-
-    // Kotlin Coroutines cho Firebase
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
-
-    // Google Play Services Auth
-    implementation("com.google.android.gms:play-services-auth:21.2.0")
+    // Navigation Component
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
