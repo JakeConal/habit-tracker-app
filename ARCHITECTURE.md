@@ -2,39 +2,89 @@
 
 ## Tổng quan
 
-Ứng dụng này được xây dựng theo kiến trúc **MVVM (Model-View-ViewModel)**, một pattern được Google khuyến nghị cho phát triển ứng dụng Android hiện đại.
+Ứng dụng này được xây dựng theo kiến trúc **MVVM (Model-View-ViewModel)** với **Feature-based Structure**, một pattern được Google khuyến nghị cho phát triển ứng dụng Android hiện đại.
 
 ## Cấu trúc thư mục
 
 ```
 app/src/main/java/com/example/habittracker/
-├── data/                          # Lớp dữ liệu
-│   ├── models/                    # Các data class (Model)
-│   │   └── Habit.kt              # Model đại diện cho một habit
-│   └── repository/                # Repository pattern
-│       └── HabitRepository.kt    # Quản lý data source
+├── data/                           # Lớp dữ liệu
+│   ├── model/                      # Các data class (Model)
+│   │   ├── Habit.kt               # Model đại diện cho một habit
+│   │   └── Challenge.kt           # Model đại diện cho một challenge
+│   ├── repository/                 # Repository pattern
+│   │   └── HabitRepository.kt     # Quản lý data source
+│   ├── local/                      # Room Database (DAOs, Entities)
+│   ├── remote/                     # Retrofit API Services
+│   └── preferences/                # DataStore/SharedPreferences
 │
-├── ui/                            # Lớp giao diện người dùng
-│   ├── activities/                # Các Activity
-│   │   └── MainActivity.kt       # Activity chính
-│   ├── fragments/                 # Các Fragment (chưa có)
-│   ├── viewmodels/                # Các ViewModel
-│   │   └── HabitViewModel.kt     # ViewModel cho habits
-│   └── adapters/                  # RecyclerView Adapters
-│       └── HabitAdapter.kt       # Adapter hiển thị danh sách habits
+├── ui/                             # Lớp giao diện người dùng (Feature-based)
+│   ├── main/                       # Main container
+│   │   └── MainActivity.kt
+│   ├── auth/                       # Authentication features
+│   │   ├── login/
+│   │   ├── register/
+│   │   └── guest/
+│   ├── dashboard/                  # Dashboard feature
+│   ├── category/                   # Category management
+│   ├── habit/                      # Habit management
+│   │   ├── list/                  # Habit list
+│   │   │   ├── HabitListViewModel.kt
+│   │   │   └── HabitAdapter.kt
+│   │   ├── detail/                # Habit detail
+│   │   ├── add/                   # Add habit
+│   │   └── edit/                  # Edit habit
+│   ├── pomodoro/                   # Pomodoro timer
+│   ├── progress/                   # Progress tracking
+│   │   ├── calendar/
+│   │   └── chart/
+│   ├── streak/                     # Streak management
+│   ├── reminder/                   # Reminders
+│   ├── quote/                      # Motivational quotes
+│   ├── social/                     # Social features
+│   │   ├── CommunityActivity.kt
+│   │   ├── CommunityPagerAdapter.kt
+│   │   ├── feed/                  # Community posts
+│   │   ├── friend/                # Friends management
+│   │   ├── interaction/           # Post interactions
+│   │   └── profile/               # User profile
+│   ├── challenge/                  # Challenges
+│   │   ├── list/
+│   │   │   ├── ChallengesFragment.kt
+│   │   │   └── ChallengeAdapter.kt
+│   │   ├── detail/
+│   │   ├── create/
+│   │   └── join/
+│   ├── leaderboard/                # Leaderboards
+│   │   └── LeaderboardFragment.kt
+│   ├── settings/                   # App settings
+│   ├── report/                     # Report generation
+│   └── common/                     # Shared UI components
+│       ├── BaseActivity.kt
+│       ├── BaseFragment.kt
+│       └── BaseViewModel.kt
 │
-├── di/                            # Dependency Injection (chưa implement)
-│   └── (Dagger/Hilt modules)
+├── di/                             # Dependency Injection (Hilt)
+│   ├── AppModule.kt
+│   ├── DatabaseModule.kt
+│   ├── NetworkModule.kt
+│   └── RepositoryModule.kt
 │
-└── utils/                         # Các utility classes
-    └── Constants.kt              # Hằng số dùng chung
+├── service/                        # Background Services
+│
+├── worker/                         # WorkManager Workers
+│
+├── util/                           # Các utility classes
+│   └── Constants.kt               # Hằng số dùng chung
+│
+└── HabitTrackerApplication.kt      # Application class
 ```
 
 ## Giải thích các thành phần
 
-### 1. **Model** (`data/models/`)
+### 1. **Model** (`data/model/`)
 - Chứa các data class đại diện cho dữ liệu của ứng dụng
-- Ví dụ: `Habit.kt` định nghĩa cấu trúc của một thói quen
+- Ví dụ: `Habit.kt`, `Challenge.kt`
 - **Trách nhiệm**: Định nghĩa cấu trúc dữ liệu
 
 ### 2. **Repository** (`data/repository/`)
@@ -42,24 +92,30 @@ app/src/main/java/com/example/habittracker/
 - Trừu tượng hóa data source (có thể từ database, API, cache...)
 - **Trách nhiệm**: Cung cấp dữ liệu cho ViewModel, xử lý logic lấy/lưu dữ liệu
 
-### 3. **ViewModel** (`ui/viewmodels/`)
+### 3. **ViewModel** (`ui/[feature]/`)
 - Nằm giữa View và Model
 - Giữ và xử lý dữ liệu cho UI
 - Sống sót qua configuration changes (xoay màn hình)
-- Sử dụng `LiveData` hoặc `StateFlow` để UI observe
+- Sử dụng `StateFlow` hoặc `LiveData` để UI observe
 - **Trách nhiệm**: Chuẩn bị dữ liệu cho View, xử lý business logic
 
-### 4. **View** (`ui/activities/`, `ui/fragments/`)
-- Activity và Fragment
+### 4. **View** (`ui/[feature]/`)
+- Activity và Fragment được tổ chức theo feature
+- Mỗi feature có folder riêng chứa tất cả files liên quan
 - Hiển thị dữ liệu và nhận input từ người dùng
 - Observe ViewModel để cập nhật UI
 - **Trách nhiệm**: Hiển thị UI và xử lý user interaction
 
-### 5. **Adapter** (`ui/adapters/`)
-- Adapter cho RecyclerView
-- **Trách nhiệm**: Bind dữ liệu vào các view item
+### 5. **Common** (`ui/common/`)
+- Base classes cho Activity, Fragment, ViewModel
+- Shared UI components
+- **Trách nhiệm**: Code dùng chung cho tất cả features
 
-### 6. **Utils** (`utils/`)
+### 6. **DI** (`di/`)
+- Hilt modules cho dependency injection
+- **Trách nhiệm**: Quản lý và cung cấp dependencies
+
+### 7. **Utils** (`util/`)
 - Các class tiện ích, helper functions, constants
 - **Trách nhiệm**: Code dùng chung trong toàn bộ app
 
@@ -81,46 +137,59 @@ User Action → View (Activity/Fragment)
             View (observe & update UI)
 ```
 
-## Ưu điểm của MVVM
+## Ưu điểm của MVVM + Feature-based Structure
 
 1. **Separation of Concerns**: Tách biệt rõ ràng giữa UI và business logic
 2. **Testability**: Dễ dàng test ViewModel độc lập với UI
 3. **Maintainability**: Code dễ bảo trì và mở rộng
 4. **Lifecycle Aware**: ViewModel tự động xử lý lifecycle
-5. **Data Binding**: UI tự động cập nhật khi dữ liệu thay đổi
+5. **Scalability**: Dễ thêm features mới
+6. **Team Collaboration**: Team có thể làm song song nhiều features
 
-## Dependencies cần thiết
+## Dependencies chính
 
 Thêm vào `app/build.gradle.kts`:
 
 ```kotlin
 dependencies {
     // ViewModel và LiveData
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     
     // Coroutines cho async operations
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     
-    // Room Database (nếu dùng)
-    implementation("androidx.room:room-runtime:2.6.0")
-    implementation("androidx.room:room-ktx:2.6.0")
+    // Navigation
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
     
-    // Dependency Injection - Hilt (optional)
-    implementation("com.google.dagger:hilt-android:2.48")
+    // Room Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+    
+    // Dependency Injection - Hilt
+    implementation("com.google.dagger:hilt-android:2.50")
+    kapt("com.google.dagger:hilt-compiler:2.50")
+    
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
 }
 ```
-
-## Các bước tiếp theo
-
-1. **Implement Database**: Thêm Room Database để lưu trữ habits
-2. **Add Dependency Injection**: Sử dụng Hilt để quản lý dependencies
-3. **Create Fragments**: Tách UI thành các fragment nhỏ hơn
-4. **Add Navigation**: Sử dụng Navigation Component để điều hướng
-5. **Testing**: Viết unit tests cho ViewModel và Repository
 
 ## Tài liệu tham khảo
 
 - [Android Architecture Guide](https://developer.android.com/topic/architecture)
 - [ViewModel Overview](https://developer.android.com/topic/libraries/architecture/viewmodel)
 - [Room Database](https://developer.android.com/training/data-storage/room)
+- [Hilt Dependency Injection](https://developer.android.com/training/dependency-injection/hilt-android)
+
+## Xem thêm
+
+- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Chi tiết cấu trúc đầy đủ của project
+- [.cursorrules](.cursorrules) - Quy tắc và conventions cho Cursor AI
