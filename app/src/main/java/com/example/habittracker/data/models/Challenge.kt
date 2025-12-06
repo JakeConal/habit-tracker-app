@@ -1,12 +1,12 @@
 package com.example.habittracker.data.models
 
 data class Challenge(
-    val id: String,
-    val title: String,
-    val description: String,
-    val imgURL: String,
-    val duration: ChallengeDuration,
-    val participants: Int = 0,
+    val id: String = "",
+    val title: String = "",
+    val description: String = "",
+    val imgURL: String = "",
+    val duration: ChallengeDuration = ChallengeDuration.SEVEN_DAYS,
+    val reward: Int = 0,
     val isJoined: Boolean = false,
 )
 
