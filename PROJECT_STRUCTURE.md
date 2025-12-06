@@ -2,7 +2,13 @@
 
 ## 🏗️ Kiến trúc tổng quan
 
-Dự án sử dụng **MVVM (Model-View-ViewModel)** với **Feature-based Structure**.
+Dự án sử dụng **MVVM (Model-View-ViewModel)** với **Single-Activity Architecture** và **Feature-based Structure**.
+
+### Single-Activity Architecture
+- **MainActivity** là container duy nhất
+- Tất cả màn hình được implement bằng **Fragments**
+- **Navigation Component** quản lý điều hướng
+- **BottomNavigationView** kết nối với NavController
 
 ## 📁 Cấu trúc thư mục
 
@@ -64,21 +70,20 @@ app/src/main/
 │   ├── ui/
 │   │   ├── auth/                       # Feature: User Account
 │   │   │   ├── login/
-│   │   │   │   ├── LoginActivity.kt
+│   │   │   │   ├── LoginFragment.kt
 │   │   │   │   └── LoginViewModel.kt
 │   │   │   ├── register/
-│   │   │   │   ├── RegisterActivity.kt
+│   │   │   │   ├── RegisterFragment.kt
 │   │   │   │   └── RegisterViewModel.kt
 │   │   │   └── guest/
-│   │   │       ├── GuestModeActivity.kt
+│   │   │       ├── GuestModeFragment.kt
 │   │   │       └── GuestViewModel.kt
 │   │   │
-│   │   ├── main/                       # Main Container
-│   │   │   ├── MainActivity.kt
-│   │   │   └── MainViewModel.kt
+│   │   ├── main/                       # Main Container (Single Activity)
+│   │   │   └── MainActivity.kt
 │   │   │
 │   │   ├── dashboard/                  # Dashboard + Quote + Streak
-│   │   │   ├── DashboardFragment.kt
+│   │   │   ├── HomeFragment.kt
 │   │   │   ├── DashboardViewModel.kt
 │   │   │   └── DashboardAdapter.kt
 │   │   │
@@ -110,7 +115,7 @@ app/src/main/
 │   │   │   └── TimerService.kt
 │   │   │
 │   │   ├── progress/                   # Feature: Track Progress
-│   │   │   ├── ProgressFragment.kt
+│   │   │   ├── StatisticFragment.kt
 │   │   │   ├── ProgressViewModel.kt
 │   │   │   ├── calendar/
 │   │   │   │   ├── CalendarView.kt
@@ -135,36 +140,36 @@ app/src/main/
 │   │   │   ├── QuoteViewModel.kt
 │   │   │   └── QuoteAdapter.kt
 │   │   │
-│   │   ├── social/                     # Social Features
-│   │   │   ├── CommunityActivity.kt
-│   │   │   ├── CommunityPagerAdapter.kt
-│   │   │   ├── friend/                 # Feature: Friends
+│   │   ├── social/                     # Social Features (Community)
+│   │   │   ├── CommunityFragment.kt        # Main community container với tabs
+│   │   │   ├── CommunityPagerAdapter.kt    # ViewPager adapter cho nested fragments
+│   │   │   ├── friend/                     # Feature: Friends
 │   │   │   │   ├── FriendListFragment.kt
 │   │   │   │   ├── FriendViewModel.kt
 │   │   │   │   ├── FriendAdapter.kt
 │   │   │   │   ├── FriendRequestFragment.kt
 │   │   │   │   └── SearchFriendFragment.kt
 │   │   │   │
-│   │   │   ├── feed/                   # Feature: Community Posts
+│   │   │   ├── feed/                       # Feature: Community Posts
 │   │   │   │   ├── FeedFragment.kt
 │   │   │   │   ├── FeedViewModel.kt
 │   │   │   │   ├── PostAdapter.kt
 │   │   │   │   ├── CreatePostFragment.kt
 │   │   │   │   └── EditPostFragment.kt
 │   │   │   │
-│   │   │   ├── interaction/            # Feature: Post Interactions
+│   │   │   ├── interaction/                # Feature: Post Interactions
 │   │   │   │   ├── CommentBottomSheet.kt
 │   │   │   │   ├── CommentAdapter.kt
 │   │   │   │   └── InteractionViewModel.kt
 │   │   │   │
 │   │   │   └── profile/
-│   │   │       ├── ProfileFragment.kt
+│   │   │       ├── UserProfileFragment.kt
 │   │   │       ├── ProfileViewModel.kt
 │   │   │       └── UserPostsAdapter.kt
 │   │   │
 │   │   ├── challenge/                  # Features: Challenges
 │   │   │   ├── list/
-│   │   │   │   ├── ChallengeListFragment.kt
+│   │   │   │   ├── ChallengesFragment.kt
 │   │   │   │   ├── ChallengeViewModel.kt
 │   │   │   │   └── ChallengeAdapter.kt
 │   │   │   ├── detail/
@@ -182,7 +187,8 @@ app/src/main/
 │   │   │   ├── LeaderboardViewModel.kt
 │   │   │   └── LeaderboardAdapter.kt
 │   │   │
-│   │   ├── settings/                   # Feature: Settings
+│   │   ├── settings/                   # Feature: Settings & Profile
+│   │   │   ├── ProfileFragment.kt          # Profile tab trong bottom nav
 │   │   │   ├── SettingsFragment.kt
 │   │   │   ├── SettingsViewModel.kt
 │   │   │   ├── LanguageSettingFragment.kt
@@ -235,14 +241,15 @@ app/src/main/
 │
 └── res/
     ├── layout/
-    │   ├── activity_login.xml
     │   ├── activity_main.xml
-    │   ├── fragment_dashboard.xml
+    │   ├── fragment_home.xml
+    │   ├── fragment_statistic.xml
+    │   ├── fragment_community.xml
+    │   ├── fragment_profile.xml
     │   ├── fragment_habit_list.xml
     │   ├── fragment_pomodoro.xml
-    │   ├── fragment_progress.xml
     │   ├── fragment_feed.xml
-    │   ├── fragment_challenge_list.xml
+    │   ├── fragment_challenges.xml
     │   ├── fragment_leaderboard.xml
     │   ├── fragment_settings.xml
     │   ├── item_habit.xml
@@ -250,12 +257,15 @@ app/src/main/
     │   ├── item_post.xml
     │   ├── item_comment.xml
     │   ├── item_friend.xml
-    │   ├── item_challenge.xml
+    │   ├── item_challenge_card.xml
     │   ├── item_leaderboard.xml
     │   ├── dialog_add_category.xml
     │   ├── dialog_add_reminder.xml
     │   ├── dialog_confirm.xml
     │   └── bottom_sheet_comment.xml
+    │
+    ├── navigation/
+    │   └── nav_graph_main.xml          # Main navigation graph
     │
     ├── values/
     │   ├── strings.xml
@@ -269,13 +279,9 @@ app/src/main/
     │
     ├── drawable/
     ├── menu/
-    │   ├── bottom_navigation.xml
-    │   └── menu_main.xml
+    │   └── bottom_nav_menu.xml
     │
-    └── navigation/
-        ├── nav_graph_main.xml
-        ├── nav_graph_auth.xml
-        └── nav_graph_social.xml
+    └── xml/
 ```
 
 ## 📊 Mapping Features với Cấu trúc
@@ -340,48 +346,38 @@ data class Streak(
 )
 ```
 
-## 🎯 Navigation Flow
+## 🎯 Navigation Flow (Single-Activity)
 
 ```
-Splash Screen
-    ↓
-Auth Flow (nếu chưa login)
-    ├── Login
-    ├── Register
-    └── Guest Mode
-    ↓
-Main Activity (Bottom Navigation)
-    ├── Dashboard (Home)
-    │   ├── Daily Quote
-    │   ├── Current Streaks
-    │   └── Today's Habits
+MainActivity (Single Activity Container)
     │
-    ├── Habits
-    │   ├── Habit List (by Category)
-    │   ├── Add/Edit Habit
-    │   ├── Habit Detail
-    │   │   ├── Progress (Calendar/Chart)
-    │   │   ├── Reminders
-    │   │   └── Pomodoro Timer
-    │   └── Categories Management
-    │
-    ├── Community
-    │   ├── Feed (Posts)
-    │   ├── Friends
-    │   ├── Challenges
-    │   └── Leaderboard
-    │
-    └── Profile
-        ├── User Stats
-        ├── Settings
-        ├── Reports
-        └── Account Management
+    └── NavHostFragment
+        │
+        ├── HomeFragment (nav_home) ─────────────────── Dashboard
+        │   ├── Daily Quote
+        │   ├── Current Streaks
+        │   └── Today's Habits
+        │
+        ├── StatisticFragment (nav_statistic) ───────── Progress/Stats
+        │   ├── Calendar View
+        │   └── Charts
+        │
+        ├── CommunityFragment (nav_community) ────────── Social Hub
+        │   └── ViewPager2 + TabLayout
+        │       ├── FeedFragment (tab 0) ─── Posts
+        │       ├── ChallengesFragment (tab 1) ─── Challenges
+        │       └── LeaderboardFragment (tab 2) ─── Rankings
+        │
+        └── ProfileFragment (nav_profile) ───────────── User Profile
+            ├── User Stats
+            ├── Settings
+            └── Account Management
 ```
 
 ## 🔄 Data Flow (MVVM)
 
 ```
-User Action → View (Activity/Fragment)
+User Action → View (Fragment)
                 ↓
             ViewModel (xử lý logic)
                 ↓
@@ -404,16 +400,20 @@ dependencies {
     // Core Android
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
+    implementation("com.google.android.material:material:1.12.0")
     
     // ViewModel & LiveData
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     
-    // Navigation
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
-    implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
+    // Navigation Component
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+    
+    // Fragment & ViewPager2
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
     
     // Room Database
     implementation("androidx.room:room-runtime:2.6.1")
@@ -430,7 +430,7 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.50")
     
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")
@@ -470,26 +470,27 @@ dependencies {
 ## ✅ Checklist khi tạo Feature mới
 
 - [ ] Tạo folder `ui/[feature_name]/`
-- [ ] Tạo Activity hoặc Fragment
+- [ ] Tạo Fragment (ưu tiên) hoặc Activity
 - [ ] Tạo ViewModel tương ứng
+- [ ] Tạo layout file `fragment_[feature].xml`
 - [ ] Tạo Repository trong `data/repository/`
 - [ ] Tạo Model trong `data/model/`
-- [ ] Tạo layout files trong `res/layout/`
 - [ ] Tạo Adapter nếu có RecyclerView
-- [ ] Update AndroidManifest.xml (nếu là Activity)
-- [ ] Setup Navigation (nếu dùng Navigation Component)
+- [ ] Thêm destination vào `nav_graph_main.xml`
 - [ ] Thêm DI bindings nếu dùng Hilt
 
 ## 💡 Best Practices
 
-1. **Offline-First Architecture**: Lưu tất cả dữ liệu local trước, sync với server sau
-2. **WorkManager**: Dùng cho daily tasks (quotes, streak check, reminders)
-3. **Repository Pattern**: Combine local + remote data sources
-4. **Sealed Classes**: Cho UI states (Loading, Success, Error)
-5. **Dependency Injection**: Hilt cho toàn bộ dependencies
-6. **Navigation Component**: Quản lý navigation giữa các screens
-7. **DataStore**: Cho user preferences thay vì SharedPreferences
-8. **Proper Error Handling**: Try-catch với proper user feedback
+1. **Single-Activity Architecture**: Sử dụng Fragment cho mọi màn hình
+2. **Offline-First Architecture**: Lưu tất cả dữ liệu local trước, sync với server sau
+3. **WorkManager**: Dùng cho daily tasks (quotes, streak check, reminders)
+4. **Repository Pattern**: Combine local + remote data sources
+5. **Sealed Classes**: Cho UI states (Loading, Success, Error)
+6. **Dependency Injection**: Hilt cho toàn bộ dependencies
+7. **Navigation Component**: Quản lý navigation giữa các screens
+8. **DataStore**: Cho user preferences thay vì SharedPreferences
+9. **Proper Error Handling**: Try-catch với proper user feedback
+10. **Nested Fragments**: Sử dụng `childFragmentManager` cho ViewPager2 trong Fragment
 
 ## 🚀 Development Flow
 
@@ -501,9 +502,10 @@ dependencies {
 ---
 
 Cấu trúc này giúp:
+- ✅ Single source of navigation
 - ✅ Dễ scale khi thêm features
 - ✅ Clear separation of concerns
 - ✅ Dễ test từng feature độc lập
 - ✅ Team có thể làm song song nhiều features
 - ✅ Maintain dễ dàng trong tương lai
-
+- ✅ Bottom navigation state được giữ đúng

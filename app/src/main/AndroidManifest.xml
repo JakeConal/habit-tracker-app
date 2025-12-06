@@ -25,11 +25,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
-        <!-- Social/Community Activity -->
-        <activity
-            android:name=".ui.social.CommunityActivity"
-            android:exported="false" />
             
     </application>
 

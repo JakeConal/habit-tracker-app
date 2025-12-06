@@ -19,6 +19,13 @@
         android:label="Statistics"
         tools:layout="@layout/fragment_statistic" />
 
+    <!-- Community Fragment -->
+    <fragment
+        android:id="@+id/nav_community"
+        android:name="com.example.habittracker.ui.social.CommunityFragment"
+        android:label="Community"
+        tools:layout="@layout/fragment_community" />
+
     <!-- Profile Fragment -->
     <fragment
         android:id="@+id/nav_profile"
@@ -27,4 +34,3 @@
         tools:layout="@layout/fragment_profile" />
 
 </navigation>
-

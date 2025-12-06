@@ -1,6 +1,5 @@
 package com.example.habittracker.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -12,11 +11,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityMainBinding
-import com.example.habittracker.ui.social.CommunityActivity
 
 /**
  * MainActivity - Container chính của ứng dụng
  * Quản lý Navigation Component và BottomNavigationView
+ * Sử dụng Single-Activity Architecture với các Fragments
  */
 class MainActivity : AppCompatActivity() {
 
@@ -58,13 +57,13 @@ class MainActivity : AppCompatActivity() {
 
     /**
      * Setup BottomNavigationView với NavController
-     * Xử lý đặc biệt cho Community tab (mở CommunityActivity)
+     * Tất cả các tabs giờ đều sử dụng Navigation Component
      */
     private fun setupBottomNavigation() {
-        // Kết nối BottomNavigation với NavController cho các tab cơ bản
+        // Kết nối BottomNavigation với NavController
         binding.bottomNavigation.setupWithNavController(navController)
         
-        // Xử lý riêng cho Community tab vì nó mở Activity khác
+        // Xử lý để skip placeholder item và đảm bảo navigation hoạt động đúng
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
@@ -76,9 +75,8 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_community -> {
-                    // Mở CommunityActivity thay vì navigate đến fragment
-                    openCommunityScreen()
-                    false // Return false để không thay đổi selection state
+                    navController.navigate(R.id.nav_community)
+                    true
                 }
                 R.id.nav_profile -> {
                     navController.navigate(R.id.nav_profile)
@@ -101,14 +99,6 @@ class MainActivity : AppCompatActivity() {
             // TODO: Mở màn hình thêm habit mới
             Toast.makeText(this, "Add new habit", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    /**
-     * Mở CommunityActivity
-     */
-    private fun openCommunityScreen() {
-        val intent = Intent(this, CommunityActivity::class.java)
-        startActivity(intent)
     }
 
     /**
