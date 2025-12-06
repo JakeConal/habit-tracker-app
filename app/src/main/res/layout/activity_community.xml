@@ -5,7 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/background_gradient">
+    android:background="@drawable/background_gradient"
+    android:clipChildren="false"
+    android:clipToPadding="false">
 
     <!-- Header with Back Button, Title, and Notification Icon -->
     <RelativeLayout
@@ -74,6 +76,12 @@
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Bottom Navigation Bar -->
+    <include
+        android:id="@+id/bottomNavigationBar"
+        layout="@layout/bottom_navigation" />
 
 </LinearLayout>
