@@ -2,6 +2,7 @@ package com.example.habittracker.ui.activities
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.viewpager2.widget.ViewPager2
 import com.example.habittracker.R
 import com.example.habittracker.ui.adapters.CommunityPagerAdapter
@@ -15,6 +16,9 @@ class CommunityActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        
         setContentView(R.layout.activity_community)
 
         tabLayout = findViewById(R.id.tabLayout)
