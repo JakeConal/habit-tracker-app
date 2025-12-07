@@ -1,15 +1,12 @@
 package com.example.habittracker.ui.main
 
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
-import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -69,30 +66,24 @@ class MainActivity : AppCompatActivity() {
         // Kết nối BottomNavigation với NavController
         binding.bottomNavigation.setupWithNavController(navController)
         
-        // Xử lý để skip placeholder item và đảm bảo navigation hoạt động đúng
+        // Xử lý để skip placeholder item
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> {
-                    navController.navigate(R.id.nav_home)
-                    true
-                }
-                R.id.nav_statistic -> {
-                    navController.navigate(R.id.nav_statistic)
-                    true
-                }
-                R.id.nav_community -> {
-                    navController.navigate(R.id.nav_community)
-                    true
-                }
-                R.id.nav_profile -> {
-                    navController.navigate(R.id.nav_profile)
-                    true
-                }
                 R.id.nav_placeholder -> {
                     // Placeholder cho FAB, không làm gì
                     false
                 }
-                else -> false
+                else -> {
+                    // Let NavigationUI handle navigation for other items
+                    try {
+                        if (navController.currentDestination?.id != item.itemId) {
+                            navController.navigate(item.itemId)
+                        }
+                        true
+                    } catch (_: Exception) {
+                        false
+                    }
+                }
             }
         }
     }
