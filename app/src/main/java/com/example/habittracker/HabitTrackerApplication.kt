@@ -24,6 +24,9 @@ class HabitTrackerApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         
+        // Initialize instance
+        instance = this
+
         // Initialize application-wide configurations
         initializeApp()
     }

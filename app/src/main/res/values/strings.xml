@@ -13,6 +13,18 @@
     <string name="tab_feed">Feed</string>
     <string name="tab_challenges">Challenges</string>
     <string name="tab_leaderboard">Leaderboard</string>
+    
+    <!-- Home Screen -->
+    <string name="greeting_morning">Good Morning!</string>
+    <string name="greeting_afternoon">Good Afternoon!</string>
+    <string name="greeting_evening">Good Evening!</string>
+    <string name="greeting_default">Hi %s!</string>
+    <string name="sub_greeting">How are you feeling today?</string>
+    <string name="your_habits">Your Habits</string>
+    <string name="habit_completed">Completed</string>
+    <string name="habit_pending">Pending</string>
+    <string name="motivational_quote">Believe in yourself and all that you are.</string>
+    
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

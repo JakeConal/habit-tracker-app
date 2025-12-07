@@ -25,4 +25,27 @@
     <!-- Badge -->
     <dimen name="badge_radius">100dp</dimen>
     <dimen name="badge_padding_horizontal">12dp</dimen>
+    
+    <!-- Home screen components -->
+    <dimen name="header_card_height">82dp</dimen>
+    <dimen name="header_card_radius">24dp</dimen>
+    <dimen name="quote_card_height">114dp</dimen>
+    <dimen name="calendar_card_height">106dp</dimen>
+    <dimen name="habit_item_height">82dp</dimen>
+    <dimen name="habit_item_radius">16dp</dimen>
+    <dimen name="calendar_day_width">44dp</dimen>
+    <dimen name="calendar_day_height">72dp</dimen>
+    <dimen name="calendar_day_radius">16dp</dimen>
+    <dimen name="habit_icon_size">56dp</dimen>
+    <dimen name="habit_icon_radius">16dp</dimen>
+    <dimen name="check_button_size">32dp</dimen>
+    <dimen name="profile_image_size">48dp</dimen>
+    <dimen name="notification_button_size">40dp</dimen>
+    
+    <!-- Elevation values for modern material design -->
+    <dimen name="elevation_card">4dp</dimen>
+    <dimen name="elevation_card_raised">8dp</dimen>
+    <dimen name="elevation_button">2dp</dimen>
+    <dimen name="elevation_fab">12dp</dimen>
+    <dimen name="no_elevation">0dp</dimen>
 </resources>

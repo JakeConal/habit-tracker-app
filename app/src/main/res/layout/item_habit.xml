@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="@dimen/habit_item_radius"
+    app:cardBackgroundColor="@color/white"
+    app:cardElevation="@dimen/no_elevation"
+    app:strokeWidth="0dp"
+    app:strokeColor="@color/transparent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_md">
+
+    <!-- Habit Icon -->
+    <View
+        android:id="@+id/habitIconBackground"
+        android:layout_width="@dimen/habit_icon_size"
+        android:layout_height="@dimen/habit_icon_size"
+        android:background="@drawable/bg_habit_icon_pink"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <ImageView
+        android:id="@+id/ivHabitIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:src="@drawable/ic_heart"
+        android:contentDescription="@string/app_name"
+        app:layout_constraintStart_toStartOf="@id/habitIconBackground"
+        app:layout_constraintEnd_toEndOf="@id/habitIconBackground"
+        app:layout_constraintTop_toTopOf="@id/habitIconBackground"
+        app:layout_constraintBottom_toBottomOf="@id/habitIconBackground" />
+
+    <!-- Habit Info -->
+    <TextView
+        android:id="@+id/tvHabitName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:text="Praying Namaz"
+        android:textSize="@dimen/text_lg"
+        android:textColor="@color/primary_blue"
+        android:fontFamily="sans-serif"
+        app:layout_constraintStart_toEndOf="@id/habitIconBackground"
+        app:layout_constraintEnd_toStartOf="@id/btnCheck"
+        app:layout_constraintTop_toTopOf="@id/habitIconBackground"
+        tools:text="Praying Namaz" />
+
+    <TextView
+        android:id="@+id/tvHabitStatus"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:text="Completed"
+        android:textSize="@dimen/text_md"
+        android:textColor="@color/habit_completed"
+        android:fontFamily="sans-serif"
+        app:layout_constraintStart_toEndOf="@id/habitIconBackground"
+        app:layout_constraintEnd_toStartOf="@id/btnCheck"
+        app:layout_constraintTop_toBottomOf="@id/tvHabitName"
+        tools:text="Completed" />
+
+    <!-- Check Button -->
+    <FrameLayout
+        android:id="@+id/btnCheck"
+        android:layout_width="@dimen/check_button_size"
+        android:layout_height="@dimen/check_button_size"
+        android:background="@drawable/bg_check_button"
+        android:elevation="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ImageView
+            android:id="@+id/ivCheck"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_check"
+            android:contentDescription="@string/app_name" />
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
