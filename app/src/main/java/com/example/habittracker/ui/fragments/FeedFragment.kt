@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -13,8 +14,11 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.habittracker.R
 import com.example.habittracker.data.models.Post
+import com.example.habittracker.ui.activities.CreatePostActivity
+import com.example.habittracker.ui.activities.PostDetailActivity
 import com.example.habittracker.ui.adapters.FeedAdapter
 import com.example.habittracker.ui.viewmodels.FeedViewModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class FeedFragment : Fragment() {
 
@@ -42,6 +46,9 @@ class FeedFragment : Fragment() {
     private fun initViews(view: View) {
         swipeRefresh = view.findViewById(R.id.swipeRefresh)
         rvFeedPosts = view.findViewById(R.id.rvFeedPosts)
+        view.findViewById<FloatingActionButton>(R.id.fabCreatePost).setOnClickListener {
+            openCreatePost()
+        }
     }
 
     private fun setupRecyclerView() {
@@ -60,30 +67,13 @@ class FeedFragment : Fragment() {
 
             // Optimize RecyclerView performance
             setItemViewCacheSize(20)
-            isNestedScrollingEnabled = true
+            isNestedScrollingEnabled = false
 
             // Create a RecycledViewPool for better memory management
             val viewPool = RecyclerView.RecycledViewPool()
             viewPool.setMaxRecycledViews(0, 5) // Header type
             viewPool.setMaxRecycledViews(1, 15) // Post type
             setRecycledViewPool(viewPool)
-
-            // Infinite scroll
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(recyclerView, dx, dy)
-                    val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
-
-                    if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 2
-                        && firstVisibleItemPosition >= 0
-                    ) {
-                        viewModel.loadMore()
-                    }
-                }
-            })
         }
     }
 
@@ -110,14 +100,19 @@ class FeedFragment : Fragment() {
 
     private fun openCreatePost() {
         Toast.makeText(requireContext(), "Create new post", Toast.LENGTH_SHORT).show()
+        // Navigate to CreatePostActivity
+        val intent = Intent(requireContext(), CreatePostActivity::class.java)
+        startActivity(intent)
     }
 
     private fun openComments(post: Post) {
-        Toast.makeText(requireContext(), "Open comments for: ${post.author.name}", Toast.LENGTH_SHORT).show()
+        val intent = Intent(requireContext(), PostDetailActivity::class.java)
+        intent.putExtra("POST_ID", post.id)
+        startActivity(intent)
     }
 
     private fun openPostDetail(post: Post) {
-        Toast.makeText(requireContext(), "Open post detail", Toast.LENGTH_SHORT).show()
+        openComments(post)
     }
 
     private fun showMoreOptions(post: Post, anchor: View) {
