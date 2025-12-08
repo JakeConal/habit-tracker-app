@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.habittracker" />
-                  <option name="mobileSdkAppId" value="1:62520872452:android:4087b7bf3d052bc765af51" />
-                  <option name="projectId" value="habit-tracker-23533" />
-                  <option name="projectNumber" value="62520872452" />
+                  <option name="mobileSdkAppId" value="1:123456789000:android:abcdef1234567890" />
+                  <option name="projectId" value="habit-tracker-demo" />
+                  <option name="projectNumber" value="123456789000" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

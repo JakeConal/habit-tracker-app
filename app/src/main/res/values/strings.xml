@@ -25,6 +25,39 @@
     <string name="habit_pending">Pending</string>
     <string name="motivational_quote">Believe in yourself and all that you are.</string>
     
+    <!-- Authentication Screens -->
+    <string name="welcome">Welcome!</string>
+    <string name="sign_in_subtitle">Sign in to continue your journey</string>
+    <string name="create_account">Create Account</string>
+    <string name="join_subtitle">Join us to build better habits</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="full_name">Full Name</string>
+    <string name="email_hint">your@email.com</string>
+    <string name="password_hint">Enter your password</string>
+    <string name="password_create_hint">Create a strong password</string>
+    <string name="name_hint">John Doe</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="login">Login</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="log_in">Log In</string>
+    <string name="continue_as_guest">Continue as Guest</string>
+    <string name="dont_have_account">Don\'t have an account?  </string>
+    <string name="already_have_account">Already have an account?  </string>
+    <string name="agree_to_terms">I agree to the </string>
+    <string name="terms_privacy">Terms &amp; Privacy</string>
+
+    <!-- Statistics Screen -->
+    <string name="statistic">Statistic</string>
+    <string name="all_habits">All habits</string>
+    <string name="calendar">Calendar</string>
+    <string name="statistics">Statistics</string>
+    <string name="habit_score">Habit Score</string>
+    <string name="last_week">Last Week</string>
+    <string name="streak">Streak</string>
+    <string name="current">Current</string>
+    <string name="best">Best</string>
+
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

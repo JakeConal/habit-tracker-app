@@ -56,6 +56,20 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
+
+        // Hide bottom navigation and FAB on authentication screens
+        navController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.nav_login, R.id.nav_register -> {
+                    binding.bottomNavigation.visibility = android.view.View.GONE
+                    binding.fabAdd.visibility = android.view.View.GONE
+                }
+                else -> {
+                    binding.bottomNavigation.visibility = android.view.View.VISIBLE
+                    binding.fabAdd.visibility = android.view.View.VISIBLE
+                }
+            }
+        }
     }
 
     /**

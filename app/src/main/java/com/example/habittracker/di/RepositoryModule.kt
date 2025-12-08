@@ -2,13 +2,13 @@ package com.example.habittracker.di
 
 /**
  * Hilt Module for providing Repository dependencies.
- * 
+ *
  * Example usage:
- * 
+ *
  * @Module
  * @InstallIn(SingletonComponent::class)
  * object RepositoryModule {
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideHabitRepository(
@@ -17,7 +17,7 @@ package com.example.habittracker.di
  *     ): HabitRepository {
  *         return HabitRepository(habitDao, apiService)
  *     }
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideCategoryRepository(
@@ -25,7 +25,7 @@ package com.example.habittracker.di
  *     ): CategoryRepository {
  *         return CategoryRepository(categoryDao)
  *     }
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideUserRepository(

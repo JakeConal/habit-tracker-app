@@ -4,17 +4,17 @@ import android.app.Application
 
 /**
  * Custom Application class for Habit Tracker.
- * 
+ *
  * This class is the entry point for the application and is used for:
  * - Initializing Hilt dependency injection
  * - Setting up global configurations
  * - Initializing third-party libraries
- * 
+ *
  * To use this class, add it to AndroidManifest.xml:
  * <application
  *     android:name=".HabitTrackerApplication"
  *     ...>
- * 
+ *
  * When Hilt is enabled, add @HiltAndroidApp annotation:
  * @HiltAndroidApp
  * class HabitTrackerApplication : Application() { ... }

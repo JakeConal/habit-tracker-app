@@ -35,7 +35,7 @@
     <dimen name="habit_item_radius">16dp</dimen>
     <dimen name="calendar_day_width">44dp</dimen>
     <dimen name="calendar_day_height">72dp</dimen>
-    <dimen name="calendar_day_radius">16dp</dimen>
+    <dimen name="calendar_day_radius">20dp</dimen>
     <dimen name="habit_icon_size">56dp</dimen>
     <dimen name="habit_icon_radius">16dp</dimen>
     <dimen name="check_button_size">32dp</dimen>

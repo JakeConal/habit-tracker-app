@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_selected="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/badge_7_days_cyan" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+    <item android:state_enabled="true">
+        <shape android:shape="oval">
+            <solid android:color="@android:color/transparent" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="#20000000" />
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+</selector>
+

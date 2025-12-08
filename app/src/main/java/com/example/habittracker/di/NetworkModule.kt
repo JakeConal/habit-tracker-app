@@ -2,15 +2,15 @@ package com.example.habittracker.di
 
 /**
  * Hilt Module for providing Network (Retrofit) dependencies.
- * 
+ *
  * Example usage:
- * 
+ *
  * @Module
  * @InstallIn(SingletonComponent::class)
  * object NetworkModule {
- *     
+ *
  *     private const val BASE_URL = "https://api.example.com/"
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideOkHttpClient(): OkHttpClient {
@@ -23,7 +23,7 @@ package com.example.habittracker.di
  *             .writeTimeout(30, TimeUnit.SECONDS)
  *             .build()
  *     }
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
@@ -33,7 +33,7 @@ package com.example.habittracker.di
  *             .addConverterFactory(GsonConverterFactory.create())
  *             .build()
  *     }
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideApiService(retrofit: Retrofit): ApiService {

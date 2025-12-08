@@ -2,13 +2,13 @@ package com.example.habittracker.di
 
 /**
  * Hilt Module for providing Room Database dependencies.
- * 
+ *
  * Example usage:
- * 
+ *
  * @Module
  * @InstallIn(SingletonComponent::class)
  * object DatabaseModule {
- *     
+ *
  *     @Provides
  *     @Singleton
  *     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
@@ -18,12 +18,12 @@ package com.example.habittracker.di
  *             "habit_tracker_db"
  *         ).build()
  *     }
- *     
+ *
  *     @Provides
  *     fun provideHabitDao(database: AppDatabase): HabitDao {
  *         return database.habitDao()
  *     }
- *     
+ *
  *     @Provides
  *     fun provideCategoryDao(database: AppDatabase): CategoryDao {
  *         return database.categoryDao()

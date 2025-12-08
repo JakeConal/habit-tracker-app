@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/calendar_selected_bg" />
+    <solid android:color="#B3D9F2" />
     <corners android:radius="12dp" />
+    <size android:width="40dp" android:height="40dp" />
 </shape>
+
