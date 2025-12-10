@@ -1,112 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_gradient"
-    android:fillViewport="true">
+    tools:context=".ui.dashboard.HomeFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/spacing_xl"
-        tools:context=".ui.dashboard.HomeFragment">
+    <RelativeLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Header -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/headerLayout"
-            android:layout_width="0dp"
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_back"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="Back"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="@dimen/elevation_card"
-            app:strokeColor="@android:color/transparent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            android:layout_centerInParent="true"
+            android:text="Home"
+            android:textSize="18sp"
+            android:textColor="@color/primary_blue"
+            android:fontFamily="sans-serif-medium" />
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp">
+        <ImageButton
+            android:id="@+id/btnNotification"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:src="@mipmap/ic_notification"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="Notifications" />
 
-                <!-- Avatar -->
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:src="@drawable/ic_launcher_background"
-                    android:scaleType="centerCrop"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Round"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
+    </RelativeLayout>
 
-                <!-- Greeting texts -->
-                <LinearLayout
-                    android:id="@+id/greetingLayout"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp"
-                    app:layout_constraintStart_toEndOf="@id/ivAvatar"
-                    app:layout_constraintTop_toTopOf="@id/ivAvatar"
-                    app:layout_constraintBottom_toBottomOf="@id/ivAvatar"
-                    app:layout_constraintEnd_toStartOf="@id/btnNotification">
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-                    <!-- Dùng lại id tvTitle để không vỡ code -->
-                    <TextView
-                        android:id="@+id/tvTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Hi Tanzir!"
-                        android:textSize="20sp"
-                        android:textColor="@color/primary_blue"
-                        android:fontFamily="sans-serif-medium" />
-
-                    <TextView
-                        android:id="@+id/tvSubGreeting"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="How are you feeling today?"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:layout_marginTop="2dp"
-                        android:fontFamily="sans-serif" />
-                </LinearLayout>
-
-                <!-- Notification button (giữ nguyên id cũ) -->
-                <ImageButton
-                    android:id="@+id/btnNotification"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:padding="10dp"
-                    android:background="@drawable/button_background_round"
-                    android:src="@mipmap/ic_notification"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="Notifications"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </com.google.android.material.card.MaterialCardView>
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:paddingBottom="@dimen/spacing_xl">
 
         <!-- Quote Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/quoteCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:layout_marginEnd="@dimen/spacing_md"
             android:layout_marginTop="@dimen/spacing_lg"
             android:minHeight="@dimen/quote_card_height"
             app:cardCornerRadius="@dimen/header_card_radius"
             app:cardElevation="@dimen/elevation_card"
-            app:layout_constraintTop_toBottomOf="@id/headerLayout"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -144,8 +118,6 @@
             android:id="@+id/calendarCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:layout_marginEnd="@dimen/spacing_md"
             android:layout_marginTop="@dimen/spacing_md"
             app:cardCornerRadius="@dimen/header_card_radius"
             app:cardBackgroundColor="@color/white"
@@ -174,7 +146,6 @@
             android:id="@+id/tvHabitsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
             android:layout_marginTop="@dimen/spacing_md"
             android:text="@string/your_habits"
             android:textSize="@dimen/text_lg"
@@ -188,8 +159,6 @@
             android:id="@+id/rvHabits"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:layout_marginEnd="@dimen/spacing_md"
             android:layout_marginTop="@dimen/spacing_md"
             android:nestedScrollingEnabled="false"
             app:layout_constraintTop_toBottomOf="@id/tvHabitsTitle"
@@ -199,5 +168,7 @@
             tools:listitem="@layout/item_habit"
             tools:itemCount="3" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
