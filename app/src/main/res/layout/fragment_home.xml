@@ -15,23 +15,59 @@
         android:paddingHorizontal="16dp"
         android:paddingVertical="16dp"
         android:layout_marginTop="30dp"
+        android:background="@color/header_background"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <!-- Avatar và Greeting ở bên trái -->
+        <LinearLayout
+            android:id="@+id/userInfoLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:padding="10dp"
-            android:src="@drawable/ic_back"
-            android:scaleType="fitCenter"
-            android:background="@drawable/button_background_round"
-            android:contentDescription="Back"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@mipmap/ic_launcher"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Round"
+                android:contentDescription="User avatar" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvGreeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hi, User"
+                    android:textSize="16sp"
+                    android:textColor="@color/primary_blue"
+                    android:fontFamily="sans-serif" />
+
+                <TextView
+                    android:id="@+id/tvSubGreeting"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sub_greeting"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:fontFamily="sans-serif" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Title ở giữa (ẩn đi vì đã có greeting) -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
@@ -40,7 +76,8 @@
             android:text="Home"
             android:textSize="18sp"
             android:textColor="@color/primary_blue"
-            android:fontFamily="sans-serif-medium" />
+            android:fontFamily="sans-serif-medium"
+            android:visibility="gone" />
 
         <ImageButton
             android:id="@+id/btnNotification"

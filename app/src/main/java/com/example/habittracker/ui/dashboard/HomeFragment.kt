@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.dashboard
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -38,6 +39,17 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupView() {
+        // Get username from SharedPreferences
+        val sharedPref = requireActivity().getSharedPreferences("HabitTrackerPrefs", Context.MODE_PRIVATE)
+        val username = sharedPref.getString("username", null)
+        
+        // Set greeting text with username
+        if (!username.isNullOrEmpty()) {
+            binding.tvGreeting.text = "Hi, $username"
+        } else {
+            binding.tvGreeting.text = "Hi, User"
+        }
+        
         // Set content text - matching StaticFragment style
         binding.tvQuote.text = getString(R.string.motivational_quote)
         binding.tvHabitsTitle.text = getString(R.string.your_habits)
