@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHomeBinding
@@ -36,6 +37,7 @@ class HomeFragment : Fragment() {
         setupView()
         setupCalendar()
         setupHabits()
+        setupClickListeners()
     }
 
     private fun setupView() {
@@ -50,9 +52,42 @@ class HomeFragment : Fragment() {
             binding.tvGreeting.text = "Hi, User"
         }
         
-        // Set content text - matching StaticFragment style
-        binding.tvQuote.text = getString(R.string.motivational_quote)
+        // Load custom quote or use default
+        loadQuote()
+        
         binding.tvHabitsTitle.text = getString(R.string.your_habits)
+    }
+
+    private fun loadQuote() {
+        val sharedPref = requireActivity().getSharedPreferences("HabitTrackerPrefs", Context.MODE_PRIVATE)
+        val useSystemQuotes = sharedPref.getBoolean("use_system_quotes", false)
+        val showOnDashboard = sharedPref.getBoolean("show_quote_on_dashboard", true)
+        
+        if (!showOnDashboard) {
+            binding.quoteCard.visibility = View.GONE
+            return
+        }
+        
+        binding.quoteCard.visibility = View.VISIBLE
+        
+        if (useSystemQuotes) {
+            // Use default motivational quote
+            binding.tvQuote.text = getString(R.string.motivational_quote)
+        } else {
+            // Use custom quote if available
+            val customQuote = sharedPref.getString("custom_quote", null)
+            if (!customQuote.isNullOrEmpty()) {
+                binding.tvQuote.text = customQuote
+            } else {
+                binding.tvQuote.text = getString(R.string.motivational_quote)
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload quote when returning from Daily Quote screen
+        loadQuote()
     }
 
     private fun setupCalendar() {
@@ -146,6 +181,13 @@ class HomeFragment : Fragment() {
     private fun toggleHabitCompletion(habit: Habit) {
         habit.isCompleted = !habit.isCompleted
         habitsAdapter.notifyDataSetChanged()
+    }
+
+    private fun setupClickListeners() {
+        // Navigate to Daily Quote screen when quote card is clicked
+        binding.quoteCard.setOnClickListener {
+            findNavController().navigate(R.id.nav_daily_quote)
+        }
     }
 
     override fun onDestroyView() {
