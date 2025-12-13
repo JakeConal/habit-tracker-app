@@ -25,6 +25,13 @@
         android:label="Home"
         tools:layout="@layout/fragment_home" />
 
+    <!-- Daily Quote Fragment -->
+    <fragment
+        android:id="@+id/nav_daily_quote"
+        android:name="com.example.habittracker.ui.dashboard.DailyQuoteFragment"
+        android:label="Daily Quote"
+        tools:layout="@layout/fragment_daily_quote" />
+
     <!-- Statistic Fragment -->
     <fragment
         android:id="@+id/nav_statistic"
