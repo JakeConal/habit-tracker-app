@@ -9,7 +9,7 @@
         android:id="@+id/etReply"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Write your reply..."
+        android:hint="@string/write_reply_hint"
         android:minHeight="100dp"
         android:gravity="start|top"
         android:inputType="textMultiLine|textCapSentences"

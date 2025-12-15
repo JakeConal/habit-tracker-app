@@ -74,4 +74,5 @@
     <string name="add_photo_desc">Add Photo</string>
     <string name="more_options_desc">More Options</string>
     <string name="back">Back</string>
+    <string name="write_reply_hint">Write your reply...</string>
 </resources>

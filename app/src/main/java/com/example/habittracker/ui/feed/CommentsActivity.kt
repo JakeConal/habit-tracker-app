@@ -3,12 +3,14 @@ package com.example.habittracker.ui.feed
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityCommentsBinding
+import com.example.habittracker.utils.UserPreferences
 
 class CommentsActivity : AppCompatActivity() {
 
@@ -29,6 +31,13 @@ class CommentsActivity : AppCompatActivity() {
         setupViews()
         setupRecyclerView()
         loadComments()
+
+        // Handle back press using OnBackPressedDispatcher
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                returnResult()
+            }
+        })
     }
 
     private fun getPostFromIntent() {
@@ -162,97 +171,9 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun loadComments() {
-        // If comments already exist (from previous sessions), use them
-        // Otherwise load sample comments
-        if (comments.isEmpty()) {
-            val sampleComments = listOf(
-                Comment(
-                    id = "1",
-                    authorName = "Alice Johnson",
-                    authorAvatar = "",
-                    timestamp = "1h ago",
-                    content = "Great job! Keep it up! 👏",
-                    likesCount = 5,
-                    isLiked = false,
-                    replies = listOf(
-                        CommentReply(
-                            id = "r1",
-                            authorName = "You",
-                            authorAvatar = "",
-                            timestamp = "30m ago",
-                            content = "Thank you! 🙏",
-                            likesCount = 2,
-                            isLiked = true,
-                            replies = listOf(
-                                CommentReply(
-                                    id = "r1_1",
-                                    authorName = "Alice Johnson",
-                                    authorAvatar = "",
-                                    timestamp = "20m ago",
-                                    content = "You're welcome! Keep going! 💪",
-                                    likesCount = 1,
-                                    isLiked = false,
-                                    replies = emptyList()
-                                )
-                            )
-                        )
-                    )
-                ),
-                Comment(
-                    id = "2",
-                    authorName = "Bob Smith",
-                    authorAvatar = "",
-                    timestamp = "3h ago",
-                    content = "Inspiring! I should try this challenge too.",
-                    likesCount = 3,
-                    isLiked = true,
-                    replies = emptyList()
-                ),
-                Comment(
-                    id = "3",
-                    authorName = "Carol White",
-                    authorAvatar = "",
-                    timestamp = "5h ago",
-                    content = "Amazing progress! How did you stay motivated?",
-                    likesCount = 2,
-                    isLiked = false,
-                    replies = listOf(
-                        CommentReply(
-                            id = "r2",
-                            authorName = "John Doe",
-                            authorAvatar = "",
-                            timestamp = "4h ago",
-                            content = "I set small daily goals and tracked them!",
-                            likesCount = 4,
-                            isLiked = false,
-                            replies = emptyList()
-                        ),
-                        CommentReply(
-                            id = "r3",
-                            authorName = "You",
-                            authorAvatar = "",
-                            timestamp = "2h ago",
-                            content = "That's a great tip!",
-                            likesCount = 1,
-                            isLiked = false,
-                            replies = listOf(
-                                CommentReply(
-                                    id = "r3_1",
-                                    authorName = "John Doe",
-                                    authorAvatar = "",
-                                    timestamp = "1h ago",
-                                    content = "Glad I could help! 😊",
-                                    likesCount = 0,
-                                    isLiked = false,
-                                    replies = emptyList()
-                                )
-                            )
-                        )
-                    )
-                )
-            )
-            comments.addAll(sampleComments)
-        }
+        // Comments are already loaded from getPostFromIntent()
+        // If no comments exist (shouldn't happen with our sample data), do nothing
+        // The user can add new comments using the input field
 
         commentAdapter.submitList(comments.toList())
         updateCommentCountUI()
@@ -266,11 +187,15 @@ class CommentsActivity : AppCompatActivity() {
             return
         }
 
+        // Get user info from preferences
+        val userName = UserPreferences.getUserName(this)
+        val userAvatar = UserPreferences.getUserAvatar(this)
+
         // Create new comment
         val newComment = Comment(
             id = System.currentTimeMillis().toString(),
-            authorName = "You",
-            authorAvatar = "",
+            authorName = userName,
+            authorAvatar = userAvatar,
             timestamp = "Just now",
             content = commentText
         )
@@ -337,10 +262,14 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun addReplyToComment(comment: Comment, replyText: String) {
+        // Get user info from preferences
+        val userName = UserPreferences.getUserName(this)
+        val userAvatar = UserPreferences.getUserAvatar(this)
+
         val newReply = CommentReply(
             id = System.currentTimeMillis().toString(),
-            authorName = "You",
-            authorAvatar = "",
+            authorName = userName,
+            authorAvatar = userAvatar,
             timestamp = "Just now",
             content = replyText
         )
@@ -412,10 +341,14 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun addNestedReply(comment: Comment, parentReply: CommentReply, replyText: String) {
+        // Get user info from preferences
+        val userName = UserPreferences.getUserName(this)
+        val userAvatar = UserPreferences.getUserAvatar(this)
+
         val newReply = CommentReply(
             id = System.currentTimeMillis().toString(),
-            authorName = "You",
-            authorAvatar = "",
+            authorName = userName,
+            authorAvatar = userAvatar,
             timestamp = "Just now",
             content = replyText
         )
@@ -459,10 +392,6 @@ class CommentsActivity : AppCompatActivity() {
         finish()
     }
 
-    override fun onBackPressed() {
-        returnResult()
-        super.onBackPressed()
-    }
 
     companion object {
         const val EXTRA_POST_ID = "extra_post_id"

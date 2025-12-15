@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
+import com.example.habittracker.utils.UserPreferences
 import com.google.android.material.card.MaterialCardView
 
 class FeedFragment : Fragment() {
@@ -60,9 +61,23 @@ class FeedFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize user name if not set
+        initializeUserIfNeeded()
+
         setupViews(view)
         setupRecyclerView(view)
         loadSampleData()
+    }
+
+    private fun initializeUserIfNeeded() {
+        val currentName = UserPreferences.getUserName(requireContext())
+        // If user name is still default "You", we can prompt them to set it
+        // For now, we'll set a default name for testing
+        if (currentName == "You") {
+            // You can show a dialog here to ask for user name
+            // For demo purposes, setting a default name
+            UserPreferences.saveUserName(requireContext(), "Current User")
+        }
     }
 
     private fun setupViews(view: View) {
@@ -172,6 +187,9 @@ class FeedFragment : Fragment() {
     }
 
     private fun loadSampleData() {
+        // Get current user name for consistency
+        val currentUserName = UserPreferences.getUserName(requireContext())
+
         val samplePosts = listOf(
             Post(
                 id = "1",
@@ -181,8 +199,95 @@ class FeedFragment : Fragment() {
                 content = "Just completed my 30-day meditation challenge! Feeling amazing! 🧘‍♂️",
                 imageUrl = null,
                 likesCount = 24,
-                commentsCount = 5,
-                isLiked = true
+                commentsCount = 3,
+                isLiked = true,
+                comments = listOf(
+                    Comment(
+                        id = "c1_1",
+                        authorName = "Alice Johnson",
+                        authorAvatar = "",
+                        timestamp = "1h ago",
+                        content = "Great job! Keep it up! 👏",
+                        likesCount = 5,
+                        isLiked = false,
+                        replies = listOf(
+                            CommentReply(
+                                id = "r1",
+                                authorName = "John Doe", // Post author replies
+                                authorAvatar = "",
+                                timestamp = "30m ago",
+                                content = "Thank you so much! 🙏",
+                                likesCount = 2,
+                                isLiked = false,
+                                replies = emptyList()
+                            )
+                        )
+                    ),
+                    Comment(
+                        id = "c1_2",
+                        authorName = "Bob Smith",
+                        authorAvatar = "",
+                        timestamp = "3h ago",
+                        content = "Inspiring! I should try this challenge too.",
+                        likesCount = 3,
+                        isLiked = true,
+                        replies = listOf(
+                            CommentReply(
+                                id = "r2",
+                                authorName = "John Doe", // Post author encourages
+                                authorAvatar = "",
+                                timestamp = "2h ago",
+                                content = "You definitely should! It changed my life. Let me know if you need any tips! 💪",
+                                likesCount = 1,
+                                isLiked = false,
+                                replies = listOf(
+                                    CommentReply(
+                                        id = "r2_1",
+                                        authorName = "Bob Smith",
+                                        authorAvatar = "",
+                                        timestamp = "1h ago",
+                                        content = "Thanks! I'll start tomorrow!",
+                                        likesCount = 0,
+                                        isLiked = false,
+                                        replies = emptyList()
+                                    )
+                                )
+                            )
+                        )
+                    ),
+                    Comment(
+                        id = "c1_3",
+                        authorName = "Carol White",
+                        authorAvatar = "",
+                        timestamp = "5h ago",
+                        content = "Amazing progress! How did you stay motivated?",
+                        likesCount = 2,
+                        isLiked = false,
+                        replies = listOf(
+                            CommentReply(
+                                id = "r3",
+                                authorName = "John Doe", // Post author answers question
+                                authorAvatar = "",
+                                timestamp = "4h ago",
+                                content = "I set small daily goals and tracked them! Also having an accountability partner helped a lot.",
+                                likesCount = 4,
+                                isLiked = false,
+                                replies = listOf(
+                                    CommentReply(
+                                        id = "r3_1",
+                                        authorName = "Carol White",
+                                        authorAvatar = "",
+                                        timestamp = "3h ago",
+                                        content = "That's a great tip! Thanks for sharing!",
+                                        likesCount = 1,
+                                        isLiked = false,
+                                        replies = emptyList()
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
             ),
             Post(
                 id = "2",
@@ -192,8 +297,41 @@ class FeedFragment : Fragment() {
                 content = "Morning run done! Starting the day with positive energy ☀️🏃‍♀️",
                 imageUrl = "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8",
                 likesCount = 18,
-                commentsCount = 3,
-                isLiked = false
+                commentsCount = 2,
+                isLiked = false,
+                comments = listOf(
+                    Comment(
+                        id = "c2_1",
+                        authorName = currentUserName,
+                        authorAvatar = "",
+                        timestamp = "4h ago",
+                        content = "Great start to the day! 🌅",
+                        likesCount = 1,
+                        isLiked = true,
+                        replies = listOf(
+                            CommentReply(
+                                id = "r4",
+                                authorName = "Jane Smith", // Post author replies to current user
+                                authorAvatar = "",
+                                timestamp = "3h ago",
+                                content = "Thanks! Hope you have a great day too! 😊",
+                                likesCount = 0,
+                                isLiked = false,
+                                replies = emptyList()
+                            )
+                        )
+                    ),
+                    Comment(
+                        id = "c2_2",
+                        authorName = "Mike Wilson",
+                        authorAvatar = "",
+                        timestamp = "3h ago",
+                        content = "Keep up the good work!",
+                        likesCount = 2,
+                        isLiked = false,
+                        replies = emptyList()
+                    )
+                )
             ),
             Post(
                 id = "3",
@@ -203,8 +341,31 @@ class FeedFragment : Fragment() {
                 content = "Week 3 of my fitness journey. Progress is slow but steady. Keep pushing! 💪",
                 imageUrl = null,
                 likesCount = 42,
-                commentsCount = 8,
-                isLiked = true
+                commentsCount = 1,
+                isLiked = true,
+                comments = listOf(
+                    Comment(
+                        id = "c3_1",
+                        authorName = currentUserName,
+                        authorAvatar = "",
+                        timestamp = "20h ago",
+                        content = "You got this! Consistency is key! 🔥",
+                        likesCount = 3,
+                        isLiked = false,
+                        replies = listOf(
+                            CommentReply(
+                                id = "r5",
+                                authorName = "Mike Johnson", // Post author thanks current user
+                                authorAvatar = "",
+                                timestamp = "18h ago",
+                                content = "Thank you for the encouragement! Really appreciate it! 💯",
+                                likesCount = 1,
+                                isLiked = false,
+                                replies = emptyList()
+                            )
+                        )
+                    )
+                )
             )
         )
 

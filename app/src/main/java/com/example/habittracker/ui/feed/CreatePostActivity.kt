@@ -13,8 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
-import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityCreatePostBinding
+import com.example.habittracker.utils.UserPreferences
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -67,11 +67,22 @@ class CreatePostActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        // Set user info (you would get this from your user session/preferences)
-        binding.tvUserName.text = "John Doe"
+        // Set user info from preferences
+        val userName = UserPreferences.getUserName(this)
+        val userAvatar = UserPreferences.getUserAvatar(this)
 
-        // You can load user avatar with Glide
-        // Glide.with(this).load(userAvatarUrl).into(binding.ivUserAvatar)
+        binding.tvUserName.text = userName
+
+        // Load user avatar with Glide
+        if (userAvatar.isNotEmpty()) {
+            Glide.with(this)
+                .load(userAvatar)
+                .placeholder(com.example.habittracker.R.drawable.ic_person)
+                .error(com.example.habittracker.R.drawable.ic_person)
+                .into(binding.ivUserAvatar)
+        } else {
+            binding.ivUserAvatar.setImageResource(com.example.habittracker.R.drawable.ic_person)
+        }
     }
 
     private fun setupClickListeners() {
@@ -160,11 +171,15 @@ class CreatePostActivity : AppCompatActivity() {
             return
         }
 
+        // Get user info from preferences
+        val userName = UserPreferences.getUserName(this)
+        val userAvatar = UserPreferences.getUserAvatar(this)
+
         // Create new post
         val newPost = Post(
             id = System.currentTimeMillis().toString(),
-            authorName = "You", // TODO: Get from user session
-            authorAvatar = "", // TODO: Get from user session
+            authorName = userName,
+            authorAvatar = userAvatar,
             timestamp = "Just now",
             content = content,
             imageUrl = selectedImageUri?.toString(),
