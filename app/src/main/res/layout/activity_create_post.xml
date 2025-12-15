@@ -30,7 +30,7 @@
             android:src="@drawable/ic_back"
             android:scaleType="fitCenter"
             android:background="@drawable/button_background_round"
-            android:contentDescription="Back" />
+            android:contentDescription="@string/back" />
 
         <!-- Title: Create Post -->
         <TextView
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Create Post"
+            android:text="@string/create_post"
             android:textSize="18sp"
             android:textColor="@color/primary_blue"
             android:fontFamily="sans-serif-medium" />
@@ -50,7 +50,7 @@
             android:layout_height="40dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:text="Post"
+            android:text="@string/post"
             android:textColor="@color/white"
             android:textSize="14sp"
             android:backgroundTint="@color/accent_blue"
@@ -90,13 +90,13 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
-                android:text="John Doe"
                 android:textColor="@color/primary_blue"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toEndOf="@id/ivUserAvatar"
                 app:layout_constraintTop_toTopOf="@id/ivUserAvatar"
-                app:layout_constraintBottom_toBottomOf="@id/ivUserAvatar" />
+                app:layout_constraintBottom_toBottomOf="@id/ivUserAvatar"
+                tools:text="John Doe" />
 
             <!-- Content Input -->
             <EditText
@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:background="@android:color/transparent"
-                android:hint="What's on your mind?"
+                android:hint="@string/whats_on_your_mind"
                 android:textColorHint="@color/secondary_gray"
                 android:textColor="@color/primary_blue"
                 android:textSize="16sp"
@@ -114,7 +114,7 @@
                 android:inputType="textMultiLine|textCapSentences"
                 android:maxLength="500"
                 android:padding="0dp"
-                android:autofillHints="What's on your mind?"
+                android:autofillHints="@string/whats_on_your_mind"
                 android:importantForAutofill="no"
                 app:layout_constraintTop_toBottomOf="@id/ivUserAvatar"
                 app:layout_constraintStart_toStartOf="parent"
@@ -156,7 +156,7 @@
                         android:layout_margin="8dp"
                         android:src="@drawable/ic_minus_cirlce"
                         android:background="@drawable/button_background_round"
-                        android:contentDescription="Remove image"
+                        android:contentDescription="@string/remove_image"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:tint="@color/white" />
@@ -189,7 +189,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Add to your post"
+                        android:text="@string/add_to_your_post"
                         android:textColor="@color/primary_blue"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -214,14 +214,14 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_gallery"
-                                android:contentDescription="Gallery icon"
+                                android:contentDescription="@string/gallery_icon"
                                 app:tint="@color/accent_blue" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:text="Photo"
+                                android:text="@string/photo"
                                 android:textColor="@color/primary_blue"
                                 android:textSize="14sp" />
 
@@ -241,14 +241,14 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_camera"
-                                android:contentDescription="Camera icon"
+                                android:contentDescription="@string/camera_icon"
                                 app:tint="@color/accent_blue" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
-                                android:text="Camera"
+                                android:text="@string/camera"
                                 android:textColor="@color/primary_blue"
                                 android:textSize="14sp" />
 

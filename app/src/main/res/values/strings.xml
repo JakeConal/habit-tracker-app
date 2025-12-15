@@ -75,4 +75,13 @@
     <string name="more_options_desc">More Options</string>
     <string name="back">Back</string>
     <string name="write_reply_hint">Write your reply...</string>
+    <string name="create_post">Create Post</string>
+    <string name="post">Post</string>
+    <string name="whats_on_your_mind">What\'s on your mind?</string>
+    <string name="remove_image">Remove image</string>
+    <string name="add_to_your_post">Add to your post</string>
+    <string name="gallery_icon">Gallery icon</string>
+    <string name="photo">Photo</string>
+    <string name="camera_icon">Camera icon</string>
+    <string name="camera">Camera</string>
 </resources>
