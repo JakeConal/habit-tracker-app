@@ -4,7 +4,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.example.habittracker.ui.challenge.list.ChallengesFragment
 import com.example.habittracker.ui.leaderboard.LeaderboardFragment
-import com.example.habittracker.ui.social.feed.FeedFragment
+import com.example.habittracker.ui.feed.FeedFragment
 
 /**
  * Adapter cho ViewPager2 trong CommunityFragment

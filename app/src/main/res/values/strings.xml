@@ -58,6 +58,20 @@
     <string name="current">Current</string>
     <string name="best">Best</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+    <!-- Feed Screen -->
+    <string name="time_ago_format">%s ago</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="author_name">Author Name</string>
+    <string name="time_ago_placeholder">2h ago</string>
+    <string name="post_content_placeholder">This is a sample post content. It can be multiple lines long.</string>
+    <string name="like_count_placeholder">12</string>
+    <string name="comment_count_placeholder">4</string>
+    <string name="author_avatar_desc">Author Avatar</string>
+    <string name="post_image_desc">Post Image</string>
+    <string name="like_icon_desc">Like Icon</string>
+    <string name="comment_icon_desc">Comment Icon</string>
+    <string name="share_your_progress">Share your progress today...</string>
+    <string name="add_photo_desc">Add Photo</string>
+    <string name="more_options_desc">More Options</string>
+    <string name="back">Back</string>
 </resources>
