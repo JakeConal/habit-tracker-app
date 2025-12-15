@@ -45,7 +45,9 @@ class CommentAdapter(
 
         private val replyAdapter = CommentReplyAdapter(
             onLikeClick = { /* will be set in bind */ },
-            onReplyClick = { /* will be set in bind */ }
+            onReplyClick = { /* will be set in bind */ },
+            nestingLevel = 0,
+            maxNestingLevel = 3
         )
 
         private var currentComment: Comment? = null
@@ -56,6 +58,9 @@ class CommentAdapter(
             rvReplies.apply {
                 layoutManager = LinearLayoutManager(itemView.context)
                 adapter = replyAdapter
+                isNestedScrollingEnabled = false
+                // Use a shared RecycledViewPool for better performance
+                setRecycledViewPool(RecyclerView.RecycledViewPool())
             }
         }
 
@@ -110,10 +115,12 @@ class CommentAdapter(
                     },
                     onReplyClick = { reply ->
                         currentComment?.let { onReplyToReply(it, reply) }
-                    }
+                    },
+                    nestingLevel = 0,
+                    maxNestingLevel = 3
                 )
                 rvReplies.adapter = newReplyAdapter
-                newReplyAdapter.submitList(comment.replies)
+                newReplyAdapter.submitList(comment.replies.toList())
             } else {
                 tvReplyCount.visibility = View.GONE
                 rvReplies.visibility = View.GONE

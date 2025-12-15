@@ -16,20 +16,26 @@ import com.google.android.material.imageview.ShapeableImageView
 
 class CommentReplyAdapter(
     private val onLikeClick: (CommentReply) -> Unit,
-    private val onReplyClick: (CommentReply) -> Unit
+    private val onReplyClick: (CommentReply) -> Unit,
+    private val nestingLevel: Int = 0,
+    private val maxNestingLevel: Int = 3
 ) : ListAdapter<CommentReply, CommentReplyAdapter.ReplyViewHolder>(ReplyDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_comment_reply, parent, false)
-        return ReplyViewHolder(view)
+        return ReplyViewHolder(view, nestingLevel, maxNestingLevel)
     }
 
     override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
         holder.bind(getItem(position), onLikeClick, onReplyClick)
     }
 
-    class ReplyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ReplyViewHolder(
+        itemView: View,
+        private val nestingLevel: Int,
+        private val maxNestingLevel: Int
+    ) : RecyclerView.ViewHolder(itemView) {
         private val ivReplyAuthorAvatar: ShapeableImageView = itemView.findViewById(R.id.ivReplyAuthorAvatar)
         private val tvReplyAuthorName: TextView = itemView.findViewById(R.id.tvReplyAuthorName)
         private val tvReplyTimestamp: TextView = itemView.findViewById(R.id.tvReplyTimestamp)
@@ -75,21 +81,28 @@ class CommentReplyAdapter(
                 tvReplyLikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
             }
 
-            // Nested replies
-            if (reply.replies.isNotEmpty()) {
+            // Nested replies - only show if we haven't exceeded max nesting level
+            if (reply.replies.isNotEmpty() && nestingLevel < maxNestingLevel) {
                 tvNestedReplyCount.visibility = View.VISIBLE
                 tvNestedReplyCount.text = "(${reply.replies.size})"
                 rvNestedReplies.visibility = View.VISIBLE
 
                 // Initialize nested adapter if needed
                 if (nestedReplyAdapter == null) {
-                    nestedReplyAdapter = CommentReplyAdapter(onLikeClick, onReplyClick)
+                    nestedReplyAdapter = CommentReplyAdapter(
+                        onLikeClick,
+                        onReplyClick,
+                        nestingLevel + 1,
+                        maxNestingLevel
+                    )
                     rvNestedReplies.apply {
                         layoutManager = LinearLayoutManager(itemView.context)
                         adapter = nestedReplyAdapter
+                        // Disable nested scrolling to prevent performance issues
+                        isNestedScrollingEnabled = false
                     }
                 }
-                nestedReplyAdapter?.submitList(reply.replies)
+                nestedReplyAdapter?.submitList(reply.replies.toList())
             } else {
                 tvNestedReplyCount.visibility = View.GONE
                 rvNestedReplies.visibility = View.GONE
