@@ -48,4 +48,18 @@
     <dimen name="elevation_button">2dp</dimen>
     <dimen name="elevation_fab">12dp</dimen>
     <dimen name="no_elevation">0dp</dimen>
+
+    <!-- Feed -->
+    <dimen name="create_post_card_radius">20dp</dimen>
+    <dimen name="post_card_radius">24dp</dimen>
+    <dimen name="post_card_padding">16dp</dimen>
+    <dimen name="post_card_spacing">16dp</dimen>
+    <dimen name="post_profile_image_size">40dp</dimen>
+    <dimen name="post_button_height">40dp</dimen>
+    <dimen name="post_button_radius">12dp</dimen>
+    <dimen name="post_button_icon_size">24dp</dimen>
+    <dimen name="post_image_height">200dp</dimen>
+    <dimen name="post_image_radius">16dp</dimen>
+    <dimen name="post_action_button_size">24dp</dimen>
+    <dimen name="post_action_button_spacing">16dp</dimen>
 </resources>
