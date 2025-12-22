@@ -84,4 +84,18 @@
     <string name="photo">Photo</string>
     <string name="camera_icon">Camera icon</string>
     <string name="camera">Camera</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="default_user_name">Tanzir Fahad</string>
+    <string name="default_user_email">fahaduxlab@gmail.com</string>
+    <string name="profile_avatar">Profile Avatar</string>
+    <string name="verified_badge">Verified Badge</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="my_post">My Post</string>
+    <string name="my_friends">My Friends</string>
+    <string name="friends_icon">Friends Icon</string>
+    <string name="friends_coming_soon">Friends feature coming soon!</string>
+    <string name="settings_coming_soon">Settings will be available soon</string>
 </resources>
