@@ -15,6 +15,7 @@
 
     <color name="accent_blue">#8EC5FF</color>
     <color name="accent_light_gray">#6A7282</color>
+    <color name="accent_pink">#FFC0CB</color>
 
     <color name="card_background">#80FFFFFF</color>
     <color name="card_border">#99FFFFFF</color>
@@ -46,4 +47,10 @@
     <color name="quote_gradient_middle">#33F3E8FF</color>
     <color name="quote_gradient_end">#33FCE7F3</color>
     
+    <color name="gray">#808080</color>
+    <color name="light_gray">#F5F5F5</color>
+    <color name="secondary_text">#4A5565</color>
+    <color name="divider">#E0E0E0</color>
+    <color name="primary_color">#1E2939</color>
+    <color name="primary_text">#1E2939</color>
 </resources>
