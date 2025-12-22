@@ -43,7 +43,7 @@
     <dimen name="notification_button_size">40dp</dimen>
     
     <!-- Elevation values for modern material design -->
-    <dimen name="elevation_card">4dp</dimen>
+    <dimen name="elevation_card">1dp</dimen>
     <dimen name="elevation_card_raised">8dp</dimen>
     <dimen name="elevation_button">2dp</dimen>
     <dimen name="elevation_fab">12dp</dimen>
