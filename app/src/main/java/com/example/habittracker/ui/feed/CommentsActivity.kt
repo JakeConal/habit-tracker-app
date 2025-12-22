@@ -55,6 +55,7 @@ class CommentsActivity : AppCompatActivity() {
 
         post = Post(
             id = postId,
+            userId = "user_current", // Default user ID for comments activity
             authorName = authorName,
             authorAvatar = authorAvatar,
             timestamp = timestamp,

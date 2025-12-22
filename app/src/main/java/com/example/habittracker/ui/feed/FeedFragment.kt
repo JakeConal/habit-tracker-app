@@ -193,6 +193,7 @@ class FeedFragment : Fragment() {
         val samplePosts = listOf(
             Post(
                 id = "1",
+                userId = "user_002",
                 authorName = "John Doe",
                 authorAvatar = "",
                 timestamp = "2 hours ago",
@@ -291,6 +292,7 @@ class FeedFragment : Fragment() {
             ),
             Post(
                 id = "2",
+                userId = "user_003",
                 authorName = "Jane Smith",
                 authorAvatar = "",
                 timestamp = "5 hours ago",
@@ -335,6 +337,7 @@ class FeedFragment : Fragment() {
             ),
             Post(
                 id = "3",
+                userId = "user_004",
                 authorName = "Mike Johnson",
                 authorAvatar = "",
                 timestamp = "1 day ago",

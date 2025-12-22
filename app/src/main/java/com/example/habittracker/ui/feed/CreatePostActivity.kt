@@ -178,6 +178,7 @@ class CreatePostActivity : AppCompatActivity() {
         // Create new post
         val newPost = Post(
             id = System.currentTimeMillis().toString(),
+            userId = "user_current", // Default user ID for current user
             authorName = userName,
             authorAvatar = userAvatar,
             timestamp = "Just now",
