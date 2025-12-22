@@ -2,6 +2,7 @@ package com.example.habittracker.data.model
 
 data class Post(
     val id: String,
+    val userId: String,
     val authorName: String,
     val authorAvatarUrl: String?, // Can be null if using local placeholder
     val content: String,

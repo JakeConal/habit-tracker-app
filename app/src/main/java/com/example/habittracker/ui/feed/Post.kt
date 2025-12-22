@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class Post(
     val id: String,
+    val userId: String,
     val authorName: String,
     val authorAvatar: String,
     val timestamp: String,
