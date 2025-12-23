@@ -47,6 +47,13 @@
     <string name="agree_to_terms">I agree to the </string>
     <string name="terms_privacy">Terms &amp; Privacy</string>
 
+    <!-- Friend Profile Screen -->
+    <string name="friend_profile_posts_tab">Posts</string>
+    <string name="friend_profile_friends_tab">Friends</string>
+    <string name="friend_profile_empty_posts">No posts yet</string>
+    <string name="friend_profile_empty_friends">Friend list view coming soon</string>
+    <string name="friend_profile_feature_coming_soon">Feature coming soon!</string>
+
     <!-- Statistics Screen -->
     <string name="statistic">Statistic</string>
     <string name="all_habits">All habits</string>
