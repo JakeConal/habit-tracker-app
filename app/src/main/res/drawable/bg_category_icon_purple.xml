@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="135"
+        android:endColor="#DAB2FF"
+        android:startColor="#E9D4FF"
+        android:type="linear" />
+    <corners android:radius="@dimen/habit_icon_radius" />
+</shape>

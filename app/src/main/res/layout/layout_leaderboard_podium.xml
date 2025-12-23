@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/spacing_lg"
+    android:paddingTop="@dimen/spacing_lg">
+
+    <!-- Top 3 Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="163dp"
+        android:orientation="horizontal"
+        android:gravity="bottom">
+
+        <!-- 2nd Place -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="@dimen/leaderboard_top_avatar_size"
+                android:layout_height="@dimen/leaderboard_top_avatar_size"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/iv_second_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/circular_progress"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person" />
+
+                <TextView
+                    android:layout_width="@dimen/leaderboard_badge_size"
+                    android:layout_height="@dimen/leaderboard_badge_size"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_badge_silver"
+                    android:gravity="center"
+                    android:text="2"
+                    android:textColor="@color/leaderboard_text_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_md"
+                app:cardCornerRadius="@dimen/leaderboard_card_radius"
+                app:cardElevation="@dimen/elevation_card">
+
+                <TextView
+                    android:id="@+id/tv_second_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Michael Chen"
+                    android:textColor="@color/leaderboard_text_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:id="@+id/tv_second_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="2150 pts"
+                    android:textColor="@color/leaderboard_text_primary"
+                    android:textSize="@dimen/text_md" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 1st Place -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="@dimen/leaderboard_top_avatar_size"
+                android:layout_height="@dimen/leaderboard_top_avatar_size"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/iv_first_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/circular_progress"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person" />
+
+                <ImageView
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="top|center_horizontal"
+                    android:layout_marginTop="-8dp"
+                    android:src="@drawable/ic_crown" />
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_md"
+                app:cardCornerRadius="@dimen/leaderboard_card_radius"
+                app:cardElevation="@dimen/elevation_card_raised">
+
+                <TextView
+                    android:id="@+id/tv_first_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Emma Wilson"
+                    android:textColor="@color/leaderboard_text_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:id="@+id/tv_first_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="2400 pts"
+                    android:textColor="@color/leaderboard_text_primary"
+                    android:textSize="@dimen/text_lg" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- 3rd Place -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <FrameLayout
+                android:layout_width="@dimen/leaderboard_top_avatar_size"
+                android:layout_height="@dimen/leaderboard_top_avatar_size"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:id="@+id/iv_third_avatar"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/circular_progress"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_person" />
+
+                <TextView
+                    android:layout_width="@dimen/leaderboard_badge_size"
+                    android:layout_height="@dimen/leaderboard_badge_size"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/bg_badge_bronze"
+                    android:gravity="center"
+                    android:text="3"
+                    android:textColor="@color/leaderboard_text_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/spacing_md"
+                app:cardCornerRadius="@dimen/leaderboard_card_radius"
+                app:cardElevation="@dimen/elevation_card">
+
+                <TextView
+                    android:id="@+id/tv_third_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Sarah Johnson"
+                    android:textColor="@color/leaderboard_text_secondary"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:id="@+id/tv_third_points"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="1980 pts"
+                    android:textColor="@color/leaderboard_text_primary"
+                    android:textSize="@dimen/text_md" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
