@@ -48,6 +48,19 @@
     <color name="quote_gradient_end">#33FCE7F3</color>
     
     <color name="gray">#808080</color>
+
+    <!-- Leaderboard colors -->
+    <color name="leaderboard_bg_start">#F3E8FF</color>
+    <color name="leaderboard_bg_middle">#EFF6FF</color>
+    <color name="leaderboard_bg_end">#DFF6FE</color>
+    <color name="leaderboard_gold">#FFDF20</color>
+    <color name="leaderboard_silver">#D1D5DC</color>
+    <color name="leaderboard_bronze">#FFB86A</color>
+    <color name="leaderboard_points">#51A2FF</color>
+    <color name="leaderboard_text_primary">#1E2939</color>
+    <color name="leaderboard_text_secondary">#364153</color>
+    <color name="leaderboard_text_gray">#4A5565</color>
+    <color name="leaderboard_text_light_gray">#6A7282</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="secondary_text">#4A5565</color>
     <color name="divider">#E0E0E0</color>

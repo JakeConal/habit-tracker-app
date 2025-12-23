@@ -62,4 +62,13 @@
     <dimen name="post_image_radius">16dp</dimen>
     <dimen name="post_action_button_size">24dp</dimen>
     <dimen name="post_action_button_spacing">16dp</dimen>
+
+    <!-- Leaderboard -->
+    <dimen name="leaderboard_corner_radius">50dp</dimen>
+    <dimen name="leaderboard_card_radius">16dp</dimen>
+    <dimen name="leaderboard_top_avatar_size">80dp</dimen>
+    <dimen name="leaderboard_avatar_size">40dp</dimen>
+    <dimen name="leaderboard_badge_size">28dp</dimen>
+    <dimen name="leaderboard_card_height">67dp</dimen>
+    <dimen name="leaderboard_user_card_height">70dp</dimen>
 </resources>
