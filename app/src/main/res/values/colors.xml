@@ -14,8 +14,12 @@
     <color name="badge_30_days_green">#D8F999</color>
 
     <color name="accent_blue">#8EC5FF</color>
+    <color name="accent_blue_dark">#51A2FF</color>
     <color name="accent_light_gray">#6A7282</color>
     <color name="accent_pink">#FFC0CB</color>
+    
+    <!-- Friend feature colors -->
+    <color name="badge_light_blue">#DBEAFE</color>
 
     <color name="card_background">#80FFFFFF</color>
     <color name="card_border">#99FFFFFF</color>

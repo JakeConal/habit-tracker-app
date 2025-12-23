@@ -98,4 +98,18 @@
     <string name="friends_icon">Friends Icon</string>
     <string name="friends_coming_soon">Friends feature coming soon!</string>
     <string name="settings_coming_soon">Settings will be available soon</string>
+    
+    <!-- Friends Feature -->
+    <string name="find_friends_hint">Find friends by name/email...</string>
+    <string name="requests">Requests</string>
+    <string name="mutual_friends_format">%d mutual friends</string>
+    <string name="my_friends_count">My Friends (%d)</string>
+    <string name="day_streak_format">🔥 %d day streak</string>
+    <string name="accept_request">Accept friend request</string>
+    <string name="reject_request">Reject friend request</string>
+    <string name="view_friend_profile">View friend profile</string>
+    <string name="unfriend">Unfriend</string>
+    <string name="search_friends">Search friends</string>
+    <string name="no_friends_found">No friends found</string>
+    <string name="no_requests">No friend requests</string>
 </resources>

@@ -42,6 +42,15 @@
     <dimen name="profile_image_size">48dp</dimen>
     <dimen name="notification_button_size">40dp</dimen>
     
+    <!-- Friend items -->
+    <dimen name="friend_request_item_height">72dp</dimen>
+    <dimen name="friend_list_item_height">91dp</dimen>
+    <dimen name="friend_avatar_request">48dp</dimen>
+    <dimen name="friend_avatar_list">56dp</dimen>
+    <dimen name="friend_action_button_size">36dp</dimen>
+    <dimen name="search_bar_height">51dp</dimen>
+    <dimen name="request_badge_size">32dp</dimen>
+    
     <!-- Elevation values for modern material design -->
     <dimen name="elevation_card">1dp</dimen>
     <dimen name="elevation_card_raised">8dp</dimen>
