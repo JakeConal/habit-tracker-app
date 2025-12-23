@@ -7,6 +7,47 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
+ * Friend data model
+ */
+data class Friend(
+    val id: String,
+    val userId: String,
+    val name: String,
+    val avatarUrl: String,
+    val currentStreak: Int
+)
+
+/**
+ * Friend Request data model
+ */
+data class FriendRequest(
+    val id: String,
+    val userId: String,
+    val name: String,
+    val avatarUrl: String,
+    val mutualFriendsCount: Int
+)
+
+/**
+ * Sealed class for RecyclerView items with multiple view types
+ */
+sealed class FriendListItem {
+    object SearchHeader : FriendListItem()
+    
+    data class SectionHeader(
+        val title: String,
+        val count: Int,
+        val showBadge: Boolean = false
+    ) : FriendListItem()
+    
+    data class RequestItem(val request: FriendRequest) : FriendListItem()
+    
+    data class FriendItem(val friend: Friend) : FriendListItem()
+    
+    data class EmptyState(val message: String) : FriendListItem()
+}
+
+/**
  * ProfileViewModel - Manages profile screen data and state
  */
 class ProfileViewModel : ViewModel() {
@@ -76,6 +117,71 @@ class ProfileViewModel : ViewModel() {
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts.asStateFlow()
 
+    // Friend requests
+    private val allFriendRequests = listOf(
+        FriendRequest(
+            id = "req_001",
+            userId = "user_101",
+            name = "Emma Thompson",
+            avatarUrl = "",
+            mutualFriendsCount = 12
+        ),
+        FriendRequest(
+            id = "req_002",
+            userId = "user_102",
+            name = "Michael Chen",
+            avatarUrl = "",
+            mutualFriendsCount = 8
+        )
+    )
+
+    // Friends list
+    private val allFriends = listOf(
+        Friend(
+            id = "friend_001",
+            userId = "user_201",
+            name = "Emma Thompson",
+            avatarUrl = "",
+            currentStreak = 45
+        ),
+        Friend(
+            id = "friend_002",
+            userId = "user_202",
+            name = "Michael Chen",
+            avatarUrl = "",
+            currentStreak = 32
+        ),
+        Friend(
+            id = "friend_003",
+            userId = "user_203",
+            name = "Olivia Martinez",
+            avatarUrl = "",
+            currentStreak = 28
+        ),
+        Friend(
+            id = "friend_004",
+            userId = "user_204",
+            name = "David Park",
+            avatarUrl = "",
+            currentStreak = 21
+        ),
+        Friend(
+            id = "friend_005",
+            userId = "user_205",
+            name = "Sophia Anderson",
+            avatarUrl = "",
+            currentStreak = 15
+        )
+    )
+
+    // Search query
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    // Filtered friend list items for RecyclerView
+    private val _filteredFriendListItems = MutableStateFlow<List<FriendListItem>>(emptyList())
+    val filteredFriendListItems: StateFlow<List<FriendListItem>> = _filteredFriendListItems.asStateFlow()
+
     init {
         updatePostsForTab()
     }
@@ -83,13 +189,74 @@ class ProfileViewModel : ViewModel() {
     fun selectTab(tab: ProfileTab) {
         _selectedTab.value = tab
         updatePostsForTab()
+        if (tab == ProfileTab.MY_FRIENDS) {
+            filterFriendList()
+        }
     }
 
     private fun updatePostsForTab() {
         _posts.value = when (_selectedTab.value) {
             ProfileTab.MY_POST -> allPosts.filter { it.userId == currentUserId }
-            ProfileTab.MY_FRIENDS -> emptyList() // Not implemented yet
+            ProfileTab.MY_FRIENDS -> emptyList()
         }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+        filterFriendList()
+    }
+
+    private fun filterFriendList() {
+        val query = _searchQuery.value.lowercase().trim()
+        val items = mutableListOf<FriendListItem>()
+
+        // Add search header
+        items.add(FriendListItem.SearchHeader)
+
+        // Filter requests
+        val filteredRequests = if (query.isEmpty()) {
+            allFriendRequests
+        } else {
+            allFriendRequests.filter { it.name.lowercase().contains(query) }
+        }
+
+        // Filter friends
+        val filteredFriends = if (query.isEmpty()) {
+            allFriends
+        } else {
+            allFriends.filter { it.name.lowercase().contains(query) }
+        }
+
+        // Add requests section
+        if (filteredRequests.isNotEmpty()) {
+            items.add(
+                FriendListItem.SectionHeader(
+                    title = "Requests",
+                    count = filteredRequests.size,
+                    showBadge = true
+                )
+            )
+            filteredRequests.forEach { items.add(FriendListItem.RequestItem(it)) }
+        }
+
+        // Add friends section
+        if (filteredFriends.isNotEmpty()) {
+            items.add(
+                FriendListItem.SectionHeader(
+                    title = "My Friends (${filteredFriends.size})",
+                    count = filteredFriends.size,
+                    showBadge = false
+                )
+            )
+            filteredFriends.forEach { items.add(FriendListItem.FriendItem(it)) }
+        }
+
+        // Add empty state if no results
+        if (filteredRequests.isEmpty() && filteredFriends.isEmpty() && query.isNotEmpty()) {
+            items.add(FriendListItem.EmptyState("No friends found"))
+        }
+
+        _filteredFriendListItems.value = items
     }
 
     fun toggleLike(postId: String) {
