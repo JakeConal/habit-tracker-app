@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +26,7 @@ class ProfileFragment : Fragment() {
 
     private val viewModel: ProfileViewModel by viewModels()
     private lateinit var postAdapter: PostAdapter
+    private lateinit var friendListAdapter: FriendListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,6 +81,7 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        // Post adapter
         postAdapter = PostAdapter(
             onLikeClick = { post ->
                 viewModel.toggleLike(post.id)
@@ -96,6 +99,47 @@ class ProfileFragment : Fragment() {
             adapter = postAdapter
             setHasFixedSize(false)
         }
+
+        // Friend list adapter
+        friendListAdapter = FriendListAdapter(
+            onSearchQueryChanged = { query ->
+                viewModel.updateSearchQuery(query)
+            },
+            onAcceptRequest = { request ->
+                Toast.makeText(
+                    requireContext(),
+                    "Accept request from ${request.name} - Feature coming soon!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onRejectRequest = { request ->
+                Toast.makeText(
+                    requireContext(),
+                    "Reject request from ${request.name} - Feature coming soon!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onViewProfile = { friend ->
+                Toast.makeText(
+                    requireContext(),
+                    "View ${friend.name}'s profile - Feature coming soon!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            },
+            onUnfriend = { friend ->
+                Toast.makeText(
+                    requireContext(),
+                    "Unfriend ${friend.name} - Feature coming soon!",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        )
+
+        binding.rvFriendsList.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = friendListAdapter
+            setHasFixedSize(false)
+        }
     }
 
     private fun observeViewModel() {
@@ -103,6 +147,13 @@ class ProfileFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.posts.collect { posts ->
                 postAdapter.submitList(posts)
+            }
+        }
+
+        // Observe filtered friend list items
+        lifecycleScope.launch {
+            viewModel.filteredFriendListItems.collect { items ->
+                friendListAdapter.submitList(items)
             }
         }
 
@@ -136,11 +187,13 @@ class ProfileFragment : Fragment() {
         when (tab) {
             ProfileViewModel.ProfileTab.MY_POST -> {
                 binding.rvPosts.visibility = View.VISIBLE
+                binding.rvFriendsList.visibility = View.GONE
                 binding.emptyFriendsState.visibility = View.GONE
             }
             ProfileViewModel.ProfileTab.MY_FRIENDS -> {
                 binding.rvPosts.visibility = View.GONE
-                binding.emptyFriendsState.visibility = View.VISIBLE
+                binding.rvFriendsList.visibility = View.VISIBLE
+                binding.emptyFriendsState.visibility = View.GONE
             }
         }
     }
