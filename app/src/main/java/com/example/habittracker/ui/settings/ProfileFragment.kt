@@ -120,11 +120,11 @@ class ProfileFragment : Fragment() {
                 ).show()
             },
             onViewProfile = { friend ->
-                Toast.makeText(
-                    requireContext(),
-                    "View ${friend.name}'s profile - Feature coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                // Navigate to friend profile
+                val bundle = Bundle().apply {
+                    putString("friendId", friend.userId)
+                }
+                findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
             },
             onUnfriend = { friend ->
                 Toast.makeText(
