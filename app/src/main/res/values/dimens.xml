@@ -48,6 +48,14 @@
     <dimen name="friend_avatar_request">48dp</dimen>
     <dimen name="friend_avatar_list">56dp</dimen>
     <dimen name="friend_action_button_size">36dp</dimen>
+    
+    <!-- Friend Profile -->
+    <dimen name="friend_profile_card_radius">24dp</dimen>
+    <dimen name="friend_profile_avatar_size">63dp</dimen>
+    <dimen name="friend_profile_avatar_border">1.5dp</dimen>
+    <dimen name="friend_profile_header_height">72dp</dimen>
+    <dimen name="friend_profile_tab_height">47dp</dimen>
+    <dimen name="friend_profile_tab_radius">44dp</dimen>
     <dimen name="search_bar_height">51dp</dimen>
     <dimen name="request_badge_size">32dp</dimen>
     

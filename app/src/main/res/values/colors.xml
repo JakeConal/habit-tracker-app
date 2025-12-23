@@ -20,6 +20,8 @@
     
     <!-- Friend feature colors -->
     <color name="badge_light_blue">#DBEAFE</color>
+    <color name="friend_profile_text_secondary">#6A7282</color>
+    <color name="friend_profile_text_tertiary">#4A5565</color>
 
     <color name="card_background">#80FFFFFF</color>
     <color name="card_border">#99FFFFFF</color>
