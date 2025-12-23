@@ -141,10 +141,16 @@
                         android:src="@drawable/ic_book"
                         app:tint="#364153" />
 
-                    <View
+                    <TextView
+                        android:id="@+id/tvCategoryName"
                         android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:layout_weight="1" />
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="12dp"
+                        android:fontFamily="sans-serif"
+                        android:text="Reading"
+                        android:textColor="#364153"
+                        android:textSize="@dimen/text_lg" />
 
                     <ImageView
                         android:layout_width="16dp"

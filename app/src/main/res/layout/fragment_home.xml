@@ -211,4 +211,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
+    <!-- Floating Action Button for adding new habit -->
+
 </androidx.constraintlayout.widget.ConstraintLayout>

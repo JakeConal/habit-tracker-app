@@ -2,7 +2,6 @@ package com.example.habittracker.ui.main
 
 import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -107,8 +106,8 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupFab() {
         binding.fabAdd.setOnClickListener {
-            // TODO: Mở màn hình thêm habit mới
-            Toast.makeText(this, "Add new habit", Toast.LENGTH_SHORT).show()
+            // Navigate to Create Habit screen
+            navController.navigate(R.id.nav_create_habit)
         }
     }
 
