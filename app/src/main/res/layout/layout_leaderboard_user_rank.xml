@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/leaderboard_user_card_height"
+    android:background="@color/white"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/spacing_lg"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:layout_width="24dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="12"
+        android:textColor="@color/leaderboard_text_primary"
+        android:textSize="@dimen/text_lg" />
+
+    <ImageView
+        android:id="@+id/iv_user_avatar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:background="@drawable/circular_progress"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_person" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_marginStart="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="You"
+            android:textColor="@color/leaderboard_text_primary"
+            android:textSize="@dimen/text_lg" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your Rank"
+            android:textColor="@color/leaderboard_text_gray"
+            android:textSize="@dimen/text_sm" />
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1210 pts"
+        android:textColor="@color/leaderboard_points"
+        android:textSize="@dimen/text_lg" />
+
+</LinearLayout>
