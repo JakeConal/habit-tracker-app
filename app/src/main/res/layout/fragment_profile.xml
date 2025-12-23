@@ -239,7 +239,18 @@
             tools:itemCount="3"
             tools:listitem="@layout/item_post" />
 
-        <!-- Empty State for My Friends -->
+        <!-- Friends List RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvFriendsList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:visibility="gone"
+            tools:visibility="gone" />
+
+        <!-- Empty State for My Friends (fallback) -->
         <LinearLayout
             android:id="@+id/emptyFriendsState"
             android:layout_width="match_parent"
