@@ -5,14 +5,15 @@
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/spacing_lg"
-    android:paddingTop="@dimen/spacing_lg">
+    android:paddingTop="10dp">
 
     <!-- Top 3 Container -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="163dp"
+        android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="bottom">
+        android:gravity="bottom"
+        android:paddingBottom="@dimen/spacing_md">
 
         <!-- 2nd Place -->
         <LinearLayout
@@ -20,7 +21,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_sm">
 
             <FrameLayout
                 android:layout_width="@dimen/leaderboard_top_avatar_size"
@@ -54,14 +57,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                app:cardBackgroundColor="#CFD3DB"
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
-                app:cardElevation="@dimen/elevation_card">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#FCF5FE"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_md">
@@ -97,7 +101,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_sm">
 
             <FrameLayout
                 android:layout_width="@dimen/leaderboard_top_avatar_size"
@@ -126,14 +132,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
-                app:cardElevation="@dimen/elevation_card_raised">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#85FFF53B"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_md">
@@ -169,7 +176,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:layout_marginEnd="@dimen/spacing_sm">
 
             <FrameLayout
                 android:layout_width="@dimen/leaderboard_top_avatar_size"
@@ -202,13 +211,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
-                app:cardElevation="@dimen/elevation_card">
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="#FCF5FE"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="@dimen/spacing_md">
