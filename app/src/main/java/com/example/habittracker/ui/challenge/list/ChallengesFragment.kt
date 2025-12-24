@@ -40,15 +40,77 @@ class ChallengesFragment : Fragment() {
             try {
                 val challenges = challengeRepository.getAllChallenges()
 
-                challengeAdapter = ChallengeAdapter(challenges.toTypedArray()) { challenge ->
+                // If repository returned an empty list, fall back to local sample data
+                val listToShow: List<Challenge> = if (challenges.isEmpty()) {
+                    getSampleChallenges()
+                } else challenges
+
+                challengeAdapter = ChallengeAdapter(listToShow.toTypedArray()) { challenge ->
                     onChallengeClicked(challenge)
                 }
                 recyclerViewChallenges.adapter = challengeAdapter
 
             } catch (e: Exception) {
+                // Fallback to sample data on error
                 println("Error loading challenges: ${e.message}")
+                val sample = getSampleChallenges()
+                challengeAdapter = ChallengeAdapter(sample.toTypedArray()) { challenge ->
+                    onChallengeClicked(challenge)
+                }
+                recyclerViewChallenges.adapter = challengeAdapter
             }
         }
+    }
+
+    // Internal sample data provider (kept inside this file as requested)
+    private fun getSampleChallenges(): List<Challenge> {
+        return listOf(
+            Challenge(
+                id = "c1",
+                title = "Drink Water",
+                description = "Drink 8 glasses of water every day.",
+                imgURL = "",
+                duration = ChallengeDuration.SEVEN_DAYS,
+                reward = 10,
+                isJoined = false
+            ),
+            Challenge(
+                id = "c2",
+                title = "Morning Walk",
+                description = "Walk for 30 minutes each morning.",
+                imgURL = "",
+                duration = ChallengeDuration.THIRTY_DAYS,
+                reward = 20,
+                isJoined = true
+            ),
+            Challenge(
+                id = "c3",
+                title = "Read Books",
+                description = "Read 20 pages every day for a month.",
+                imgURL = "",
+                duration = ChallengeDuration.THIRTY_DAYS,
+                reward = 15,
+                isJoined = false
+            ),
+            Challenge(
+                id = "c4",
+                title = "No Sugar",
+                description = "Avoid added sugar for 14 days.",
+                imgURL = "",
+                duration = ChallengeDuration.SEVEN_DAYS,
+                reward = 25,
+                isJoined = false
+            ),
+            Challenge(
+                id = "c5",
+                title = "Meditation",
+                description = "Meditate 10 minutes daily for 21 days.",
+                imgURL = "",
+                duration = ChallengeDuration.SEVEN_DAYS,
+                reward = 30,
+                isJoined = true
+            )
+        )
     }
 
     private fun setupRecyclerView(view: View) {
