@@ -88,4 +88,5 @@
     <dimen name="leaderboard_badge_size">28dp</dimen>
     <dimen name="leaderboard_card_height">67dp</dimen>
     <dimen name="leaderboard_user_card_height">70dp</dimen>
+    <dimen name="leaderboard_crown_overlap">12dp</dimen>
 </resources>

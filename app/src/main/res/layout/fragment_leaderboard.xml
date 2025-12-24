@@ -34,9 +34,6 @@
 
         </ScrollView>
 
-        <!-- User's Rank - Fixed at bottom -->
-        <include layout="@layout/layout_leaderboard_user_rank" />
-
     </LinearLayout>
 
 </FrameLayout>

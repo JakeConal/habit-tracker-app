@@ -60,6 +60,7 @@
     <color name="leaderboard_bg_middle">#EFF6FF</color>
     <color name="leaderboard_bg_end">#DFF6FE</color>
     <color name="leaderboard_gold">#FFDF20</color>
+    <color name="leaderboard_first_card_bg">#FFFBE8C6</color>
     <color name="leaderboard_silver">#D1D5DC</color>
     <color name="leaderboard_bronze">#FFB86A</color>
     <color name="leaderboard_points">#51A2FF</color>

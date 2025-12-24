@@ -25,13 +25,14 @@
             <FrameLayout
                 android:layout_width="@dimen/leaderboard_top_avatar_size"
                 android:layout_height="@dimen/leaderboard_top_avatar_size"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                >
 
                 <ImageView
                     android:id="@+id/iv_second_avatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/circular_progress"
+                    android:background="@drawable/bg_avatar_ring_silver"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_person" />
 
@@ -49,34 +50,44 @@
 
             </FrameLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_md"
+                android:layout_gravity="center"
+                app:cardBackgroundColor="#CFD3DB"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
                 app:cardElevation="@dimen/elevation_card">
 
-                <TextView
-                    android:id="@+id/tv_second_name"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="#FCF5FE"
                     android:gravity="center"
-                    android:text="Michael Chen"
-                    android:textColor="@color/leaderboard_text_secondary"
-                    android:textSize="@dimen/text_sm" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_md">
 
-                <TextView
-                    android:id="@+id/tv_second_points"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="2150 pts"
-                    android:textColor="@color/leaderboard_text_primary"
-                    android:textSize="@dimen/text_md" />
+                    <TextView
+                        android:id="@+id/tv_second_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Michael Chen"
+                        android:textColor="@color/leaderboard_text_secondary"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_second_points"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="2150 pts"
+                        android:textColor="@color/leaderboard_text_primary"
+                        android:textSize="@dimen/text_md" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
@@ -91,13 +102,14 @@
             <FrameLayout
                 android:layout_width="@dimen/leaderboard_top_avatar_size"
                 android:layout_height="@dimen/leaderboard_top_avatar_size"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="16dp"
+                android:clipToPadding="false">
 
                 <ImageView
                     android:id="@+id/iv_first_avatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/circular_progress"
+                    android:background="@drawable/bg_avatar_ring_gold"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_person" />
 
@@ -105,39 +117,49 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_gravity="top|center_horizontal"
-                    android:layout_marginTop="-8dp"
+
                     android:src="@drawable/ic_crown" />
 
             </FrameLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
 
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_md"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
                 app:cardElevation="@dimen/elevation_card_raised">
 
-                <TextView
-                    android:id="@+id/tv_first_name"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="#85FFF53B"
                     android:gravity="center"
-                    android:text="Emma Wilson"
-                    android:textColor="@color/leaderboard_text_secondary"
-                    android:textSize="@dimen/text_sm" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_md">
 
-                <TextView
-                    android:id="@+id/tv_first_points"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="2400 pts"
-                    android:textColor="@color/leaderboard_text_primary"
-                    android:textSize="@dimen/text_lg" />
+                    <TextView
+                        android:id="@+id/tv_first_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Emma Wilson"
+                        android:textColor="@color/leaderboard_text_primary"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_first_points"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="2400 pts"
+                        android:textColor="@color/leaderboard_text_primary"
+                        android:textSize="@dimen/text_lg" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
@@ -158,7 +180,7 @@
                     android:id="@+id/iv_third_avatar"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/circular_progress"
+                    android:background="@drawable/bg_avatar_ring_bronze"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_person" />
 
@@ -176,33 +198,43 @@
 
             </FrameLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_md"
+                android:layout_gravity="center"
                 app:cardCornerRadius="@dimen/leaderboard_card_radius"
                 app:cardElevation="@dimen/elevation_card">
 
-                <TextView
-                    android:id="@+id/tv_third_name"
-                    android:layout_width="match_parent"
+                <LinearLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="#FCF5FE"
                     android:gravity="center"
-                    android:text="Sarah Johnson"
-                    android:textColor="@color/leaderboard_text_secondary"
-                    android:textSize="@dimen/text_sm" />
+                    android:orientation="vertical"
+                    android:padding="@dimen/spacing_md">
 
-                <TextView
-                    android:id="@+id/tv_third_points"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="1980 pts"
-                    android:textColor="@color/leaderboard_text_primary"
-                    android:textSize="@dimen/text_md" />
+                    <TextView
+                        android:id="@+id/tv_third_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Sarah Johnson"
+                        android:textColor="@color/leaderboard_text_secondary"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold" />
 
-            </LinearLayout>
+                    <TextView
+                        android:id="@+id/tv_third_points"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="1980 pts"
+                        android:textColor="@color/leaderboard_text_primary"
+                        android:textSize="@dimen/text_md" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 

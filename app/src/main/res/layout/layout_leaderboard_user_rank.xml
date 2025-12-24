@@ -15,14 +15,13 @@
         android:textColor="@color/leaderboard_text_primary"
         android:textSize="@dimen/text_lg" />
 
-    <ImageView
-        android:id="@+id/iv_user_avatar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:background="@drawable/circular_progress"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_person" />
+        <ImageView
+            android:id="@+id/iv_user_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_person" />
 
     <LinearLayout
         android:layout_width="0dp"
