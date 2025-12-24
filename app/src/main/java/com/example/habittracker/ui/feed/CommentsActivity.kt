@@ -12,6 +12,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.utils.UserPreferences
 
+
 class CommentsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCommentsBinding
@@ -55,6 +56,7 @@ class CommentsActivity : AppCompatActivity() {
 
         post = Post(
             id = postId,
+            userId = "user_current", // Default user ID for comments activity
             authorName = authorName,
             authorAvatar = authorAvatar,
             timestamp = timestamp,

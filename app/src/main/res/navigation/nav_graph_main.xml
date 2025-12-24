@@ -51,7 +51,20 @@
         android:id="@+id/nav_profile"
         android:name="com.example.habittracker.ui.settings.ProfileFragment"
         android:label="Profile"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        
+        <action
+            android:id="@+id/action_profileFragment_to_settingsFragment"
+            app:destination="@id/nav_settings" />
+            
+    </fragment>
+
+    <!-- Settings Fragment -->
+    <fragment
+        android:id="@+id/nav_settings"
+        android:name="com.example.habittracker.ui.settings.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
 
     <!-- Create Habit Fragment -->
     <fragment
@@ -83,5 +96,23 @@
         android:name="com.example.habittracker.ui.category.CreateCategoryFragment"
         android:label="Create Category"
         tools:layout="@layout/fragment_create_category" />
+
+    <!-- Friend Profile Fragment -->
+    <fragment
+        android:id="@+id/nav_friend_profile"
+        android:name="com.example.habittracker.ui.social.friend.FriendProfileFragment"
+        android:label="Friend Profile"
+        tools:layout="@layout/fragment_friend_profile">
+        
+        <argument
+            android:name="friendId"
+            app:argType="string" />
+            
+    </fragment>
+
+    <!-- Global Actions -->
+    <action
+        android:id="@+id/action_global_to_friend_profile"
+        app:destination="@id/nav_friend_profile" />
 
 </navigation>

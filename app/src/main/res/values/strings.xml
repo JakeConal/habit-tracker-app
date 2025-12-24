@@ -47,6 +47,13 @@
     <string name="agree_to_terms">I agree to the </string>
     <string name="terms_privacy">Terms &amp; Privacy</string>
 
+    <!-- Friend Profile Screen -->
+    <string name="friend_profile_posts_tab">Posts</string>
+    <string name="friend_profile_friends_tab">Friends</string>
+    <string name="friend_profile_empty_posts">No posts yet</string>
+    <string name="friend_profile_empty_friends">Friend list view coming soon</string>
+    <string name="friend_profile_feature_coming_soon">Feature coming soon!</string>
+
     <!-- Statistics Screen -->
     <string name="statistic">Statistic</string>
     <string name="all_habits">All habits</string>
@@ -84,4 +91,32 @@
     <string name="photo">Photo</string>
     <string name="camera_icon">Camera icon</string>
     <string name="camera">Camera</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile">Profile</string>
+    <string name="settings">Settings</string>
+    <string name="default_user_name">Tanzir Fahad</string>
+    <string name="default_user_email">fahaduxlab@gmail.com</string>
+    <string name="profile_avatar">Profile Avatar</string>
+    <string name="verified_badge">Verified Badge</string>
+    <string name="edit_profile">Edit Profile</string>
+    <string name="my_post">My Post</string>
+    <string name="my_friends">My Friends</string>
+    <string name="friends_icon">Friends Icon</string>
+    <string name="friends_coming_soon">Friends feature coming soon!</string>
+    <string name="settings_coming_soon">Settings will be available soon</string>
+    
+    <!-- Friends Feature -->
+    <string name="find_friends_hint">Find friends by name/email...</string>
+    <string name="requests">Requests</string>
+    <string name="mutual_friends_format">%d mutual friends</string>
+    <string name="my_friends_count">My Friends (%d)</string>
+    <string name="day_streak_format">🔥 %d day streak</string>
+    <string name="accept_request">Accept friend request</string>
+    <string name="reject_request">Reject friend request</string>
+    <string name="view_friend_profile">View friend profile</string>
+    <string name="unfriend">Unfriend</string>
+    <string name="search_friends">Search friends</string>
+    <string name="no_friends_found">No friends found</string>
+    <string name="no_requests">No friend requests</string>
 </resources>
