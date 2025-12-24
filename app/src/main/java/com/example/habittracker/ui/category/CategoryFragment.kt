@@ -23,7 +23,7 @@ class CategoryFragment : Fragment() {
     private lateinit var categoryAdapter: CategoryAdapter
     
     // Categories matching the Figma design
-    private val categories = listOf(
+    private val categories = mutableListOf(
         Category("Physical Health", R.drawable.ic_heart, R.drawable.bg_category_icon_red, 5),
         Category("Study", R.drawable.ic_book, R.drawable.bg_category_icon_blue, 3),
         Category("Finance", R.drawable.ic_money, R.drawable.bg_category_icon_yellow, 2),
@@ -48,6 +48,7 @@ class CategoryFragment : Fragment() {
         setupView()
         setupRecyclerView()
         setupClickListeners()
+        setupFragmentResultListener()
     }
 
     private fun setupView() {
@@ -90,6 +91,31 @@ class CategoryFragment : Fragment() {
         
         binding.fabAddCategory.setOnClickListener {
             findNavController().navigate(R.id.action_category_to_create_category)
+        }
+    }
+    
+    private fun setupFragmentResultListener() {
+        // Listen for new category created from CreateCategoryFragment
+        parentFragmentManager.setFragmentResultListener(
+            "new_category_request_key",
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val categoryName = bundle.getString("category_name")
+            val categoryIcon = bundle.getInt("category_icon")
+            val categoryBackground = bundle.getInt("category_background")
+            
+            if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
+                // Add new category to the list
+                val newCategory = Category(
+                    name = categoryName,
+                    iconRes = categoryIcon,
+                    backgroundRes = categoryBackground,
+                    habitCount = 0 // New category starts with 0 habits
+                )
+                categories.add(0, newCategory) // Add to the beginning of the list
+                categoryAdapter.notifyItemInserted(0)
+                binding.rvCategories.scrollToPosition(0) // Scroll to show the new category
+            }
         }
     }
 
