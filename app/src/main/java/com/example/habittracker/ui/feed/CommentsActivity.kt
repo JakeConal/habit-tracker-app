@@ -12,6 +12,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.utils.UserPreferences
 
+
 class CommentsActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCommentsBinding
