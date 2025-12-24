@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
  * This acts as an intermediary between View (Activity/Fragment) and Model (Data)
  */
 class HabitListViewModel(
-    private val repository: HabitRepository = HabitRepository()
+    private val repository: HabitRepository = HabitRepository.getInstance()
 ) : ViewModel() {
     
     // State flow so UI can observe and update when data changes

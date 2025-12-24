@@ -8,9 +8,14 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.ItemHabitBinding
 
 class HabitsAdapter(
-    private val habits: List<Habit>,
+    private var habits: MutableList<Habit>,
     private val onHabitClick: (Habit) -> Unit
 ) : RecyclerView.Adapter<HabitsAdapter.HabitViewHolder>() {
+
+    fun updateHabits(newHabits: MutableList<Habit>) {
+        habits = newHabits
+        notifyDataSetChanged()
+    }
 
     inner class HabitViewHolder(private val binding: ItemHabitBinding) :
         RecyclerView.ViewHolder(binding.root) {

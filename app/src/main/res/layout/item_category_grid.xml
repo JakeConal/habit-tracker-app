@@ -10,6 +10,9 @@
     android:focusable="true"
     app:cardCornerRadius="16dp"
     app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white"
+    app:strokeColor="@android:color/transparent"
+    app:strokeWidth="0dp"
     app:rippleColor="@android:color/white">
 
     <LinearLayout

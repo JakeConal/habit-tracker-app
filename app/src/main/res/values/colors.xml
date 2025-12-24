@@ -42,6 +42,16 @@
     <color name="icon_bg_coral">#FFFFC5C5</color>
     <color name="icon_bg_orange">#FFFFD4A3</color>
     
+    <!-- Action colors -->
+    <color name="red">#FF6B6B</color>
+    
+    <!-- Action button colors -->
+    <color name="edit_button_bg">#E6F0F9</color>
+    <color name="edit_button_border">#B3D4E8</color>
+    <color name="edit_button_icon">#4A7BA7</color>
+    <color name="delete_button_bg">#FFEBEE</color>
+    <color name="delete_button_icon">#D32F2F</color>
+    
     <!-- Quote card gradient colors -->
     <color name="quote_gradient_start">#33DBEAFE</color>
     <color name="quote_gradient_middle">#33F3E8FF</color>
@@ -53,4 +63,15 @@
     <color name="divider">#E0E0E0</color>
     <color name="primary_color">#1E2939</color>
     <color name="primary_text">#1E2939</color>
+    <!-- Các màu nền cho Icon Category -->
+    <color name="icon_bg_red">#FFEBEE</color> <!-- Đỏ nhạt -->
+    <color name="icon_bg_blue">#E3F2FD</color> <!-- Xanh dương nhạt -->
+    <color name="icon_bg_yellow">#FFFDE7</color> <!-- Vàng nhạt -->
+    <color name="icon_bg_pink_light">#FCE4EC</color> <!-- Hồng cực nhạt -->
+    <color name="icon_bg_purple">#F3E5F5</color> <!-- Tím nhạt -->
+    <color name="icon_bg_orange_light">#FFF3E0</color> <!-- Cam nhạt -->
+    <color name="icon_bg_green">#E8F5E9</color> <!-- Xanh lá nhạt -->
+    <color name="icon_bg_indigo">#E8EAF6</color>
+ <!-- Màu chàm nhạt -->
+    <!-- <color name="icon_bg_pink">#FCE4EC</color> -->
 </resources>

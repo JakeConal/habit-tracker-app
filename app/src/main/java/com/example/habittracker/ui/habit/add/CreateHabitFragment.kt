@@ -78,11 +78,29 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         ) { _, bundle ->
             val categoryName = bundle.getString("selected_category_name")
             val categoryIcon = bundle.getInt("selected_category_icon")
+            val categoryIconBackground = bundle.getInt("selected_category_icon_background")
             
             if (categoryName != null && categoryIcon != 0) {
                 binding.ivCategoryIcon.setImageResource(categoryIcon)
                 binding.tvCategoryName.text = categoryName
+                binding.categoryIconBackground.setCardBackgroundColor(
+                    requireContext().getColor(
+                        when (categoryIconBackground) {
+                            R.drawable.bg_category_icon_red -> R.color.icon_bg_red
+                            R.drawable.bg_category_icon_blue -> R.color.icon_bg_blue
+                            R.drawable.bg_category_icon_yellow -> R.color.icon_bg_yellow
+                            R.drawable.bg_category_icon_pink_light -> R.color.icon_bg_pink_light
+                            R.drawable.bg_category_icon_purple -> R.color.icon_bg_purple
+                            R.drawable.bg_category_icon_orange_light -> R.color.icon_bg_orange_light
+                            R.drawable.bg_category_icon_green -> R.color.icon_bg_green
+                            R.drawable.bg_category_icon_indigo -> R.color.icon_bg_indigo
+                            else -> R.color.icon_bg_pink
+                        }
+                    )
+                )
                 viewModel.updateCategory(categoryName)
+                viewModel.updateCategoryIcon(categoryIcon)
+                viewModel.updateCategoryIconBackground(categoryIconBackground)
             }
         }
     }
@@ -91,7 +109,13 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         // Set default category
         binding.ivCategoryIcon.setImageResource(categories[0].second)
         binding.tvCategoryName.text = categories[0].first
+        binding.categoryIconBackground.setCardBackgroundColor(
+            requireContext().getColor(R.color.icon_bg_pink)
+        )
         viewModel.updateCategory(categories[0].first)
+        viewModel.updateCategoryIcon(categories[0].second)
+        // Set default background for Reading category
+        viewModel.updateCategoryIconBackground(R.drawable.bg_habit_icon_pink)
         
         // Set default values
         viewModel.updateQuantity(30)

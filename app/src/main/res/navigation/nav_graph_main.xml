@@ -70,6 +70,18 @@
         android:id="@+id/nav_category"
         android:name="com.example.habittracker.ui.category.CategoryFragment"
         android:label="Select Category"
-        tools:layout="@layout/fragment_category" />
+        tools:layout="@layout/fragment_category">
+        
+        <action
+            android:id="@+id/action_category_to_create_category"
+            app:destination="@id/nav_create_category" />
+    </fragment>
+
+    <!-- Create Category Fragment -->
+    <fragment
+        android:id="@+id/nav_create_category"
+        android:name="com.example.habittracker.ui.category.CreateCategoryFragment"
+        android:label="Create Category"
+        tools:layout="@layout/fragment_create_category" />
 
 </navigation>

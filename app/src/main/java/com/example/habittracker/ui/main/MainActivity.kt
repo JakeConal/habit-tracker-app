@@ -56,10 +56,13 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Hide bottom navigation and FAB on authentication screens
+        // Hide bottom navigation and FAB on authentication screens and create/select screens
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
-                R.id.nav_login, R.id.nav_register -> {
+                R.id.nav_login, 
+                R.id.nav_register,
+                R.id.nav_create_habit,
+                R.id.nav_category -> {
                     binding.bottomNavigation.visibility = android.view.View.GONE
                     binding.fabAdd.visibility = android.view.View.GONE
                 }

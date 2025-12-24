@@ -6,10 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHomeBinding
+import kotlinx.coroutines.launch
 import java.util.*
 
 /**
@@ -19,6 +22,8 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+    
+    private val viewModel: HomeViewModel by viewModels()
     
     private lateinit var habitsAdapter: HabitsAdapter
     private lateinit var calendarAdapter: CalendarAdapter
@@ -38,6 +43,7 @@ class HomeFragment : Fragment() {
         setupCalendar()
         setupHabits()
         setupClickListeners()
+        observeData()
     }
 
     private fun setupView() {
@@ -88,6 +94,61 @@ class HomeFragment : Fragment() {
         super.onResume()
         // Reload quote when returning from Daily Quote screen
         loadQuote()
+        // Reload habits when returning to home screen
+        viewModel.loadHabits()
+    }
+
+    private fun observeData() {
+        // Observe habits from ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.habits.collect { habitsList ->
+                updateHabits(habitsList)
+            }
+        }
+    }
+
+    private fun updateHabits(habitsList: List<com.example.habittracker.data.model.Habit>) {
+        if (habitsList.isEmpty()) {
+            // Show sample data if no habits
+            val sampleHabits = getSampleHabits()
+            habitsAdapter.updateHabits(sampleHabits)
+        } else {
+            // Convert repository Habit to UI Habit model
+            val uiHabits = habitsList.map { habit ->
+                Habit(
+                    id = habit.id.toInt(),
+                    name = habit.name,
+                    isCompleted = habit.isCompleted,
+                    // Use saved icon or fallback to category-based icon
+                    iconRes = if (habit.iconRes != 0) habit.iconRes else getIconForCategory(habit.description),
+                    iconBackgroundRes = if (habit.iconBackgroundRes != 0) habit.iconBackgroundRes else getBackgroundForCategory(habit.description),
+                    progress = null
+                )
+            }
+            habitsAdapter.updateHabits(uiHabits.toMutableList())
+        }
+    }
+
+    private fun getIconForCategory(description: String): Int {
+        return when {
+            description.contains("Reading", ignoreCase = true) -> R.drawable.ic_book
+            description.contains("Exercise", ignoreCase = true) || 
+            description.contains("Walk", ignoreCase = true) -> R.drawable.ic_walk
+            description.contains("Health", ignoreCase = true) -> R.drawable.ic_health
+            description.contains("Work", ignoreCase = true) -> R.drawable.ic_work
+            description.contains("Meditation", ignoreCase = true) -> R.drawable.ic_meditation
+            else -> R.drawable.ic_other
+        }
+    }
+
+    private fun getBackgroundForCategory(description: String): Int {
+        return when {
+            description.contains("Reading", ignoreCase = true) -> R.drawable.bg_habit_icon_pink
+            description.contains("Exercise", ignoreCase = true) ||
+            description.contains("Walk", ignoreCase = true) -> R.drawable.bg_habit_icon_coral
+            description.contains("Health", ignoreCase = true) -> R.drawable.bg_habit_icon_orange
+            else -> R.drawable.bg_habit_icon_pink
+        }
     }
 
     private fun setupCalendar() {
@@ -137,7 +198,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupHabits() {
-        val habits = getSampleHabits()
+        val habits = mutableListOf<Habit>()
         habitsAdapter = HabitsAdapter(habits) { habit ->
             // Handle habit click
             toggleHabitCompletion(habit)
