@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/menuItemContainer"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/settings_menu_item_height"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_md"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/menuIcon"
+            android:layout_width="@dimen/settings_menu_icon_size"
+            android:layout_height="@dimen/settings_menu_icon_size"
+            android:contentDescription="@string/settings_general"
+            tools:src="@drawable/ic_settings_header" />
+
+        <TextView
+            android:id="@+id/menuTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:textSize="@dimen/text_lg"
+            android:textColor="@color/primary_blue"
+            android:fontFamily="sans-serif"
+            tools:text="General Settings" />
+
+        <ImageView
+            android:id="@+id/chevronIcon"
+            android:layout_width="@dimen/settings_menu_icon_size"
+            android:layout_height="@dimen/settings_menu_icon_size"
+            android:src="@drawable/ic_chevron_right"
+            android:contentDescription="@string/back" />
+
+    </LinearLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/settings_divider_height"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:background="@color/settings_divider" />
+
+</LinearLayout>

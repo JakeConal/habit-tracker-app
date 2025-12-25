@@ -5,15 +5,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient"
+    android:background="@drawable/gradient_background"
     tools:context=".ui.settings.SettingsFragment">
 
-    <!-- Header -->
+    <!-- Header with Back Button, Title, and Settings Icon -->
     <RelativeLayout
         android:id="@+id/headerLayout"
         android:layout_width="0dp"
         android:layout_height="72dp"
-        android:paddingHorizontal="24dp"
+        android:paddingHorizontal="16dp"
         android:paddingVertical="16dp"
         android:layout_marginTop="30dp"
         android:background="@color/header_background"
@@ -27,62 +27,61 @@
             android:layout_height="40dp"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_arrow_back"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_back_settings"
             android:scaleType="fitCenter"
             android:background="@drawable/button_background_round"
-            android:contentDescription="@string/back" />
+            android:contentDescription="@string/back"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="@string/settings"
-            android:textSize="16sp"
+            android:text="@string/settings_title"
+            android:textSize="18sp"
             android:textColor="@color/primary_blue"
             android:fontFamily="sans-serif-medium" />
+
+        <ImageButton
+            android:id="@+id/btnSettings"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:src="@drawable/ic_settings_header"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="@string/settings" />
 
     </RelativeLayout>
 
-    <!-- Content placeholder -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:padding="32dp"
-        app:layout_constraintTop_toBottomOf="@id/headerLayout"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+    <!-- Settings Card Container -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/settingsCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_lg"
+        android:layout_marginEnd="@dimen/spacing_lg"
+        android:layout_marginTop="@dimen/spacing_lg"
+        app:cardBackgroundColor="@color/settings_card_bg"
+        app:cardCornerRadius="@dimen/settings_card_radius"
+        app:cardElevation="@dimen/no_elevation"
+        app:strokeColor="@color/settings_card_border"
+        app:strokeWidth="@dimen/settings_button_border"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout">
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:src="@drawable/ic_settings"
-            android:alpha="0.3"
-            app:tint="@color/accent_blue"
-            android:contentDescription="@string/settings" />
-
-        <TextView
-            android:layout_width="wrap_content"
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvSettingsMenu"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="@string/settings"
-            android:textSize="24sp"
-            android:textColor="@color/primary_blue"
-            android:fontFamily="sans-serif-medium" />
+            android:padding="@dimen/spacing_md"
+            android:overScrollMode="never"
+            tools:listitem="@layout/item_setting_menu"
+            tools:itemCount="7" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/settings_coming_soon"
-            android:textSize="16sp"
-            android:textColor="@color/secondary_gray"
-            android:gravity="center" />
-
-    </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
