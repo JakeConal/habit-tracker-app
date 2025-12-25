@@ -78,6 +78,15 @@
     <dimen name="post_image_height">200dp</dimen>
     <dimen name="post_image_radius">16dp</dimen>
     <dimen name="post_action_button_size">24dp</dimen>
+    
+    <!-- Settings -->
+    <dimen name="settings_card_radius">24dp</dimen>
+    <dimen name="settings_button_size">40dp</dimen>
+    <dimen name="settings_button_icon_size">20dp</dimen>
+    <dimen name="settings_menu_item_height">56dp</dimen>
+    <dimen name="settings_menu_icon_size">20dp</dimen>
+    <dimen name="settings_divider_height">1dp</dimen>
+    <dimen name="settings_button_border">1.315dp</dimen>
     <dimen name="post_action_button_spacing">16dp</dimen>
 
     <!-- Leaderboard -->

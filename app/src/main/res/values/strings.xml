@@ -98,6 +98,18 @@
     <string name="default_user_name">Tanzir Fahad</string>
     <string name="default_user_email">fahaduxlab@gmail.com</string>
     <string name="profile_avatar">Profile Avatar</string>
+    
+    <!-- Settings Screen -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_general">General Settings</string>
+    <string name="settings_notification">Notification</string>
+    <string name="settings_subscription">Subscription</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_report">Report</string>
+    <string name="settings_terms">Terms of Use</string>
+    <string name="settings_support">Support &amp; FAQ</string>
+    <string name="coming_soon">Coming Soon</string>
+    <string name="feature_in_development">This feature is currently in development</string>
     <string name="verified_badge">Verified Badge</string>
     <string name="edit_profile">Edit Profile</string>
     <string name="my_post">My Post</string>

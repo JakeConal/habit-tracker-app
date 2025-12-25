@@ -28,6 +28,11 @@
     <color name="header_background">#00FFFFFF</color>
     <color name="button_background">#66FFFFFF</color>
     <color name="button_border">#80FFFFFF</color>
+    
+    <!-- Settings colors -->
+    <color name="settings_divider">#80E5E7EB</color>
+    <color name="settings_card_bg">#80FFFFFF</color>
+    <color name="settings_card_border">#99FFFFFF</color>
     <color name="bottom_nav_background">#99FFFFFF</color>
     <color name="bottom_nav_border">#B3FFFFFF</color>
 
