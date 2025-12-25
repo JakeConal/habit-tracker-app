@@ -64,7 +64,79 @@
         android:id="@+id/nav_settings"
         android:name="com.example.habittracker.ui.settings.SettingsFragment"
         android:label="Settings"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings">
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_generalSettingsFragment"
+            app:destination="@id/nav_general_settings" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_notificationSettingsFragment"
+            app:destination="@id/nav_notification_settings" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_subscriptionFragment"
+            app:destination="@id/nav_subscription" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_languageSettingsFragment"
+            app:destination="@id/nav_language_settings" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_reportFragment"
+            app:destination="@id/nav_report" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_termsFragment"
+            app:destination="@id/nav_terms" />
+        
+        <action
+            android:id="@+id/action_settingsFragment_to_supportFragment"
+            app:destination="@id/nav_support" />
+    </fragment>
+
+    <!-- Sub-Settings Fragments -->
+    <fragment
+        android:id="@+id/nav_general_settings"
+        android:name="com.example.habittracker.ui.settings.subsettings.GeneralSettingsFragment"
+        android:label="General Settings"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_notification_settings"
+        android:name="com.example.habittracker.ui.settings.subsettings.NotificationSettingsFragment"
+        android:label="Notification"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_subscription"
+        android:name="com.example.habittracker.ui.settings.subsettings.SubscriptionFragment"
+        android:label="Subscription"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_language_settings"
+        android:name="com.example.habittracker.ui.settings.subsettings.LanguageSettingsFragment"
+        android:label="Language"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_report"
+        android:name="com.example.habittracker.ui.settings.subsettings.ReportFragment"
+        android:label="Report"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_terms"
+        android:name="com.example.habittracker.ui.settings.subsettings.TermsFragment"
+        android:label="Terms of Use"
+        tools:layout="@layout/fragment_placeholder_setting" />
+
+    <fragment
+        android:id="@+id/nav_support"
+        android:name="com.example.habittracker.ui.settings.subsettings.SupportFragment"
+        android:label="@string/settings_support"
+        tools:layout="@layout/fragment_placeholder_setting" />
 
     <!-- Create Habit Fragment -->
     <fragment
