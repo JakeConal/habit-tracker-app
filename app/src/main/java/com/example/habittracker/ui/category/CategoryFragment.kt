@@ -8,12 +8,12 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentCategoryBinding
 
 /**
- * CategoryFragment - Screen for selecting a category
+ * CategoryFragment - Screen for managing categories
  */
 class CategoryFragment : Fragment() {
 
@@ -22,20 +22,16 @@ class CategoryFragment : Fragment() {
     
     private lateinit var categoryAdapter: CategoryAdapter
     
-    // Categories with their corresponding icons
-    private val categories = listOf(
-        Category("Reading", R.drawable.ic_book, "#FF6B6B"),
-        Category("Exercise", R.drawable.ic_fitness, "#4ECDC4"),
-        Category("Study", R.drawable.ic_book, "#45B7D1"),
-        Category("Work", R.drawable.ic_work, "#FFA07A"),
-        Category("Health", R.drawable.ic_health, "#98D8C8"),
-        Category("Meditation", R.drawable.ic_meditation, "#C7CEEA"),
-        Category("Cooking", R.drawable.ic_other, "#FFD93D"),
-        Category("Music", R.drawable.ic_other, "#FF85A2"),
-        Category("Art", R.drawable.ic_other, "#95E1D3"),
-        Category("Writing", R.drawable.ic_book, "#F38181"),
-        Category("Language", R.drawable.ic_book, "#AA96DA"),
-        Category("Other", R.drawable.ic_other, "#FCBAD3")
+    // Categories matching the Figma design
+    private val categories = mutableListOf(
+        Category("Physical Health", R.drawable.ic_heart, R.drawable.bg_category_icon_red, 5),
+        Category("Study", R.drawable.ic_book, R.drawable.bg_category_icon_blue, 3),
+        Category("Finance", R.drawable.ic_money, R.drawable.bg_category_icon_yellow, 2),
+        Category("Mental Health", R.drawable.ic_heart, R.drawable.bg_category_icon_pink_light, 4),
+        Category("Career", R.drawable.ic_briefcase, R.drawable.bg_category_icon_purple, 3),
+        Category("Nutrition", R.drawable.ic_food, R.drawable.bg_category_icon_orange_light, 6),
+        Category("Personal Growth", R.drawable.ic_growth, R.drawable.bg_category_icon_green, 4),
+        Category("Sleep", R.drawable.ic_moon, R.drawable.bg_category_icon_indigo, 2)
     )
 
     override fun onCreateView(
@@ -52,19 +48,38 @@ class CategoryFragment : Fragment() {
         setupView()
         setupRecyclerView()
         setupClickListeners()
+        setupFragmentResultListener()
     }
 
     private fun setupView() {
-        binding.tvTitle.text = "Select Category"
+        binding.tvTitle.text = "Manage Categories"
     }
 
     private fun setupRecyclerView() {
-        categoryAdapter = CategoryAdapter(categories) { category ->
-            onCategorySelected(category)
-        }
+        categoryAdapter = CategoryAdapter(
+            categories = categories,
+            onCategoryClick = { category ->
+                // Send selected category back to CreateHabitFragment
+                setFragmentResult(
+                    "category_request_key",
+                    bundleOf(
+                        "selected_category_name" to category.name,
+                        "selected_category_icon" to category.iconRes,
+                        "selected_category_icon_background" to category.backgroundRes
+                    )
+                )
+                findNavController().navigateUp()
+            },
+            onEditClick = { category ->
+                // TODO: Handle edit category
+            },
+            onDeleteClick = { category ->
+                // TODO: Handle delete category
+            }
+        )
         
         binding.rvCategories.apply {
-            layoutManager = GridLayoutManager(requireContext(), 3)
+            layoutManager = LinearLayoutManager(requireContext())
             adapter = categoryAdapter
         }
     }
@@ -73,20 +88,35 @@ class CategoryFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
-    }
-
-    private fun onCategorySelected(category: Category) {
-        // Send result back to CreateHabitFragment
-        setFragmentResult(
-            "category_request_key",
-            bundleOf(
-                "selected_category_name" to category.name,
-                "selected_category_icon" to category.iconRes
-            )
-        )
         
-        // Navigate back
-        findNavController().navigateUp()
+        binding.fabAddCategory.setOnClickListener {
+            findNavController().navigate(R.id.action_category_to_create_category)
+        }
+    }
+    
+    private fun setupFragmentResultListener() {
+        // Listen for new category created from CreateCategoryFragment
+        parentFragmentManager.setFragmentResultListener(
+            "new_category_request_key",
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val categoryName = bundle.getString("category_name")
+            val categoryIcon = bundle.getInt("category_icon")
+            val categoryBackground = bundle.getInt("category_background")
+            
+            if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
+                // Add new category to the list
+                val newCategory = Category(
+                    name = categoryName,
+                    iconRes = categoryIcon,
+                    backgroundRes = categoryBackground,
+                    habitCount = 0 // New category starts with 0 habits
+                )
+                categories.add(0, newCategory) // Add to the beginning of the list
+                categoryAdapter.notifyItemInserted(0)
+                binding.rvCategories.scrollToPosition(0) // Scroll to show the new category
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -99,5 +129,6 @@ class CategoryFragment : Fragment() {
 data class Category(
     val name: String,
     val iconRes: Int,
-    val color: String
+    val backgroundRes: Int,
+    val habitCount: Int
 )

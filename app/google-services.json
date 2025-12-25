@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "123456789000",
-    "project_id": "habit-tracker-demo",
-    "storage_bucket": "habit-tracker-demo.appspot.com"
+    "project_number": "791039352776",
+    "project_id": "habit-tracker-2b03f",
+    "storage_bucket": "habit-tracker-2b03f.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789000:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:791039352776:android:3bd8432c240bc856f9aafd",
         "android_client_info": {
           "package_name": "com.example.habittracker"
         }
       },
       "oauth_client": [
         {
-          "client_id": "123456789000-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+          "client_id": "791039352776-be88u1ntup6buh2nqi8sbv5urm8rvoug.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.habittracker",
+            "certificate_hash": "3b3368e2b367e98ac9b27c49dad0482cf4852228"
+          }
+        },
+        {
+          "client_id": "791039352776-ca724m7tspfokl41dkjvka0doj267msh.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDummyKeyForDevelopment1234567890"
+          "current_key": "AIzaSyAbIZcHgndBtGS3HDhdqyfiEQj_msh0YiM"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "123456789000-abcdefghijklmnopqrstuvwxyz123456.apps.googleusercontent.com",
+              "client_id": "791039352776-ca724m7tspfokl41dkjvka0doj267msh.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
@@ -37,4 +45,3 @@
   ],
   "configuration_version": "1"
 }
-

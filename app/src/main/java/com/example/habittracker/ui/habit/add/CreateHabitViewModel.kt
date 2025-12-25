@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
  */
 class CreateHabitViewModel : ViewModel() {
 
-    private val repository = HabitRepository()
+    private val repository = HabitRepository.getInstance()
 
     // UI State
     private val _title = MutableStateFlow("")
@@ -26,6 +26,12 @@ class CreateHabitViewModel : ViewModel() {
 
     private val _category = MutableStateFlow("Reading")
     val category: StateFlow<String> = _category.asStateFlow()
+
+    private val _categoryIcon = MutableStateFlow(0)
+    val categoryIcon: StateFlow<Int> = _categoryIcon.asStateFlow()
+
+    private val _categoryIconBackground = MutableStateFlow(0)
+    val categoryIconBackground: StateFlow<Int> = _categoryIconBackground.asStateFlow()
 
     private val _quantity = MutableStateFlow(30)
     val quantity: StateFlow<Int> = _quantity.asStateFlow()
@@ -62,6 +68,20 @@ class CreateHabitViewModel : ViewModel() {
      */
     fun updateCategory(category: String) {
         _category.value = category
+    }
+
+    /**
+     * Update category icon resource
+     */
+    fun updateCategoryIcon(iconRes: Int) {
+        _categoryIcon.value = iconRes
+    }
+
+    /**
+     * Update category icon background resource
+     */
+    fun updateCategoryIconBackground(backgroundRes: Int) {
+        _categoryIconBackground.value = backgroundRes
     }
 
     /**
@@ -115,7 +135,9 @@ class CreateHabitViewModel : ViewModel() {
                     description = description,
                     frequency = _frequency.value,
                     isCompleted = false,
-                    createdAt = System.currentTimeMillis()
+                    createdAt = System.currentTimeMillis(),
+                    iconRes = _categoryIcon.value,
+                    iconBackgroundRes = _categoryIconBackground.value
                 )
 
                 // Save to repository

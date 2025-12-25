@@ -95,9 +95,11 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:minHeight="112dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="1dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent"
                 app:layout_constraintTop_toBottomOf="@id/tvPreviewLabel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -107,7 +109,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_quote_card"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="@dimen/spacing_lg">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -149,9 +151,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="1dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent"
                 app:layout_constraintTop_toBottomOf="@id/tvCustomQuoteLabel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -161,7 +165,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_quote_card"
                     android:orientation="vertical"
-                    android:padding="21dp">
+                    android:padding="@dimen/spacing_lg">
 
                     <EditText
                         android:id="@+id/etCustomQuote"
@@ -205,9 +209,11 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="1dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent"
                 app:layout_constraintTop_toBottomOf="@id/customQuoteCard"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -217,7 +223,7 @@
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_quote_card"
                     android:orientation="vertical"
-                    android:padding="21dp">
+                    android:padding="@dimen/spacing_lg">
 
                     <!-- Show on Dashboard Toggle -->
                     <RelativeLayout

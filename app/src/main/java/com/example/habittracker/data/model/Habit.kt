@@ -10,6 +10,8 @@ data class Habit(
     val description: String = "",
     val frequency: String = "Daily", // Daily, Weekly, Monthly
     val isCompleted: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val iconRes: Int = 0, // Icon resource ID
+    val iconBackgroundRes: Int = 0 // Icon background resource ID
 )
 

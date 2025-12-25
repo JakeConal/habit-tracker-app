@@ -77,7 +77,6 @@
 
         </LinearLayout>
 
-        <!-- Title ở giữa (ẩn đi vì đã có greeting) -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
@@ -124,13 +123,16 @@
             android:id="@+id/quoteCard"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_lg"
+            android:layout_marginTop="@dimen/spacing_md"
             android:minHeight="@dimen/quote_card_height"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="@dimen/header_card_radius"
-            app:cardElevation="@dimen/elevation_card"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardElevation="2dp"
+            app:strokeWidth="0dp"
+            app:strokeColor="@android:color/transparent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
@@ -170,9 +172,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
-            app:cardCornerRadius="@dimen/header_card_radius"
+            app:cardCornerRadius="16dp"
             app:cardBackgroundColor="@color/white"
-            app:cardElevation="@dimen/elevation_card"
+            app:cardElevation="2dp"
             app:strokeWidth="0dp"
             app:strokeColor="@android:color/transparent"
             app:layout_constraintTop_toBottomOf="@id/quoteCard"

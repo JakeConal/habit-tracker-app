@@ -4,74 +4,76 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="@dimen/spacing_lg"
-    android:layout_marginBottom="@dimen/spacing_md"
-    app:cardBackgroundColor="@color/card_background"
-    app:cardCornerRadius="@dimen/habit_item_radius"
-    app:cardElevation="@dimen/no_elevation"
-    app:strokeColor="@color/card_border"
-    app:strokeWidth="1dp">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeColor="@android:color/transparent"
+    app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/spacing_md">
-
-        <!-- Category Icon Background -->
-        <View
-            android:id="@+id/categoryIconBackground"
-            android:layout_width="@dimen/habit_icon_size"
-            android:layout_height="@dimen/habit_icon_size"
-            android:background="@drawable/bg_category_icon_red"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        android:padding="16dp">
 
         <!-- Category Icon -->
-        <ImageView
-            android:id="@+id/ivCategoryIcon"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:contentDescription="@string/app_name"
-            android:src="@drawable/ic_heart"
-            app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
-            app:layout_constraintEnd_toEndOf="@id/categoryIconBackground"
-            app:layout_constraintStart_toStartOf="@id/categoryIconBackground"
-            app:layout_constraintTop_toTopOf="@id/categoryIconBackground"
-            app:tint="@color/white" />
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/categoryIconBackground"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:cardBackgroundColor="@color/icon_bg_pink"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Category Info -->
-        <TextView
-            android:id="@+id/tvCategoryName"
+            <ImageView
+                android:id="@+id/ivCategoryIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_heart"
+                app:tint="@color/white" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Category Info Container -->
+        <LinearLayout
+            android:id="@+id/categoryInfoContainer"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:fontFamily="sans-serif"
-            android:text="Physical Health"
-            android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg"
-            app:layout_constraintBottom_toTopOf="@id/tvHabitCount"
-            app:layout_constraintEnd_toStartOf="@id/btnEdit"
-            app:layout_constraintStart_toEndOf="@id/categoryIconBackground"
-            app:layout_constraintTop_toTopOf="@id/categoryIconBackground"
-            app:layout_constraintVertical_chainStyle="packed"
-            tools:text="Physical Health" />
-
-        <TextView
-            android:id="@+id/tvHabitCount"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/spacing_md"
-            android:layout_marginTop="@dimen/spacing_xs"
-            android:fontFamily="sans-serif"
-            android:text="5 Habits"
-            android:textColor="@color/text_secondary"
-            android:textSize="@dimen/text_md"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
-            app:layout_constraintEnd_toStartOf="@id/btnEdit"
+            app:layout_constraintEnd_toStartOf="@id/actionButtonsContainer"
             app:layout_constraintStart_toEndOf="@id/categoryIconBackground"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoryName"
-            tools:text="5 Habits" />
+            app:layout_constraintTop_toTopOf="@id/categoryIconBackground">
+
+            <!-- Category Name -->
+            <TextView
+                android:id="@+id/tvCategoryName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Physical Health"
+                android:textColor="@color/primary_blue"
+                android:textSize="16sp"
+                tools:text="Physical Health" />
+
+            <!-- Habit Count -->
+            <TextView
+                android:id="@+id/tvHabitCount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="sans-serif"
+                android:text="5 Habits"
+                android:textColor="@color/secondary_gray"
+                android:textSize="12sp"
+                tools:text="5 Habits" />
+        </LinearLayout>
 
         <!-- Action Buttons Container -->
         <LinearLayout
@@ -79,40 +81,42 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="center_vertical"
+            app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toTopOf="@id/categoryIconBackground">
 
             <!-- Edit Button -->
             <FrameLayout
                 android:id="@+id/btnEdit"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/bg_action_button">
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_edit_button">
 
                 <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/app_name"
                     android:src="@drawable/ic_edit"
-                    app:tint="@color/primary_blue" />
+                    app:tint="@color/edit_button_icon" />
             </FrameLayout>
 
             <!-- Delete Button -->
             <FrameLayout
                 android:id="@+id/btnDelete"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:background="@drawable/bg_action_button">
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_delete_button">
 
                 <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/app_name"
-                    android:src="@drawable/ic_delete" />
+                    android:src="@drawable/ic_delete"
+                    app:tint="@color/delete_button_icon" />
             </FrameLayout>
         </LinearLayout>
 

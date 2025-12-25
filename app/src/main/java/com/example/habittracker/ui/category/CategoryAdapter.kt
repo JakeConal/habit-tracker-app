@@ -1,21 +1,22 @@
 package com.example.habittracker.ui.category
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.habittracker.databinding.ItemCategoryGridBinding
+import com.example.habittracker.databinding.ItemCategoryBinding
 
 /**
- * CategoryAdapter - Adapter for displaying categories in a grid
+ * CategoryAdapter - Adapter for displaying categories in a list
  */
 class CategoryAdapter(
     private val categories: List<Category>,
-    private val onCategoryClick: (Category) -> Unit
+    private val onCategoryClick: ((Category) -> Unit)? = null,
+    private val onEditClick: (Category) -> Unit,
+    private val onDeleteClick: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
-        val binding = ItemCategoryGridBinding.inflate(
+        val binding = ItemCategoryBinding.inflate(
             LayoutInflater.from(parent.context),
             parent,
             false
@@ -30,23 +31,33 @@ class CategoryAdapter(
     override fun getItemCount(): Int = categories.size
 
     inner class CategoryViewHolder(
-        private val binding: ItemCategoryGridBinding
+        private val binding: ItemCategoryBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(category: Category) {
             binding.apply {
+                // Set category name and habit count
                 tvCategoryName.text = category.name
+                tvHabitCount.text = "${category.habitCount} Habits"
+                
+                // Set icon
                 ivCategoryIcon.setImageResource(category.iconRes)
                 
-                // Set background color
-                try {
-                    categoryCard.setCardBackgroundColor(Color.parseColor(category.color))
-                } catch (e: Exception) {
-                    // Use default color if parsing fails
+                // Set background
+                categoryIconBackground.setBackgroundResource(category.backgroundRes)
+                
+                // Set click listener for category selection
+                root.setOnClickListener {
+                    onCategoryClick?.invoke(category)
                 }
                 
-                root.setOnClickListener {
-                    onCategoryClick(category)
+                // Set click listeners
+                btnEdit.setOnClickListener {
+                    onEditClick(category)
+                }
+                
+                btnDelete.setOnClickListener {
+                    onDeleteClick(category)
                 }
             }
         }
