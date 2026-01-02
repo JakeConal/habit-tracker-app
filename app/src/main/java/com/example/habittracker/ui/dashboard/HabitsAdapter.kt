@@ -9,7 +9,8 @@ import com.example.habittracker.databinding.ItemHabitBinding
 
 class HabitsAdapter(
     private var habits: MutableList<Habit>,
-    private val onHabitClick: (Habit) -> Unit
+    private val onHabitClick: (Habit) -> Unit,
+    private val onCheckClick: (Habit) -> Unit
 ) : RecyclerView.Adapter<HabitsAdapter.HabitViewHolder>() {
 
     fun updateHabits(newHabits: MutableList<Habit>) {
@@ -49,9 +50,9 @@ class HabitsAdapter(
                     ivCheck.visibility = android.view.View.GONE
                 }
 
-                btnCheck.setOnClickListener {
-                    onHabitClick(habit)
-                }
+                // Open habit detail when card is tapped, toggle completion when check button is tapped
+                root.setOnClickListener { onHabitClick(habit) }
+                btnCheck.setOnClickListener { onCheckClick(habit) }
             }
         }
     }
