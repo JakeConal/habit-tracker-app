@@ -123,11 +123,15 @@ class ChallengesFragment : Fragment() {
     }
 
     private fun onChallengeClicked(challenge: Challenge) {
-        Toast.makeText(
-            requireContext(),
-            "Clicked: ${challenge.title}",
-            Toast.LENGTH_SHORT
-        ).show()
+        val intent = android.content.Intent(requireContext(), com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity::class.java).apply {
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_ID, challenge.id)
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_TITLE, challenge.title)
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_DESCRIPTION, challenge.description)
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_IMAGE_URL, challenge.imgURL)
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_REWARD, challenge.reward)
+            putExtra(com.example.habittracker.ui.challenge.detail.ChallengeDetailActivity.EXTRA_CHALLENGE_IS_JOINED, challenge.isJoined)
+        }
+        startActivity(intent)
     }
 
     override fun onDestroyView() {

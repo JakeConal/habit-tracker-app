@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
     <option name="tabSettings">
       <map>
         <entry key="Firebase Crashlytics">
@@ -9,9 +10,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.habittracker" />
-                  <option name="mobileSdkAppId" value="1:123456789000:android:abcdef1234567890" />
-                  <option name="projectId" value="habit-tracker-demo" />
-                  <option name="projectNumber" value="123456789000" />
+                  <option name="mobileSdkAppId" value="1:791039352776:android:3bd8432c240bc856f9aafd" />
+                  <option name="projectId" value="habit-tracker-2b03f" />
+                  <option name="projectNumber" value="791039352776" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

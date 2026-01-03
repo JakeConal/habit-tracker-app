@@ -39,6 +39,11 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Challenge Detail Activity -->
+        <activity
+            android:name=".ui.challenge.detail.ChallengeDetailActivity"
+            android:exported="false" />
+
         <!-- FileProvider for Camera -->
         <provider
             android:name="androidx.core.content.FileProvider"

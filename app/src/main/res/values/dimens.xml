@@ -52,7 +52,7 @@
     <!-- Friend Profile -->
     <dimen name="friend_profile_card_radius">24dp</dimen>
     <dimen name="friend_profile_avatar_size">63dp</dimen>
-    <dimen name="friend_profile_avatar_border">1.5dp</dimen>
+    <dimen name="friend_profile_avatar_border">0dp</dimen>
     <dimen name="friend_profile_header_height">72dp</dimen>
     <dimen name="friend_profile_tab_height">47dp</dimen>
     <dimen name="friend_profile_tab_radius">44dp</dimen>
@@ -60,10 +60,10 @@
     <dimen name="request_badge_size">32dp</dimen>
     
     <!-- Elevation values for modern material design -->
-    <dimen name="elevation_card">1dp</dimen>
-    <dimen name="elevation_card_raised">8dp</dimen>
-    <dimen name="elevation_button">2dp</dimen>
-    <dimen name="elevation_fab">12dp</dimen>
+    <dimen name="elevation_card">0dp</dimen>
+    <dimen name="elevation_card_raised">0dp</dimen>
+    <dimen name="elevation_button">0dp</dimen>
+    <dimen name="elevation_fab">0dp</dimen>
     <dimen name="no_elevation">0dp</dimen>
 
     <!-- Feed -->
@@ -86,7 +86,7 @@
     <dimen name="settings_menu_item_height">56dp</dimen>
     <dimen name="settings_menu_icon_size">20dp</dimen>
     <dimen name="settings_divider_height">1dp</dimen>
-    <dimen name="settings_button_border">1.315dp</dimen>
+    <dimen name="settings_button_border">0dp</dimen>
     <dimen name="post_action_button_spacing">16dp</dimen>
 
     <!-- Leaderboard -->
