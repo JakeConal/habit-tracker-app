@@ -63,5 +63,12 @@ class HabitRepository private constructor() {
         habits.removeIf { it.id == habitId }
         _habitsFlow.value = habits.toList()
     }
+
+    /**
+     * Get a habit by ID
+     */
+    fun getHabitById(habitId: Long): Habit? {
+        return habits.find { it.id == habitId }
+    }
 }
 

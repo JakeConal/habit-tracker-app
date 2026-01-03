@@ -63,7 +63,9 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_register,
                 R.id.nav_create_habit,
                 R.id.nav_category,
-                R.id.nav_create_category -> {
+                R.id.nav_create_category,
+                R.id.nav_view_habit,
+                R.id.nav_focus_timer -> {
                     binding.bottomNavigation.visibility = android.view.View.GONE
                     binding.fabAdd.visibility = android.view.View.GONE
                 }

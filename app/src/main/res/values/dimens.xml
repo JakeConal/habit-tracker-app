@@ -98,4 +98,15 @@
     <dimen name="leaderboard_card_height">67dp</dimen>
     <dimen name="leaderboard_user_card_height">70dp</dimen>
     <dimen name="leaderboard_crown_overlap">12dp</dimen>
+    
+    <!-- Focus Timer -->
+    <dimen name="timer_progress_size">288dp</dimen>
+    <dimen name="timer_display_size">60sp</dimen>
+    <dimen name="timer_play_button_size">64dp</dimen>
+    <dimen name="timer_stop_button_size">48dp</dimen>
+    <dimen name="session_dot_size">12dp</dimen>
+    <dimen name="session_dot_margin">8dp</dimen>
+    <dimen name="focus_card_radius">40dp</dimen>
+    <dimen name="mode_button_padding_horizontal">24dp</dimen>
+    <dimen name="mode_button_padding_vertical">8dp</dimen>
 </resources>

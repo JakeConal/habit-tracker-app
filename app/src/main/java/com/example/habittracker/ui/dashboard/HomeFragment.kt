@@ -199,10 +199,17 @@ class HomeFragment : Fragment() {
 
     private fun setupHabits() {
         val habits = mutableListOf<Habit>()
-        habitsAdapter = HabitsAdapter(habits) { habit ->
-            // Handle habit click
-            toggleHabitCompletion(habit)
-        }
+        habitsAdapter = HabitsAdapter(
+            habits = habits,
+            onHabitClick = { habit ->
+                // Handle habit click - navigate to ViewHabit screen
+                navigateToViewHabit(habit)
+            },
+            onCheckClick = { habit ->
+                // Handle check button click - toggle completion
+                toggleHabitCompletion(habit)
+            }
+        )
         
         binding.rvHabits.apply {
             layoutManager = LinearLayoutManager(context)
@@ -242,6 +249,14 @@ class HomeFragment : Fragment() {
     private fun toggleHabitCompletion(habit: Habit) {
         habit.isCompleted = !habit.isCompleted
         habitsAdapter.notifyDataSetChanged()
+    }
+
+    private fun navigateToViewHabit(habit: Habit) {
+        // Navigate to ViewHabit screen with habit ID
+        val bundle = Bundle().apply {
+            putLong("habitId", habit.id.toLong())
+        }
+        findNavController().navigate(R.id.action_global_to_view_habit, bundle)
     }
 
     private fun setupClickListeners() {

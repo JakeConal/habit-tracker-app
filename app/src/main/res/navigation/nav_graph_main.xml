@@ -182,9 +182,48 @@
             
     </fragment>
 
+    <!-- Focus Timer Fragment -->
+    <fragment
+        android:id="@+id/nav_focus_timer"
+        android:name="com.example.habittracker.ui.pomodoro.FocusTimerFragment"
+        android:label="Focus Timer"
+        tools:layout="@layout/fragment_focus_timer">
+        
+        <argument
+            android:name="taskName"
+            android:defaultValue=""
+            app:argType="string" />
+            
+    </fragment>
+
+    <!-- View/Edit Habit Fragment -->
+    <fragment
+        android:id="@+id/nav_view_habit"
+        android:name="com.example.habittracker.ui.habit.detail.ViewHabitFragment"
+        android:label="View Habit"
+        tools:layout="@layout/fragment_view_habit">
+        
+        <argument
+            android:name="habitId"
+            app:argType="long" />
+            
+        <action
+            android:id="@+id/action_view_habit_to_focus_timer"
+            app:destination="@id/nav_focus_timer" />
+            
+        <action
+            android:id="@+id/action_view_habit_to_category"
+            app:destination="@id/nav_category" />
+            
+    </fragment>
+
     <!-- Global Actions -->
     <action
         android:id="@+id/action_global_to_friend_profile"
         app:destination="@id/nav_friend_profile" />
+        
+    <action
+        android:id="@+id/action_global_to_view_habit"
+        app:destination="@id/nav_view_habit" />
 
 </navigation>
