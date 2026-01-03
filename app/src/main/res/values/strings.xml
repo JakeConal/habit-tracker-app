@@ -46,6 +46,8 @@
     <string name="already_have_account">Already have an account?  </string>
     <string name="agree_to_terms">I agree to the </string>
     <string name="terms_privacy">Terms &amp; Privacy</string>
+    <string name="sign_in_with_google">Sign in with Google</string>
+    <string name="default_web_client_id" translatable="false">791039352776-ca724m7tspfokl41dkjvka0doj267msh.apps.googleusercontent.com</string>
 
     <!-- Friend Profile Screen -->
     <string name="friend_profile_posts_tab">Posts</string>
