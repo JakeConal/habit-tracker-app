@@ -2,11 +2,8 @@ package com.example.habittracker.ui.habit.add
 
 import android.app.AlertDialog
 import android.app.TimePickerDialog
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.NumberPicker
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -14,6 +11,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentCreateHabitBinding
 import com.example.habittracker.ui.common.BaseFragment
+import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.CategoryRepository
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -25,19 +24,8 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
 
     private val viewModel: CreateHabitViewModel by viewModels()
     
-    // Categories with their corresponding icons
-    private val categories = listOf(
-        "Reading" to R.drawable.ic_book,
-        "Exercise" to R.drawable.ic_fitness,
-        "Study" to R.drawable.ic_book,
-        "Work" to R.drawable.ic_work,
-        "Health" to R.drawable.ic_health,
-        "Meditation" to R.drawable.ic_meditation,
-        "Other" to R.drawable.ic_other
-    )
-    
     private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
-    private val frequencies = listOf("Everyday", "Weekly", "Monthly", "Custom")
+    private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     override fun getViewBinding(
         inflater: LayoutInflater,
@@ -49,28 +37,10 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     override fun setupView() {
         setupClickListeners()
         setupInitialValues()
+        setupCategoryResultListener()
     }
 
-    override fun observeData() {
-        // Observe habit creation success
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.habitCreated.collect { success ->
-                if (success) {
-                    showSuccess("Habit created successfully!")
-                    findNavController().navigateUp()
-                }
-            }
-        }
-        
-        // Observe errors
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.error.collect { errorMessage ->
-                errorMessage?.let {
-                    showError(it)
-                }
-            }
-        }
-        
+    private fun setupCategoryResultListener() {
         // Listen for category selection result from CategoryFragment
         parentFragmentManager.setFragmentResultListener(
             "category_request_key",
@@ -79,8 +49,9 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
             val categoryName = bundle.getString("selected_category_name")
             val categoryIcon = bundle.getInt("selected_category_icon")
             val categoryIconBackground = bundle.getInt("selected_category_icon_background")
-            
-            if (categoryName != null && categoryIcon != 0) {
+            val categoryId = bundle.getString("selected_category_id")
+
+            if (categoryName != null && categoryIcon != 0 && categoryId != null) {
                 binding.ivCategoryIcon.setImageResource(categoryIcon)
                 binding.tvCategoryName.text = categoryName
                 binding.categoryIconBackground.setCardBackgroundColor(
@@ -99,28 +70,62 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
                     )
                 )
                 viewModel.updateCategory(categoryName)
-                viewModel.updateCategoryIcon(categoryIcon)
-                viewModel.updateCategoryIconBackground(categoryIconBackground)
+                viewModel.updateCategoryId(categoryId)
+            }
+        }
+    }
+
+    override fun observeData() {
+        // Observe habit creation success
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.habitCreated.collect { success ->
+                if (success) {
+                    showSuccess("Habit created successfully!")
+                    findNavController().navigateUp()
+                }
+            }
+        }
+
+        // Observe errors
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.error.collect { errorMessage ->
+                errorMessage?.let {
+                    showError(it)
+                }
             }
         }
     }
 
     private fun setupInitialValues() {
-        // Set default category
-        binding.ivCategoryIcon.setImageResource(categories[0].second)
-        binding.tvCategoryName.text = categories[0].first
-        binding.categoryIconBackground.setCardBackgroundColor(
-            requireContext().getColor(R.color.icon_bg_pink)
-        )
-        viewModel.updateCategory(categories[0].first)
-        viewModel.updateCategoryIcon(categories[0].second)
-        // Set default background for Reading category
-        viewModel.updateCategoryIconBackground(R.drawable.bg_habit_icon_pink)
-        
+        // Load default category from repository
+        lifecycleScope.launch {
+            try {
+                val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
+                val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
+                if (categories.isNotEmpty()) {
+                    val defaultCategory = categories[0]
+                    binding.ivCategoryIcon.setImageResource(defaultCategory.icon.resId)
+                    binding.tvCategoryName.text = defaultCategory.title
+                    binding.categoryIconBackground.setCardBackgroundColor(
+                        requireContext().getColor(defaultCategory.color.colorResId)
+                    )
+                    viewModel.updateCategory(defaultCategory.title)
+                    viewModel.updateCategoryId(defaultCategory.id)
+                } else {
+                    // No categories available, show error or default
+                    showError("No categories available. Please create a category first.")
+                }
+            } catch (e: Exception) {
+                println("Error loading default category: ${e.message}")
+                e.printStackTrace()
+                showError("Failed to load categories: ${e.message}")
+            }
+        }
+
         // Set default values
         viewModel.updateQuantity(30)
         viewModel.updateMeasurement("Mins")
-        viewModel.updateFrequency("Everyday")
+        viewModel.updateFrequency(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
         viewModel.updateTime("5:00 - 12:00")
     }
 
@@ -202,16 +207,25 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     }
 
     private fun showFrequencySelector() {
-        val currentIndex = frequencies.indexOf(viewModel.frequency.value)
-        
+        val checkedItems = BooleanArray(frequencies.size) { index ->
+            viewModel.frequency.value.contains(frequencies[index])
+        }
+
         AlertDialog.Builder(requireContext())
-            .setTitle("Select Frequency")
-            .setSingleChoiceItems(frequencies.toTypedArray(), currentIndex) { dialog, which ->
-                val selectedFrequency = frequencies[which]
-                binding.tvFrequency.text = selectedFrequency
-                viewModel.updateFrequency(selectedFrequency)
-                dialog.dismiss()
+            .setTitle("Select Frequency (Days of the Week)")
+            .setMultiChoiceItems(frequencies.toTypedArray(), checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
             }
+            .setPositiveButton("OK") { _, _ ->
+                val selectedDays = frequencies.filterIndexed { index, _ -> checkedItems[index] }
+                if (selectedDays.isNotEmpty()) {
+                    binding.tvFrequency.text = selectedDays.joinToString(", ")
+                    viewModel.updateFrequency(selectedDays)
+                } else {
+                    showError("Please select at least one day")
+                }
+            }
+            .setNegativeButton("Cancel", null)
             .show()
     }
 
@@ -259,7 +273,13 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
             binding.etHabitTitle.requestFocus()
             return
         }
-        
+
+        // Validate category is selected
+        if (viewModel.categoryId.value.isBlank()) {
+            showError("Please select a category")
+            return
+        }
+
         // Update title in ViewModel
         viewModel.updateTitle(habitTitle)
         

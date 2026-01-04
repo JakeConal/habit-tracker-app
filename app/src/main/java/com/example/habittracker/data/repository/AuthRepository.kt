@@ -1,5 +1,8 @@
 package com.example.habittracker.data.repository
 
+import com.example.habittracker.data.model.Category
+import com.example.habittracker.data.model.CategoryColor
+import com.example.habittracker.data.model.CategoryIcon
 import com.example.habittracker.data.model.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -13,6 +16,7 @@ import kotlinx.coroutines.tasks.await
 class AuthRepository private constructor() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val userRepository = FirestoreUserRepository.getInstance()
 
     companion object {
         @Volatile
@@ -50,8 +54,13 @@ class AuthRepository private constructor() {
                 val user = User(
                     id = firebaseUser.uid,
                     name = firebaseUser.displayName ?: email.substringBefore("@"),
-                    avatarUrl = firebaseUser.photoUrl?.toString()
+                    avatarUrl = firebaseUser.photoUrl?.toString(),
+                    email = firebaseUser.email,
+                    lastLoginAt = System.currentTimeMillis()
                 )
+                // Update user info in Firestore
+                userRepository.createOrUpdateUser(user)
+                seedDefaultCategoriesForUser(user.id)
                 Result.success(user)
             } else {
                 Result.failure(Exception("Sign in failed: User is null"))
@@ -78,8 +87,14 @@ class AuthRepository private constructor() {
                 val user = User(
                     id = firebaseUser.uid,
                     name = name,
-                    avatarUrl = firebaseUser.photoUrl?.toString()
+                    avatarUrl = firebaseUser.photoUrl?.toString(),
+                    email = firebaseUser.email,
+                    createdAt = System.currentTimeMillis(),
+                    lastLoginAt = System.currentTimeMillis()
                 )
+                // Create user profile in Firestore
+                userRepository.createOrUpdateUser(user)
+                seedDefaultCategoriesForUser(user.id)
                 Result.success(user)
             } else {
                 Result.failure(Exception("Registration failed: User is null"))
@@ -101,8 +116,13 @@ class AuthRepository private constructor() {
                 val user = User(
                     id = firebaseUser.uid,
                     name = firebaseUser.displayName ?: "Google User",
-                    avatarUrl = firebaseUser.photoUrl?.toString()
+                    avatarUrl = firebaseUser.photoUrl?.toString(),
+                    email = firebaseUser.email,
+                    lastLoginAt = System.currentTimeMillis()
                 )
+                // Create or update user profile in Firestore
+                userRepository.createOrUpdateUser(user)
+                seedDefaultCategoriesForUser(user.id)
                 Result.success(user)
             } else {
                 Result.failure(Exception("Google sign in failed: User is null"))
@@ -123,8 +143,13 @@ class AuthRepository private constructor() {
                 val user = User(
                     id = firebaseUser.uid,
                     name = "Guest User",
-                    avatarUrl = null
+                    avatarUrl = null,
+                    createdAt = System.currentTimeMillis(),
+                    lastLoginAt = System.currentTimeMillis()
                 )
+                // Create user profile in Firestore
+                userRepository.createOrUpdateUser(user)
+                seedDefaultCategoriesForUser(user.id)
                 Result.success(user)
             } else {
                 Result.failure(Exception("Anonymous sign in failed: User is null"))
@@ -151,5 +176,23 @@ class AuthRepository private constructor() {
      */
     fun signOut() {
         auth.signOut()
+    }
+
+    private suspend fun seedDefaultCategoriesForUser(userId: String) {
+        val categoryRepository = CategoryRepository.getInstance()
+        val existingCategories = categoryRepository.getCategoriesForUser(userId)
+        if (existingCategories.isEmpty()) {
+            val defaultCategories = listOf(
+                Category(userId = userId, title = "Physical Health", icon = CategoryIcon.HEART, color = CategoryColor.RED),
+                Category(userId = userId, title = "Study", icon = CategoryIcon.BOOK, color = CategoryColor.BLUE),
+                Category(userId = userId, title = "Finance", icon = CategoryIcon.MONEY, color = CategoryColor.YELLOW),
+                Category(userId = userId, title = "Mental Health", icon = CategoryIcon.HEART, color = CategoryColor.PINK_LIGHT),
+                Category(userId = userId, title = "Career", icon = CategoryIcon.BRIEFCASE, color = CategoryColor.PURPLE),
+                Category(userId = userId, title = "Nutrition", icon = CategoryIcon.FOOD, color = CategoryColor.ORANGE_LIGHT),
+                Category(userId = userId, title = "Personal Growth", icon = CategoryIcon.GROWTH, color = CategoryColor.GREEN),
+                Category(userId = userId, title = "Sleep", icon = CategoryIcon.MOON, color = CategoryColor.INDIGO)
+            )
+            defaultCategories.forEach { categoryRepository.addCategory(it) }
+        }
     }
 }

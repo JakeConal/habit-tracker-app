@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.HabitRepository
+import com.example.habittracker.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -13,40 +14,65 @@ import kotlinx.coroutines.launch
  * This acts as an intermediary between View (Activity/Fragment) and Model (Data)
  */
 class HabitListViewModel(
-    private val repository: HabitRepository = HabitRepository.getInstance()
+    private val repository: HabitRepository = HabitRepository.getInstance(),
+    private val authRepository: AuthRepository = AuthRepository.getInstance()
 ) : ViewModel() {
     
     // State flow so UI can observe and update when data changes
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
     val habits: StateFlow<List<Habit>> = _habits
     
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     init {
         loadHabits()
     }
     
     /**
-     * Load the list of habits
+     * Load the list of habits for current user
      */
     private fun loadHabits() {
         viewModelScope.launch {
-            repository.getAllHabits().collect { habitList ->
-                _habits.value = habitList
+            try {
+                _isLoading.value = true
+                val userId = authRepository.getCurrentUser()?.uid
+                if (userId != null) {
+                    val habitList = repository.getHabitsForUser(userId)
+                    _habits.value = habitList
+                }
+            } catch (e: Exception) {
+                println("Error loading habits: ${e.message}")
+                _habits.value = emptyList()
+            } finally {
+                _isLoading.value = false
             }
         }
     }
     
     /**
-     * Add a new habit
+     * Add a new habit for current user
      */
-    fun addHabit(name: String, description: String, frequency: String) {
+    fun addHabit(name: String, description: String, frequency: List<String>, categoryId: String = "", time: String = "") {
         viewModelScope.launch {
-            val habit = Habit(
-                name = name,
-                description = description,
-                frequency = frequency
-            )
-            repository.addHabit(habit)
-            loadHabits()
+            try {
+                val userId = authRepository.getCurrentUser()?.uid
+                if (userId != null) {
+                    val habit = Habit(
+                        userId = userId,
+                        name = name,
+                        description = description,
+                        frequency = frequency,
+                        createdAt = System.currentTimeMillis(),
+                        categoryId = categoryId,
+                        time = time
+                    )
+                    repository.addHabit(habit)
+                    loadHabits()
+                }
+            } catch (e: Exception) {
+                println("Error adding habit: ${e.message}")
+            }
         }
     }
     
@@ -55,19 +81,26 @@ class HabitListViewModel(
      */
     fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
-            repository.updateHabit(habit.copy(isCompleted = !habit.isCompleted))
-            loadHabits()
+            try {
+                repository.updateHabit(habit.copy(isCompleted = !habit.isCompleted))
+                loadHabits()
+            } catch (e: Exception) {
+                println("Error toggling habit completion: ${e.message}")
+            }
         }
     }
     
     /**
      * Delete a habit
      */
-    fun deleteHabit(habitId: Long) {
+    fun deleteHabit(habitId: String) {
         viewModelScope.launch {
-            repository.deleteHabit(habitId)
-            loadHabits()
+            try {
+                repository.deleteHabit(habitId)
+                loadHabits()
+            } catch (e: Exception) {
+                println("Error deleting habit: ${e.message}")
+            }
         }
     }
 }
-

@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.databinding.ItemCategoryBinding
+import com.example.habittracker.data.model.Category
 
 /**
  * CategoryAdapter - Adapter for displaying categories in a list
@@ -37,15 +38,15 @@ class CategoryAdapter(
         fun bind(category: Category) {
             binding.apply {
                 // Set category name and habit count
-                tvCategoryName.text = category.name
+                tvCategoryName.text = category.title
                 tvHabitCount.text = "${category.habitCount} Habits"
                 
                 // Set icon
-                ivCategoryIcon.setImageResource(category.iconRes)
-                
+                ivCategoryIcon.setImageResource(category.icon.resId)
+
                 // Set background
-                categoryIconBackground.setBackgroundResource(category.backgroundRes)
-                
+                categoryIconBackground.setBackgroundResource(category.color.resId)
+
                 // Set click listener for category selection
                 root.setOnClickListener {
                     onCategoryClick?.invoke(category)

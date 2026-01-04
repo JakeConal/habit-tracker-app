@@ -26,6 +26,26 @@ object FirestoreManager {
         }
     }
 
+    // Generic: Get documents from a collection with where clause
+    suspend fun <T> getCollectionWhere(
+        collectionName: String,
+        field: String,
+        value: Any,
+        mapper: (DocumentSnapshot) -> T?
+    ): List<T> {
+        return try {
+            db.collection(collectionName)
+                .whereEqualTo(field, value)
+                .get()
+                .await()
+                .documents
+                .mapNotNull { mapper(it) }
+        } catch (e: Exception) {
+            println("Error getting collection '$collectionName' where '$field' = '$value': ${e.message}")
+            emptyList()
+        }
+    }
+
     // Generic: Get single document
     suspend fun getDocument(
         collectionName: String,
@@ -38,6 +58,24 @@ object FirestoreManager {
                 .await()
         } catch (e: Exception) {
             println("Error getting document '$docId': ${e.message}")
+            null
+        }
+    }
+
+    // Generic: Add document with specific ID
+    suspend fun addDocumentWithId(
+        collectionName: String,
+        docId: String,
+        data: Map<String, Any>
+    ): String? {
+        return try {
+            db.collection(collectionName)
+                .document(docId)
+                .set(data)
+                .await()
+            docId
+        } catch (e: Exception) {
+            println("Error adding document with ID: ${e.message}")
             null
         }
     }

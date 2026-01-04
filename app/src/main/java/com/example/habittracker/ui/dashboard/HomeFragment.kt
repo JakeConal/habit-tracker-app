@@ -47,17 +47,28 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupView() {
-        // Get username from SharedPreferences
-        val sharedPref = requireActivity().getSharedPreferences("HabitTrackerPrefs", Context.MODE_PRIVATE)
-        val username = sharedPref.getString("username", null)
-        
-        // Set greeting text with username
-        if (!username.isNullOrEmpty()) {
-            binding.tvGreeting.text = "Hi, $username"
-        } else {
-            binding.tvGreeting.text = "Hi, User"
+        // Observe current user from ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.currentUser.collect { user ->
+                if (user != null) {
+                    // Set greeting text with user name from Firebase
+                    binding.tvGreeting.text = "Hi, ${user.name}"
+                    // You could also show user points or other info here
+                    // binding.tvUserPoints.text = "${user.points} pts"
+                } else {
+                    binding.tvGreeting.text = "Hi, User"
+                }
+            }
         }
         
+        // Observe loading state
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isLoading.collect { _ ->
+                // You can show/hide loading indicator here if needed
+                // binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            }
+        }
+
         // Load custom quote or use default
         loadQuote()
         
@@ -109,45 +120,13 @@ class HomeFragment : Fragment() {
 
     private fun updateHabits(habitsList: List<com.example.habittracker.data.model.Habit>) {
         if (habitsList.isEmpty()) {
-            // Show sample data if no habits
-            val sampleHabits = getSampleHabits()
-            habitsAdapter.updateHabits(sampleHabits)
+            // No habits found - show empty state or sample data
+            binding.rvHabits.visibility = View.VISIBLE // Keep visible to show empty state
+            // Convert empty list to UI model
+            habitsAdapter.updateHabits(mutableListOf(), viewModel.categories.value)
         } else {
-            // Convert repository Habit to UI Habit model
-            val uiHabits = habitsList.map { habit ->
-                Habit(
-                    id = habit.id.toInt(),
-                    name = habit.name,
-                    isCompleted = habit.isCompleted,
-                    // Use saved icon or fallback to category-based icon
-                    iconRes = if (habit.iconRes != 0) habit.iconRes else getIconForCategory(habit.description),
-                    iconBackgroundRes = if (habit.iconBackgroundRes != 0) habit.iconBackgroundRes else getBackgroundForCategory(habit.description),
-                    progress = null
-                )
-            }
-            habitsAdapter.updateHabits(uiHabits.toMutableList())
-        }
-    }
-
-    private fun getIconForCategory(description: String): Int {
-        return when {
-            description.contains("Reading", ignoreCase = true) -> R.drawable.ic_book
-            description.contains("Exercise", ignoreCase = true) || 
-            description.contains("Walk", ignoreCase = true) -> R.drawable.ic_walk
-            description.contains("Health", ignoreCase = true) -> R.drawable.ic_health
-            description.contains("Work", ignoreCase = true) -> R.drawable.ic_work
-            description.contains("Meditation", ignoreCase = true) -> R.drawable.ic_meditation
-            else -> R.drawable.ic_other
-        }
-    }
-
-    private fun getBackgroundForCategory(description: String): Int {
-        return when {
-            description.contains("Reading", ignoreCase = true) -> R.drawable.bg_habit_icon_pink
-            description.contains("Exercise", ignoreCase = true) ||
-            description.contains("Walk", ignoreCase = true) -> R.drawable.bg_habit_icon_coral
-            description.contains("Health", ignoreCase = true) -> R.drawable.bg_habit_icon_orange
-            else -> R.drawable.bg_habit_icon_pink
+            binding.rvHabits.visibility = View.VISIBLE
+            habitsAdapter.updateHabits(habitsList.toMutableList(), viewModel.categories.value)
         }
     }
 
@@ -198,12 +177,13 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupHabits() {
-        val habits = mutableListOf<Habit>()
+        val habits = mutableListOf<com.example.habittracker.data.model.Habit>()
         habitsAdapter = HabitsAdapter(
             habits = habits,
-            onHabitClick = { habit ->
-                // Handle habit click - navigate to ViewHabit screen
-                navigateToViewHabit(habit)
+            categories = viewModel.categories.value,
+            onHabitClick = { _ ->
+                // TODO: Handle habit click - show dialog with habit details
+                // navigateToViewHabit(habit)
             },
             onCheckClick = { habit ->
                 // Handle check button click - toggle completion
@@ -217,46 +197,11 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun getSampleHabits(): MutableList<Habit> {
-        return mutableListOf(
-            Habit(
-                id = 1,
-                name = "Praying Namaz",
-                isCompleted = true,
-                iconRes = R.drawable.ic_heart,
-                iconBackgroundRes = R.drawable.bg_habit_icon_pink,
-                progress = null
-            ),
-            Habit(
-                id = 2,
-                name = "Walk",
-                isCompleted = true,
-                iconRes = R.drawable.ic_walk,
-                iconBackgroundRes = R.drawable.bg_habit_icon_coral,
-                progress = null
-            ),
-            Habit(
-                id = 3,
-                name = "Drink The Water",
-                isCompleted = false,
-                iconRes = R.drawable.ic_water,
-                iconBackgroundRes = R.drawable.bg_habit_icon_orange,
-                progress = "800/2500 ML"
-            )
-        )
-    }
-
-    private fun toggleHabitCompletion(habit: Habit) {
-        habit.isCompleted = !habit.isCompleted
-        habitsAdapter.notifyDataSetChanged()
-    }
-
-    private fun navigateToViewHabit(habit: Habit) {
-        // Navigate to ViewHabit screen with habit ID
-        val bundle = Bundle().apply {
-            putLong("habitId", habit.id.toLong())
+    private fun toggleHabitCompletion(habit: com.example.habittracker.data.model.Habit) {
+        // Update in Firestore via ViewModel
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.toggleHabitCompletion(habit)
         }
-        findNavController().navigate(R.id.action_global_to_view_habit, bundle)
     }
 
     private fun setupClickListeners() {
@@ -275,19 +220,3 @@ class HomeFragment : Fragment() {
         fun newInstance() = HomeFragment()
     }
 }
-
-// Data classes
-data class CalendarDay(
-    val dayNumber: Int,
-    val dayName: String,
-    val isSelected: Boolean = false
-)
-
-data class Habit(
-    val id: Int,
-    val name: String,
-    var isCompleted: Boolean,
-    val iconRes: Int,
-    val iconBackgroundRes: Int,
-    val progress: String? = null
-)

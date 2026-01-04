@@ -3,7 +3,11 @@ package com.example.habittracker.ui.dashboard
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.data.model.User
+import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.HabitRepository
+import com.example.habittracker.data.repository.FirestoreUserRepository
+import com.example.habittracker.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,31 +19,85 @@ import kotlinx.coroutines.launch
  */
 class HomeViewModel : ViewModel() {
 
-    private val repository = HabitRepository.getInstance()
+    private val authRepository = AuthRepository.getInstance()
+    private val habitRepository = HabitRepository.getInstance()
+    private val firestoreUserRepository = FirestoreUserRepository.getInstance()
+    private val categoryRepository = CategoryRepository.getInstance()
 
-    // UI State
+    // UI State - Habits
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
     val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
+
+    // UI State - Categories
+    private val _categories = MutableStateFlow<List<com.example.habittracker.data.model.Category>>(emptyList())
+    val categories: StateFlow<List<com.example.habittracker.data.model.Category>> = _categories.asStateFlow()
+
+    // UI State - Current User
+    private val _currentUser = MutableStateFlow<User?>(null)
+    val currentUser: StateFlow<User?> = _currentUser.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Current user ID from Firebase Auth
+    private val currentUserId: String?
+        get() = authRepository.getCurrentUser()?.uid
+
     init {
-        loadHabits()
+        loadUserAndHabits()
     }
 
     /**
-     * Load all habits from repository
+     * Load current user info and their habits from Firestore
+     */
+    fun loadUserAndHabits() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+
+                // Get current user ID
+                val userId = currentUserId
+                if (userId != null) {
+                    // Load user info from Firestore
+                    var user = firestoreUserRepository.getUserById(userId)
+
+                    _currentUser.value = user
+
+                    // Load user's habits from Firestore
+                    val habitsList = habitRepository.getHabitsForUser(userId)
+                    _habits.value = habitsList
+
+                    // Load user's categories from Firestore
+                    val categoriesList = categoryRepository.getCategoriesForUser(userId)
+                    _categories.value = categoriesList
+                }
+            } catch (e: Exception) {
+                println("Error loading user and habits: ${e.message}")
+                _habits.value = emptyList()
+                _currentUser.value = null
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Load all habits for current user
      */
     fun loadHabits() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
-                repository.getAllHabits().collect { habitsList ->
+                val userId = currentUserId
+                if (userId != null) {
+                    val habitsList = habitRepository.getHabitsForUser(userId)
                     _habits.value = habitsList
+                    // Also reload categories
+                    val categoriesList = categoryRepository.getCategoriesForUser(userId)
+                    _categories.value = categoriesList
                 }
             } catch (e: Exception) {
-                // Handle error
+                println("Error loading habits: ${e.message}")
                 _habits.value = emptyList()
             } finally {
                 _isLoading.value = false
@@ -54,10 +112,30 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
-                repository.updateHabit(updatedHabit)
+                habitRepository.updateHabit(updatedHabit)
                 loadHabits() // Reload habits to reflect changes
             } catch (e: Exception) {
-                // Handle error
+                println("Error updating habit: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Toggle habit completion for UI Habit (with Int ID)
+     * This will find the corresponding Firestore habit and update it
+     */
+    fun toggleHabitCompletionByUiId(uiHabitId: Int) {
+        viewModelScope.launch {
+            try {
+                // Find habit with matching ID hash
+                val habit = _habits.value.find { it.id.hashCode() == uiHabitId }
+                if (habit != null) {
+                    val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
+                    habitRepository.updateHabit(updatedHabit)
+                    loadHabits() // Reload habits to reflect changes
+                }
+            } catch (e: Exception) {
+                println("Error updating habit: ${e.message}")
             }
         }
     }
@@ -65,13 +143,39 @@ class HomeViewModel : ViewModel() {
     /**
      * Delete a habit
      */
-    fun deleteHabit(habitId: Long) {
+    fun deleteHabit(habitId: String) {
         viewModelScope.launch {
             try {
-                repository.deleteHabit(habitId)
+                habitRepository.deleteHabit(habitId)
                 loadHabits() // Reload habits to reflect changes
             } catch (e: Exception) {
-                // Handle error
+                println("Error deleting habit: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Get a habit by ID
+     */
+    fun getHabitById(habitId: String): Habit? {
+        return _habits.value.find { it.id == habitId }
+    }
+
+    /**
+     * Update user points
+     */
+    fun updateUserPoints(points: Int) {
+        viewModelScope.launch {
+            try {
+                val userId = currentUserId
+                if (userId != null) {
+                    firestoreUserRepository.updateUserPoints(userId, points)
+                    // Reload user info
+                    val updatedUser = firestoreUserRepository.getUserById(userId)
+                    _currentUser.value = updatedUser
+                }
+            } catch (e: Exception) {
+                println("Error updating user points: ${e.message}")
             }
         }
     }

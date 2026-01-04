@@ -1,74 +1,178 @@
 package com.example.habittracker.data.repository
 
+import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Habit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Repository responsible for managing data
- * Provides an interface between ViewModel and Data Source (Database, Network, etc.)
- * Singleton pattern to share data across ViewModels
+ * Repository for managing Habit data, combining local caching with Firestore persistence
  */
 class HabitRepository private constructor() {
-    
-    // Sample data - in real implementation, this would come from Database or API
-    private val habits = mutableListOf<Habit>()
-    
-    // StateFlow to notify observers about changes
-    private val _habitsFlow = MutableStateFlow<List<Habit>>(emptyList())
-    
+
+    private val _habits = MutableStateFlow<List<Habit>>(emptyList())
+    val habits: Flow<List<Habit>> = _habits.asStateFlow()
+
     companion object {
         @Volatile
         private var instance: HabitRepository? = null
-        
+
         fun getInstance(): HabitRepository {
             return instance ?: synchronized(this) {
                 instance ?: HabitRepository().also { instance = it }
             }
         }
     }
-    
+
     /**
-     * Get all habits as Flow to observe changes
+     * Get all habits for a specific user
      */
-    fun getAllHabits(): Flow<List<Habit>> {
-        return _habitsFlow.asStateFlow()
+    suspend fun getHabitsForUser(userId: String): List<Habit> {
+        return try {
+            val habits = FirestoreManager.getCollectionWhere(
+                collectionName = Habit.COLLECTION_NAME,
+                field = "userId",
+                value = userId,
+                mapper = { document -> Habit.fromDocument(document) }
+            )
+            _habits.value = habits
+            habits
+        } catch (e: Exception) {
+            println("Error getting habits for user: ${e.message}")
+            emptyList()
+        }
     }
-    
+
     /**
      * Add a new habit
      */
-    suspend fun addHabit(habit: Habit) {
-        val newHabit = habit.copy(id = (habits.maxOfOrNull { it.id } ?: 0) + 1)
-        habits.add(newHabit)
-        _habitsFlow.value = habits.toList()
+    suspend fun addHabit(habit: Habit): String? {
+        return try {
+            val habitId = FirestoreManager.addDocument(
+                Habit.COLLECTION_NAME,
+                habit.toMap()
+            )
+            if (habitId != null) {
+                // Refresh the habits list
+                getHabitsForUser(habit.userId)
+            }
+            habitId
+        } catch (e: Exception) {
+            println("Error adding habit: ${e.message}")
+            null
+        }
     }
-    
+
     /**
      * Update an existing habit
      */
-    suspend fun updateHabit(habit: Habit) {
-        val index = habits.indexOfFirst { it.id == habit.id }
-        if (index != -1) {
-            habits[index] = habit
-            _habitsFlow.value = habits.toList()
+    suspend fun updateHabit(habit: Habit): Boolean {
+        return try {
+            val success = FirestoreManager.updateDocument(
+                Habit.COLLECTION_NAME,
+                habit.id,
+                habit.toMap()
+            )
+            if (success) {
+                // Refresh the habits list
+                getHabitsForUser(habit.userId)
+            }
+            success
+        } catch (e: Exception) {
+            println("Error updating habit: ${e.message}")
+            false
         }
     }
-    
+
     /**
      * Delete a habit
      */
-    suspend fun deleteHabit(habitId: Long) {
-        habits.removeIf { it.id == habitId }
-        _habitsFlow.value = habits.toList()
+    suspend fun deleteHabit(habitId: String): Boolean {
+        return try {
+            FirestoreManager.deleteDocument(Habit.COLLECTION_NAME, habitId)
+        } catch (e: Exception) {
+            println("Error deleting habit: ${e.message}")
+            false
+        }
     }
 
     /**
      * Get a habit by ID
      */
-    fun getHabitById(habitId: Long): Habit? {
-        return habits.find { it.id == habitId }
+    suspend fun getHabitById(habitId: String): Habit? {
+        return try {
+            val document = FirestoreManager.getDocument(Habit.COLLECTION_NAME, habitId)
+            document?.let { Habit.fromDocument(it) }
+        } catch (e: Exception) {
+            println("Error getting habit by ID: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * Toggle habit completion status
+     */
+    suspend fun toggleHabitCompletion(habitId: String): Boolean {
+        return try {
+            val habit = getHabitById(habitId)
+            if (habit != null) {
+                val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
+                updateHabit(updatedHabit)
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            println("Error toggling habit completion: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Mark habit as completed for today
+     */
+    suspend fun markHabitCompleted(habitId: String, date: String): Boolean {
+        return try {
+            val habit = getHabitById(habitId)
+            if (habit != null) {
+                val completedDates = habit.completedDates.toMutableList()
+                if (!completedDates.contains(date)) {
+                    completedDates.add(date)
+                    val updatedHabit = habit.copy(
+                        isCompleted = true,
+                        completedDates = completedDates,
+                        streak = habit.streak + 1
+                    )
+                    updateHabit(updatedHabit)
+                } else {
+                    true // Already completed
+                }
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            println("Error marking habit as completed: ${e.message}")
+            false
+        }
+    }
+
+    /**
+     * Get habits by frequency
+     */
+    suspend fun getHabitsByFrequency(userId: String, frequency: List<String>): List<Habit> {
+        return try {
+            val allHabits = getHabitsForUser(userId)
+            allHabits.filter { it.frequency == frequency }
+        } catch (e: Exception) {
+            println("Error getting habits by frequency: ${e.message}")
+            emptyList()
+        }
+    }
+
+    /**
+     * Clear all local cache
+     */
+    fun clearCache() {
+        _habits.value = emptyList()
     }
 }
-

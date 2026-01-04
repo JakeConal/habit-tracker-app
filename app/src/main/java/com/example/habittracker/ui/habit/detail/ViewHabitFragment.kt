@@ -2,9 +2,7 @@ package com.example.habittracker.ui.habit.detail
 
 import android.app.AlertDialog
 import android.app.TimePickerDialog
-import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.widget.NumberPicker
 import androidx.core.os.bundleOf
@@ -25,23 +23,12 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
 
     private val viewModel: ViewHabitViewModel by viewModels()
     
-    private val habitId: Long by lazy {
-        arguments?.getLong("habitId") ?: 0L
+    private val habitId: String by lazy {
+        arguments?.getString("habitId") ?: ""
     }
 
-    // Categories with their corresponding icons
-    private val categories = listOf(
-        "Reading" to R.drawable.ic_book,
-        "Exercise" to R.drawable.ic_fitness,
-        "Study" to R.drawable.ic_book,
-        "Work" to R.drawable.ic_work,
-        "Health" to R.drawable.ic_health,
-        "Meditation" to R.drawable.ic_meditation,
-        "Other" to R.drawable.ic_other
-    )
-
     private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
-    private val frequencies = listOf("Everyday", "Weekly", "Monthly", "Custom")
+    private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     override fun getViewBinding(
         inflater: LayoutInflater,
@@ -63,16 +50,17 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
                 habit?.let {
                     binding.tvTitle.text = it.name
                     binding.etHabitTitle.setText(it.name)
-                    
-                    // Set category icon if available
-                    if (it.iconRes != 0) {
-                        binding.ivCategoryIcon.setImageResource(it.iconRes)
-                    }
-                    
-                    // Set category icon background if available
-                    if (it.iconBackgroundRes != 0) {
-                        updateCategoryIconBackground(it.iconBackgroundRes)
-                    }
+                }
+            }
+        }
+
+        // Observe category
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.category.collect { category ->
+                category?.let {
+                    binding.ivCategoryIcon.setImageResource(it.icon.resId)
+                    binding.tvCategoryName.text = it.title
+                    updateCategoryIconBackground(it.color.resId)
                 }
             }
         }
@@ -94,7 +82,7 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
         // Observe frequency
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.frequency.collect { frequency ->
-                binding.tvFrequency.text = frequency
+                binding.tvFrequency.text = frequency.joinToString(", ")
             }
         }
 
@@ -139,17 +127,11 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
             "category_request_key",
             viewLifecycleOwner
         ) { _, bundle ->
-            val categoryName = bundle.getString("selected_category_name")
-            val categoryIcon = bundle.getInt("selected_category_icon")
-            val categoryIconBackground = bundle.getInt("selected_category_icon_background")
+            val categoryId = bundle.getString("selected_category_id")
 
-            if (categoryName != null && categoryIcon != 0) {
-                binding.ivCategoryIcon.setImageResource(categoryIcon)
-                binding.tvCategoryName.text = categoryName
-                updateCategoryIconBackground(categoryIconBackground)
-                viewModel.updateCategory(categoryName)
-                viewModel.updateCategoryIcon(categoryIcon)
-                viewModel.updateCategoryIconBackground(categoryIconBackground)
+            if (categoryId != null) {
+                viewModel.updateCategoryId(categoryId)
+                viewModel.loadCategory(categoryId)
             }
         }
     }
@@ -259,16 +241,25 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
     }
 
     private fun showFrequencySelector() {
-        val currentIndex = frequencies.indexOf(viewModel.frequency.value)
+        val checkedItems = BooleanArray(frequencies.size) { index ->
+            viewModel.frequency.value.contains(frequencies[index])
+        }
 
         AlertDialog.Builder(requireContext())
-            .setTitle("Select Frequency")
-            .setSingleChoiceItems(frequencies.toTypedArray(), currentIndex) { dialog, which ->
-                val selectedFrequency = frequencies[which]
-                binding.tvFrequency.text = selectedFrequency
-                viewModel.updateFrequency(selectedFrequency)
-                dialog.dismiss()
+            .setTitle("Select Frequency (Days of the Week)")
+            .setMultiChoiceItems(frequencies.toTypedArray(), checkedItems) { _, which, isChecked ->
+                checkedItems[which] = isChecked
             }
+            .setPositiveButton("OK") { _, _ ->
+                val selectedDays = frequencies.filterIndexed { index, _ -> checkedItems[index] }
+                if (selectedDays.isNotEmpty()) {
+                    binding.tvFrequency.text = selectedDays.joinToString(", ")
+                    viewModel.updateFrequency(selectedDays)
+                } else {
+                    showError("Please select at least one day")
+                }
+            }
+            .setNegativeButton("Cancel", null)
             .show()
     }
 

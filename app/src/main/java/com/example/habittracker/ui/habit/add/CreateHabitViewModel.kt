@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.HabitRepository
+import com.example.habittracker.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 class CreateHabitViewModel : ViewModel() {
 
     private val repository = HabitRepository.getInstance()
+    private val authRepository = AuthRepository.getInstance()
 
     // UI State
     private val _title = MutableStateFlow("")
@@ -27,11 +29,8 @@ class CreateHabitViewModel : ViewModel() {
     private val _category = MutableStateFlow("Reading")
     val category: StateFlow<String> = _category.asStateFlow()
 
-    private val _categoryIcon = MutableStateFlow(0)
-    val categoryIcon: StateFlow<Int> = _categoryIcon.asStateFlow()
-
-    private val _categoryIconBackground = MutableStateFlow(0)
-    val categoryIconBackground: StateFlow<Int> = _categoryIconBackground.asStateFlow()
+    private val _categoryId = MutableStateFlow("")
+    val categoryId: StateFlow<String> = _categoryId.asStateFlow()
 
     private val _quantity = MutableStateFlow(30)
     val quantity: StateFlow<Int> = _quantity.asStateFlow()
@@ -39,8 +38,8 @@ class CreateHabitViewModel : ViewModel() {
     private val _measurement = MutableStateFlow("Mins")
     val measurement: StateFlow<String> = _measurement.asStateFlow()
 
-    private val _frequency = MutableStateFlow("Everyday")
-    val frequency: StateFlow<String> = _frequency.asStateFlow()
+    private val _frequency = MutableStateFlow<List<String>>(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+    val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
     private val _time = MutableStateFlow("5:00 - 12:00")
     val time: StateFlow<String> = _time.asStateFlow()
@@ -71,17 +70,10 @@ class CreateHabitViewModel : ViewModel() {
     }
 
     /**
-     * Update category icon resource
+     * Update category ID
      */
-    fun updateCategoryIcon(iconRes: Int) {
-        _categoryIcon.value = iconRes
-    }
-
-    /**
-     * Update category icon background resource
-     */
-    fun updateCategoryIconBackground(backgroundRes: Int) {
-        _categoryIconBackground.value = backgroundRes
+    fun updateCategoryId(categoryId: String) {
+        _categoryId.value = categoryId
     }
 
     /**
@@ -101,7 +93,7 @@ class CreateHabitViewModel : ViewModel() {
     /**
      * Update frequency
      */
-    fun updateFrequency(frequency: String) {
+    fun updateFrequency(frequency: List<String>) {
         _frequency.value = frequency
     }
 
@@ -126,25 +118,39 @@ class CreateHabitViewModel : ViewModel() {
                     return@launch
                 }
 
+                // Get current user ID
+                val currentUserId = authRepository.getCurrentUser()?.uid
+                if (currentUserId == null) {
+                    _error.emit("User not authenticated")
+                    return@launch
+                }
+
                 // Create habit description from selected options
                 val description = buildHabitDescription()
 
-                // Create habit object
+                // Create habit object with Firebase structure
                 val habit = Habit(
+                    userId = currentUserId,
                     name = _title.value,
                     description = description,
                     frequency = _frequency.value,
                     isCompleted = false,
                     createdAt = System.currentTimeMillis(),
-                    iconRes = _categoryIcon.value,
-                    iconBackgroundRes = _categoryIconBackground.value
+                    categoryId = _categoryId.value,
+                    completedDates = emptyList(),
+                    streak = 0,
+                    time = _time.value
                 )
 
                 // Save to repository
-                repository.addHabit(habit)
+                val habitId = repository.addHabit(habit)
 
-                // Emit success event
-                _habitCreated.emit(true)
+                if (habitId != null) {
+                    // Emit success event
+                    _habitCreated.emit(true)
+                } else {
+                    _error.emit("Failed to create habit")
+                }
             } catch (e: Exception) {
                 _error.emit(e.message ?: "Failed to create habit")
             } finally {
@@ -162,7 +168,7 @@ class CreateHabitViewModel : ViewModel() {
             append(" • ")
             append("Goal: ${_quantity.value} ${_measurement.value}")
             append(" • ")
-            append("Frequency: ${_frequency.value}")
+            append("Frequency: ${_frequency.value.joinToString(", ")}")
             append(" • ")
             append("Time: ${_time.value}")
         }
@@ -176,7 +182,7 @@ class CreateHabitViewModel : ViewModel() {
         _category.value = "Reading"
         _quantity.value = 30
         _measurement.value = "Mins"
-        _frequency.value = "Everyday"
+        _frequency.value = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
         _time.value = "5:00 - 12:00"
     }
 }

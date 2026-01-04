@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.HabitRepository
+import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -19,23 +21,23 @@ import kotlinx.coroutines.launch
 class ViewHabitViewModel : ViewModel() {
 
     private val repository = HabitRepository.getInstance()
+    private val authRepository = AuthRepository.getInstance()
+    private val categoryRepository = CategoryRepository.getInstance()
 
     // Current habit being viewed/edited
     private val _habit = MutableStateFlow<Habit?>(null)
     val habit: StateFlow<Habit?> = _habit.asStateFlow()
 
+    // Current category
+    private val _category = MutableStateFlow<com.example.habittracker.data.model.Category?>(null)
+    val category: StateFlow<com.example.habittracker.data.model.Category?> = _category.asStateFlow()
+
     // UI State
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
-    private val _category = MutableStateFlow("Reading")
-    val category: StateFlow<String> = _category.asStateFlow()
-
-    private val _categoryIcon = MutableStateFlow(0)
-    val categoryIcon: StateFlow<Int> = _categoryIcon.asStateFlow()
-
-    private val _categoryIconBackground = MutableStateFlow(0)
-    val categoryIconBackground: StateFlow<Int> = _categoryIconBackground.asStateFlow()
+    private val _categoryId = MutableStateFlow("")
+    val categoryId: StateFlow<String> = _categoryId.asStateFlow()
 
     private val _quantity = MutableStateFlow(30)
     val quantity: StateFlow<Int> = _quantity.asStateFlow()
@@ -43,8 +45,8 @@ class ViewHabitViewModel : ViewModel() {
     private val _measurement = MutableStateFlow("Mins")
     val measurement: StateFlow<String> = _measurement.asStateFlow()
 
-    private val _frequency = MutableStateFlow("Everyday")
-    val frequency: StateFlow<String> = _frequency.asStateFlow()
+    private val _frequency = MutableStateFlow<List<String>>(emptyList())
+    val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
     private val _time = MutableStateFlow("5:00 - 12:00")
     val time: StateFlow<String> = _time.asStateFlow()
@@ -66,7 +68,7 @@ class ViewHabitViewModel : ViewModel() {
     /**
      * Load habit by ID
      */
-    fun loadHabit(habitId: Long) {
+    fun loadHabit(habitId: String) {
         viewModelScope.launch {
             try {
                 _isLoading.value = true
@@ -74,11 +76,14 @@ class ViewHabitViewModel : ViewModel() {
                 if (habit != null) {
                     _habit.value = habit
                     _title.value = habit.name
-                    _categoryIcon.value = habit.iconRes
-                    _categoryIconBackground.value = habit.iconBackgroundRes
+                    _categoryId.value = habit.categoryId
                     _frequency.value = habit.frequency
+                    _time.value = habit.time
                     // Parse description for other fields if available
                     parseDescription(habit.description)
+
+                    // Load category details
+                    loadCategory(habit.categoryId)
                 } else {
                     _error.emit("Habit not found")
                 }
@@ -86,6 +91,20 @@ class ViewHabitViewModel : ViewModel() {
                 _error.emit(e.message ?: "Failed to load habit")
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Load category by ID
+     */
+    fun loadCategory(categoryId: String) {
+        viewModelScope.launch {
+            try {
+                val category = categoryRepository.getCategoryById(categoryId)
+                _category.value = category
+            } catch (e: Exception) {
+                _error.emit(e.message ?: "Failed to load category")
             }
         }
     }
@@ -116,24 +135,10 @@ class ViewHabitViewModel : ViewModel() {
     }
 
     /**
-     * Update habit category
+     * Update category ID
      */
-    fun updateCategory(category: String) {
-        _category.value = category
-    }
-
-    /**
-     * Update category icon resource
-     */
-    fun updateCategoryIcon(iconRes: Int) {
-        _categoryIcon.value = iconRes
-    }
-
-    /**
-     * Update category icon background resource
-     */
-    fun updateCategoryIconBackground(backgroundRes: Int) {
-        _categoryIconBackground.value = backgroundRes
+    fun updateCategoryId(categoryId: String) {
+        _categoryId.value = categoryId
     }
 
     /**
@@ -153,7 +158,7 @@ class ViewHabitViewModel : ViewModel() {
     /**
      * Update frequency
      */
-    fun updateFrequency(frequency: String) {
+    fun updateFrequency(frequency: List<String>) {
         _frequency.value = frequency
     }
 
@@ -192,8 +197,8 @@ class ViewHabitViewModel : ViewModel() {
                     name = _title.value,
                     description = description,
                     frequency = _frequency.value,
-                    iconRes = _categoryIcon.value,
-                    iconBackgroundRes = _categoryIconBackground.value
+                    categoryId = _categoryId.value,
+                    time = _time.value
                 )
 
                 // Update in repository
