@@ -14,6 +14,9 @@ import com.example.habittracker.databinding.FragmentViewHabitBinding
 import com.example.habittracker.ui.common.BaseFragment
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 
 /**
  * ViewHabitFragment - Screen for viewing and editing an existing habit
@@ -39,8 +42,20 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
 
     override fun setupView() {
         setupClickListeners()
+        applyBottomInsets()
         // Load habit data
         viewModel.loadHabit(habitId)
+    }
+
+    private fun applyBottomInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.actionBarContainer) { v, insets ->
+            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            v.updatePadding(
+                bottom = systemBarsInsets.bottom
+            )
+            insets
+        }
     }
 
     override fun observeData() {

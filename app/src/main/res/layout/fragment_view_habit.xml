@@ -48,14 +48,17 @@
             android:textSize="@dimen/text_lg"
             tools:text="Walk" />
 
-        <!-- Spacer for symmetry -->
-        <View
+        <!-- Optional Action Button (right) -->
+        <FrameLayout
+            android:id="@+id/btnOptionalAction"
             android:layout_width="40dp"
-            android:layout_height="40dp" />
+            android:layout_height="40dp"
+            android:background="@drawable/bg_action_button"
+            android:visibility="gone" />
     </LinearLayout>
 
     <!-- Scrollable Form Content -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -357,7 +360,7 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Divider: Visually separates form content from action area -->
     <View
@@ -378,33 +381,19 @@
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/spacing_lg"
         android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_xl"
+        android:paddingBottom="@dimen/spacing_md"
         android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Primary Action: Save Button (highest visual weight) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:layout_marginBottom="@dimen/spacing_sm"
-            android:background="@drawable/bg_create_button"
-            android:fontFamily="sans-serif"
-            android:text="@string/save"
-            android:textAllCaps="false"
-            android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@null" />
-
-        <!-- Secondary Action: Start Pomodoro (outlined style for less emphasis) -->
+        <!-- Primary Action: Start Pomodoro Button (highest visual weight) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStartPomodoro"
             android:layout_width="match_parent"
             android:layout_height="58dp"
-            android:layout_marginBottom="@dimen/spacing_md"
-            android:background="@drawable/bg_button_outlined"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:background="@drawable/bg_create_button"
             android:fontFamily="sans-serif"
             android:text="@string/start_pomodoro"
             android:textAllCaps="false"
@@ -412,18 +401,42 @@
             android:textSize="@dimen/text_lg"
             app:backgroundTint="@null" />
 
-        <!-- Destructive Action: Delete (red text, separated from primary actions) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDelete"
+        <!-- Secondary Actions: Delete and Save side-by-side -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:background="@drawable/bg_button_destructive"
-            android:fontFamily="sans-serif"
-            android:text="@string/delete"
-            android:textAllCaps="false"
-            android:textColor="@color/destructive_red"
-            android:textSize="@dimen/text_md"
-            app:backgroundTint="@null" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Delete Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDelete"
+                android:layout_width="0dp"
+                android:layout_height="58dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_button_outlined"
+                android:fontFamily="sans-serif"
+                android:text="@string/delete"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_blue"
+                android:textSize="@dimen/text_lg"
+                app:backgroundTint="@null" />
+
+            <!-- Save Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                android:layout_width="0dp"
+                android:layout_height="58dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/bg_button_outlined"
+                android:fontFamily="sans-serif"
+                android:text="@string/save"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_blue"
+                android:textSize="@dimen/text_lg"
+                app:backgroundTint="@null" />
+        </LinearLayout>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
