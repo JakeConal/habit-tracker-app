@@ -62,8 +62,8 @@
         android:clipToPadding="false"
         android:paddingHorizontal="@dimen/spacing_xl"
         android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_xl"
-        app:layout_constraintBottom_toTopOf="@id/buttonsContainer"
+        android:paddingBottom="@dimen/spacing_md"
+        app:layout_constraintBottom_toTopOf="@id/divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
@@ -359,28 +359,52 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Buttons Container -->
+    <!-- Divider: Visually separates form content from action area -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginHorizontal="@dimen/spacing_lg"
+        android:background="@drawable/divider_horizontal"
+        app:layout_constraintBottom_toTopOf="@id/actionBarContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Action Bar Container: Sticky bottom action bar with proper elevation -->
     <LinearLayout
-        android:id="@+id/buttonsContainer"
+        android:id="@+id/actionBarContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingTop="@dimen/spacing_xl"
+        android:paddingTop="@dimen/spacing_lg"
         android:paddingBottom="@dimen/spacing_xl"
-        android:layout_marginTop="@dimen/spacing_lg"
+        android:elevation="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="1.0">
+        app:layout_constraintStart_toStartOf="parent">
 
-        <!-- Start Pomodoro Button -->
+        <!-- Primary Action: Save Button (highest visual weight) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="58dp"
+            android:layout_marginBottom="@dimen/spacing_sm"
+            android:background="@drawable/bg_create_button"
+            android:fontFamily="sans-serif"
+            android:text="@string/save"
+            android:textAllCaps="false"
+            android:textColor="@color/primary_blue"
+            android:textSize="@dimen/text_lg"
+            app:backgroundTint="@null" />
+
+        <!-- Secondary Action: Start Pomodoro (outlined style for less emphasis) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStartPomodoro"
             android:layout_width="match_parent"
             android:layout_height="58dp"
-            android:layout_marginBottom="@dimen/spacing_sm"
-            android:background="@drawable/bg_start_pomodoro_button"
+            android:layout_marginBottom="@dimen/spacing_md"
+            android:background="@drawable/bg_button_outlined"
             android:fontFamily="sans-serif"
             android:text="@string/start_pomodoro"
             android:textAllCaps="false"
@@ -388,31 +412,17 @@
             android:textSize="@dimen/text_lg"
             app:backgroundTint="@null" />
 
-        <!-- Delete Button -->
+        <!-- Destructive Action: Delete (red text, separated from primary actions) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:layout_marginBottom="@dimen/spacing_sm"
-            android:background="@drawable/bg_create_button"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_button_destructive"
             android:fontFamily="sans-serif"
             android:text="@string/delete"
             android:textAllCaps="false"
-            android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@null" />
-
-        <!-- Save Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSave"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:background="@drawable/bg_create_button"
-            android:fontFamily="sans-serif"
-            android:text="@string/save"
-            android:textAllCaps="false"
-            android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg"
+            android:textColor="@color/destructive_red"
+            android:textSize="@dimen/text_md"
             app:backgroundTint="@null" />
     </LinearLayout>
 
