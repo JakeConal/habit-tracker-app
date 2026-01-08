@@ -181,9 +181,9 @@ class HomeFragment : Fragment() {
         habitsAdapter = HabitsAdapter(
             habits = habits,
             categories = viewModel.categories.value,
-            onHabitClick = { _ ->
-                // TODO: Handle habit click - show dialog with habit details
-                // navigateToViewHabit(habit)
+            onHabitClick = { habit ->
+                // Navigate to ViewHabitFragment to view/edit habit details
+                navigateToViewHabit(habit)
             },
             onCheckClick = { habit ->
                 // Handle check button click - toggle completion
@@ -202,6 +202,14 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.toggleHabitCompletion(habit)
         }
+    }
+
+    private fun navigateToViewHabit(habit: com.example.habittracker.data.model.Habit) {
+        // Navigate to ViewHabitFragment with habitId
+        val bundle = Bundle().apply {
+            putString("habitId", habit.id)
+        }
+        findNavController().navigate(R.id.action_global_to_view_habit, bundle)
     }
 
     private fun setupClickListeners() {
