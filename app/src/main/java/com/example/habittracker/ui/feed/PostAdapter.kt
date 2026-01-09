@@ -16,7 +16,7 @@ import com.google.android.material.imageview.ShapeableImageView
 class PostAdapter(
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
-    private val onMoreOptionsClick: (Post) -> Unit
+    private val onMoreOptionsClick: (Post, View) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -38,7 +38,6 @@ class PostAdapter(
         private val tvLikeCount: TextView = itemView.findViewById(R.id.tvLikeCount)
         private val tvCommentCount: TextView = itemView.findViewById(R.id.tvCommentCount)
         private val ivLike: ImageView = itemView.findViewById(R.id.ivLike)
-        private val ivComment: ImageView = itemView.findViewById(R.id.ivComment)
         private val ivMoreOptions: ImageView = itemView.findViewById(R.id.ivMoreOptions)
         private val containerLike: View = itemView.findViewById(R.id.containerLike)
         private val containerComment: View = itemView.findViewById(R.id.containerComment)
@@ -47,7 +46,7 @@ class PostAdapter(
             post: Post,
             onLikeClick: (Post) -> Unit,
             onCommentClick: (Post) -> Unit,
-            onMoreOptionsClick: (Post) -> Unit
+            onMoreOptionsClick: (Post, View) -> Unit
         ) {
             tvAuthorName.text = post.authorName
             tvTimestamp.text = post.timestamp
@@ -67,7 +66,7 @@ class PostAdapter(
             }
 
             // Handle post image visibility
-            if (post.imageUrl != null) {
+            if (!post.imageUrl.isNullOrEmpty()) {
                 ivPostImage.visibility = View.VISIBLE
                 Glide.with(itemView.context)
                     .load(post.imageUrl)
@@ -88,7 +87,10 @@ class PostAdapter(
             // Click listeners
             containerLike.setOnClickListener { onLikeClick(post) }
             containerComment.setOnClickListener { onCommentClick(post) }
-            ivMoreOptions.setOnClickListener { onMoreOptionsClick(post) }
+
+            ivMoreOptions.setOnClickListener {
+                onMoreOptionsClick(post, ivMoreOptions)
+            }
         }
     }
 

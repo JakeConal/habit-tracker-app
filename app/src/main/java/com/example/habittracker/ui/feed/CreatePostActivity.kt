@@ -1,7 +1,6 @@
 package com.example.habittracker.ui.feed
 
 import android.Manifest
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -16,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.databinding.ActivityCreatePostBinding
 import com.example.habittracker.utils.UserPreferences
 import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -28,8 +28,15 @@ class CreatePostActivity : AppCompatActivity() {
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             result.data?.data?.let { uri ->
+                // Try to take persistable URI permission
+                try {
+                    val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    contentResolver.takePersistableUriPermission(uri, takeFlags)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
                 selectedImageUri = uri
                 showImagePreview(uri)
             }
@@ -39,7 +46,7 @@ class CreatePostActivity : AppCompatActivity() {
     private val takePictureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == RESULT_OK) {
             photoUri?.let { uri ->
                 selectedImageUri = uri
                 showImagePreview(uri)
@@ -175,6 +182,11 @@ class CreatePostActivity : AppCompatActivity() {
         val userName = UserPreferences.getUserName(this)
         val userAvatar = UserPreferences.getUserAvatar(this)
 
+        // Save image to internal storage to ensure it persists and we have permission
+        val finalImageUrl = selectedImageUri?.let { uri ->
+            saveImageToInternalStorage(uri)
+        }
+
         // Create new post
         val newPost = Post(
             id = System.currentTimeMillis().toString(),
@@ -183,7 +195,7 @@ class CreatePostActivity : AppCompatActivity() {
             authorAvatar = userAvatar,
             timestamp = "Just now",
             content = content,
-            imageUrl = selectedImageUri?.toString(),
+            imageUrl = finalImageUrl, // Use the local file path
             likesCount = 0,
             commentsCount = 0,
             isLiked = false,
@@ -198,13 +210,31 @@ class CreatePostActivity : AppCompatActivity() {
         val resultIntent = Intent().apply {
             putExtra(EXTRA_NEW_POST, newPost)
         }
-        setResult(Activity.RESULT_OK, resultIntent)
+        setResult(RESULT_OK, resultIntent)
         finish()
     }
 
+    private fun saveImageToInternalStorage(uri: Uri): String? {
+        return try {
+            val inputStream = contentResolver.openInputStream(uri) ?: return null
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val fileName = "POST_${timeStamp}.jpg"
+            // Save to app's internal files directory
+            val file = File(filesDir, fileName)
+            val outputStream = FileOutputStream(file)
+            inputStream.copyTo(outputStream)
+            inputStream.close()
+            outputStream.close()
+            // Return uri string for the file
+            Uri.fromFile(file).toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Fallback to original uri if copy fails
+            uri.toString()
+        }
+    }
+
     companion object {
-        const val REQUEST_CREATE_POST = 1001
         const val EXTRA_NEW_POST = "extra_new_post"
     }
 }
-
