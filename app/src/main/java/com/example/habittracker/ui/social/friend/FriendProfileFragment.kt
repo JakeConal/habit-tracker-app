@@ -14,6 +14,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentFriendProfileBinding
+import com.example.habittracker.ui.feed.Post
 import com.example.habittracker.ui.feed.PostAdapter
 import kotlinx.coroutines.launch
 
@@ -54,26 +55,39 @@ class FriendProfileFragment : Fragment() {
 
     private fun setupRecyclerView() {
         postAdapter = PostAdapter(
-            onLikeClick = { post ->
+            onLikeClick = { _ ->
                 Toast.makeText(
                     requireContext(),
                     "Like feature coming soon!",
                     Toast.LENGTH_SHORT
                 ).show()
             },
-            onCommentClick = { post ->
+            onCommentClick = { _ ->
                 Toast.makeText(
                     requireContext(),
                     "Comment feature coming soon!",
                     Toast.LENGTH_SHORT
                 ).show()
             },
-            onMoreOptionsClick = { post ->
-                Toast.makeText(
-                    requireContext(),
-                    "More options coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
+            onMoreOptionsClick = { post: Post, anchorView: View ->
+                val popupMenu = android.widget.PopupMenu(requireContext(), anchorView)
+                popupMenu.menu.add("Share")
+
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.title) {
+                        "Share" -> {
+                            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                                putExtra(android.content.Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                            }
+                            startActivity(android.content.Intent.createChooser(shareIntent, "Share post via"))
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popupMenu.show()
             }
         )
 
