@@ -171,13 +171,17 @@
     
     <!-- Challenge Detail Screen -->
     <string name="details">Details</string>
-    <string name="notification">Notification</string>
+    <string name="notifications">Notifications</string>
     <string name="challenge_image">Challenge Image</string>
     <string name="key_results">Key Results</string>
     <string name="key_result_icon">Key Result Icon</string>
     <string name="improved_sleep_quality">Improved Sleep Quality</string>
     <string name="improved_sleep_quality_desc">Participants experience deeper, more restorative sleep, leading to enhanced energy levels.</string>
     <string name="join_now">Join Now</string>
+    <string name="seven_days_challenge">7 Days Challenge</string>
+    <string name="thirty_days_challenge">30 Days Challenge</string>
+    <string name="reward">Reward</string>
+    <string name="earn_reward_points">Earn Reward Points</string>
     <string name="manage_categories">Manage Categories</string>
 
     <!-- Post Options -->

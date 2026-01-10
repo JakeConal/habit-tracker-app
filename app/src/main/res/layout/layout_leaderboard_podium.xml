@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:paddingHorizontal="@dimen/spacing_md"
     android:paddingTop="@dimen/spacing_lg"
-    android:paddingBottom="@dimen/spacing_lg">
+    android:paddingBottom="10dp">
 
     <!-- Top 3 Podium Container - Horizontal layout with weights -->
     <LinearLayout
