@@ -7,11 +7,11 @@
     android:layout_marginStart="@dimen/spacing_lg"
     android:layout_marginEnd="@dimen/spacing_lg"
     android:layout_marginBottom="@dimen/challenge_card_spacing"
-    app:cardBackgroundColor="@color/card_background"
+    app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="@dimen/challenge_card_radius"
     app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="@color/card_background">
+    app:strokeWidth="0dp"
+    android:alpha="0.85">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -88,6 +88,24 @@
                 app:layout_constraintTop_toBottomOf="@id/tvChallengeTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
+
+            <!-- Joined Indicator Badge (optional) -->
+            <TextView
+                android:id="@+id/tvJoinedIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Joined"
+                android:textSize="@dimen/text_sm"
+                android:textColor="@color/primary_blue"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/badge_color_green"
+                android:fontFamily="sans-serif-medium"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@id/tvChallengeDescription"
+                app:layout_constraintStart_toStartOf="parent"
+                />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

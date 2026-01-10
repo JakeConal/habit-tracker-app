@@ -2,7 +2,7 @@ package com.example.habittracker.ui.social
 
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.example.habittracker.ui.challenge.list.ChallengesFragment
+import com.example.habittracker.ui.challenge.ChallengesFragment
 import com.example.habittracker.ui.leaderboard.LeaderboardFragment
 import com.example.habittracker.ui.feed.FeedFragment
 

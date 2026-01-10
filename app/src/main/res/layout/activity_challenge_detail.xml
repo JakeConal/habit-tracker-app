@@ -98,10 +98,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="#99FFFFFF"
+                    app:cardBackgroundColor="@android:color/white"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -139,7 +140,7 @@
 
                         <!-- Challenge Description -->
                         <TextView
-                            android:id="@+id/tvChallengeDescription"
+                            android:id="@+id/tvChallengeDetail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:lineSpacingExtra="5dp"
@@ -157,10 +158,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="#99FFFFFF"
+                    app:cardBackgroundColor="@android:color/white"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -179,12 +181,16 @@
                             android:textStyle="bold"
                             android:fontFamily="sans-serif-medium" />
 
-                        <!-- Key Results List Container -->
-                        <LinearLayout
-                            android:id="@+id/llKeyResults"
+                        <!-- Key Results Content -->
+                        <TextView
+                            android:id="@+id/tvKeyResults"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical" />
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp"
+                            android:fontFamily="sans-serif"
+                            android:lineSpacingMultiplier="1.2"
+                            tools:text="• Improved sleep quality\n• Better energy levels\n• Enhanced focus and concentration" />
 
                     </LinearLayout>
 
@@ -195,10 +201,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="#99FFFFFF"
+                    app:cardBackgroundColor="@android:color/white"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
 
                     <LinearLayout
                         android:layout_width="match_parent"

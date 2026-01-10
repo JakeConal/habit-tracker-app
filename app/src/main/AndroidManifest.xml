@@ -41,7 +41,7 @@
 
         <!-- Challenge Detail Activity -->
         <activity
-            android:name=".ui.challenge.detail.ChallengeDetailActivity"
+            android:name=".ui.challenge.ChallengeDetailActivity"
             android:exported="false" />
 
         <!-- FileProvider for Camera -->

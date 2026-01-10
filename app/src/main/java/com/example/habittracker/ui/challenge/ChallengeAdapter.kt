@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.challenge.list
+package com.example.habittracker.ui.challenge
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,10 +9,12 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.BadgeColor
 import com.example.habittracker.data.model.Challenge
+import com.example.habittracker.data.repository.ChallengeWithStatus
 import com.google.android.material.imageview.ShapeableImageView
 
 class ChallengeAdapter (
     private val challengeList: Array<Challenge>,
+    private val challengeStatusList: List<ChallengeWithStatus> = emptyList(),
     private val onChallengeClick: ((Challenge) -> Unit)? = null
 ) : RecyclerView.Adapter<ChallengeAdapter.ViewHolder>() {
 
@@ -21,6 +23,7 @@ class ChallengeAdapter (
         val durationBadge = itemView.findViewById<TextView>(R.id.tvBadge)
         val challengeTitle = itemView.findViewById<TextView>(R.id.tvChallengeTitle)
         val challengeDesc = itemView.findViewById<TextView>(R.id.tvChallengeDescription)
+        val joinedIndicator = itemView.findViewById<TextView?>(R.id.tvJoinedIndicator) // Optional view to show join status
     }
 
     override fun onCreateViewHolder(
@@ -37,6 +40,11 @@ class ChallengeAdapter (
         position: Int
     ) {
         val challenge = challengeList[position]
+        val isJoined = if (challengeStatusList.isNotEmpty() && position < challengeStatusList.size) {
+            challengeStatusList[position].isJoined
+        } else {
+            false
+        }
 
         Glide.with(holder.itemView.context)
             .load(challenge.imgURL)
@@ -49,12 +57,23 @@ class ChallengeAdapter (
             val bgRes = when (challenge.duration.color) {
                 BadgeColor.CYAN -> R.drawable.badge_color_cyan
                 BadgeColor.GREEN -> R.drawable.badge_color_green
+                BadgeColor.YELLOW -> R.drawable.badge_color_yellow
             }
             setBackgroundResource(bgRes)
         }
 
         holder.challengeTitle.text = challenge.title
         holder.challengeDesc.text = challenge.description
+
+        // Show join status if indicator view exists
+        holder.joinedIndicator?.apply {
+            if (isJoined) {
+                text = "Joined"
+                visibility = View.VISIBLE
+            } else {
+                visibility = View.GONE
+            }
+        }
 
         holder.itemView.setOnClickListener {
             onChallengeClick?.invoke(challenge)
@@ -63,4 +82,3 @@ class ChallengeAdapter (
 
     override fun getItemCount(): Int = challengeList.size
 }
-
