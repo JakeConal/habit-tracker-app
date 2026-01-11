@@ -237,10 +237,10 @@ class HomeFragment : Fragment() {
         val calendar = Calendar.getInstance()
         val today = calendar.get(Calendar.DAY_OF_MONTH)
         
-        // Start from 2 days before today to show 6 days total (matching Figma design)
-        calendar.add(Calendar.DAY_OF_MONTH, -2)
-        
-        for (i in 0..5) {
+        // Start from 3 days before today to show 7 days total (today in the middle)
+        calendar.add(Calendar.DAY_OF_MONTH, -3)
+
+        for (i in 0..6) {
             val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
             val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
             
@@ -256,8 +256,8 @@ class HomeFragment : Fragment() {
                 else -> ""
             }
             
-            val isToday = dayOfMonth == today && i == 2
-            
+            val isToday = dayOfMonth == today && i == 3
+
             days.add(CalendarDay(dayOfMonth, dayName, isToday))
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
