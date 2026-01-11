@@ -13,6 +13,7 @@ import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeDuration
 import com.example.habittracker.data.repository.ChallengeRepository
 import com.example.habittracker.data.repository.UserChallengeRepository
+import com.example.habittracker.ui.main.MainActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.firebase.auth.FirebaseAuth
@@ -43,6 +44,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
         initViews()
         loadChallengeData()
         setupClickListeners()
+        MainActivity.hideSystemUI(this) // Hide the system navigation bar
     }
 
     private fun initViews() {
@@ -210,6 +212,13 @@ class ChallengeDetailActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            MainActivity.hideSystemUI(this)
         }
     }
 

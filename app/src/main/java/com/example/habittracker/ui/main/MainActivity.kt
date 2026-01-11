@@ -2,6 +2,9 @@ package com.example.habittracker.ui.main
 
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -26,6 +29,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
+        // Hide system navigation bar
+        hideSystemUI(this)
+
         // Cho phép content vẽ phía sau system bars (không chiếm diện tích)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
@@ -40,11 +46,24 @@ class MainActivity : AppCompatActivity() {
         setupNavigation()
         setupBottomNavigation()
         setupFab()
+        setupImmersiveMode()
     }
 
     private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             insets
+        }
+    }
+
+    /**
+     * Setup immersive mode to keep navigation bar hidden even when user interacts
+     */
+    private fun setupImmersiveMode() {
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION == 0) {
+                // Navigation bar appeared, hide it again
+                MainActivity.hideSystemUI(this)
+            }
         }
     }
 
@@ -122,5 +141,31 @@ class MainActivity : AppCompatActivity() {
      */
     override fun onSupportNavigateUp(): Boolean {
         return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    companion object {
+        /**
+         * Utility function to hide the system navigation bar (3-button navigation)
+         * Creates a full-screen immersive experience
+         */
+        fun hideSystemUI(activity: AppCompatActivity) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                // For Android 11 and above
+                activity.window.insetsController?.let { controller ->
+                    controller.hide(WindowInsets.Type.navigationBars())
+                    controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else {
+                // For Android 10 and below
+                @Suppress("DEPRECATION")
+                activity.window.decorView.systemUiVisibility = (
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                    or View.SYSTEM_UI_FLAG_FULLSCREEN
+                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+            }
+        }
     }
 }

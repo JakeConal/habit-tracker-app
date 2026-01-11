@@ -19,6 +19,7 @@ import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeDuration
 import com.example.habittracker.data.repository.ChallengeRepository
 import com.example.habittracker.data.supabase.SupabaseStorageRepository
+import com.example.habittracker.ui.main.MainActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.textfield.TextInputEditText
@@ -61,6 +62,7 @@ class ChallengeCreateActivity : AppCompatActivity() {
 
         initViews()
         setupClickListeners()
+        MainActivity.hideSystemUI(this)
     }
 
     private fun initViews() {
@@ -221,5 +223,11 @@ class ChallengeCreateActivity : AppCompatActivity() {
             "" // Return empty string if upload fails
         }
     }
-}
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            MainActivity.hideSystemUI(this)
+        }
+    }
+}
