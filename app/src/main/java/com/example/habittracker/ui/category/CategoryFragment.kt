@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,8 +19,8 @@ import com.example.habittracker.data.model.Category
 import com.example.habittracker.data.model.CategoryColor
 import com.example.habittracker.data.model.CategoryIcon
 import com.example.habittracker.data.repository.AuthRepository
-import com.example.habittracker.data.repository.CategoryRepository
 import com.example.habittracker.databinding.FragmentCategoryBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 /**
@@ -30,9 +31,9 @@ class CategoryFragment : Fragment() {
     private var _binding: FragmentCategoryBinding? = null
     private val binding get() = _binding!!
     
-    private lateinit var categoryAdapter: CategoryAdapter
+    private val viewModel: CategoryViewModel by viewModels()
     
-    private val categories = mutableListOf<Category>()
+    private lateinit var categoryAdapter: CategoryAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,7 +51,7 @@ class CategoryFragment : Fragment() {
         setupRecyclerView()
         setupClickListeners()
         setupFragmentResultListener()
-        loadUserCategories()
+        observeData()
     }
 
     private fun setupView() {
@@ -76,7 +77,7 @@ class CategoryFragment : Fragment() {
 
     private fun setupRecyclerView() {
         categoryAdapter = CategoryAdapter(
-            categories = categories,
+            categories = mutableListOf(),
             onCategoryClick = { category ->
                 // Send selected category back to CreateHabitFragment
                 setFragmentResult(
@@ -91,10 +92,12 @@ class CategoryFragment : Fragment() {
                 findNavController().navigateUp()
             },
             onEditClick = { category ->
-                // TODO: Handle edit category
+                // Handle edit category
+                viewModel.updateCategory(category)
             },
             onDeleteClick = { category ->
-                // TODO: Handle delete category
+                // Handle delete category
+                viewModel.deleteCategory(category.id)
             }
         )
         
@@ -114,6 +117,60 @@ class CategoryFragment : Fragment() {
         }
     }
     
+    private fun observeData() {
+        // Observe categories list
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.categories.collect { categoriesList ->
+                categoryAdapter.updateCategories(categoriesList.toMutableList())
+            }
+        }
+
+        // Observe loading state
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isLoading.collect { _ ->
+                // You can show/hide loading indicator here if needed
+                // binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+            }
+        }
+
+        // Observe errors
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.error.collect { errorMessage ->
+                errorMessage?.let {
+                    showError(it)
+                }
+            }
+        }
+
+        // Observe category added
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.categoryAdded.collect { success ->
+                if (success) {
+                    showSuccess("Category added successfully")
+                    binding.rvCategories.scrollToPosition(0)
+                }
+            }
+        }
+
+        // Observe category updated
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.categoryUpdated.collect { success ->
+                if (success) {
+                    showSuccess("Category updated successfully")
+                }
+            }
+        }
+
+        // Observe category deleted
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.categoryDeleted.collect { success ->
+                if (success) {
+                    showSuccess("Category deleted successfully")
+                }
+            }
+        }
+    }
+
     private fun setupFragmentResultListener() {
         // Listen for new category created from CreateCategoryFragment
         parentFragmentManager.setFragmentResultListener(
@@ -125,44 +182,26 @@ class CategoryFragment : Fragment() {
             val categoryBackground = bundle.getInt("category_background")
             
             if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
-                lifecycleScope.launch {
-                    val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
-                    val iconEnum = CategoryIcon.entries.firstOrNull { it.resId == categoryIcon } ?: CategoryIcon.HEART
-                    val colorEnum = CategoryColor.entries.firstOrNull { it.resId == categoryBackground } ?: CategoryColor.RED
-                    val categoryModel = Category(
-                        userId = userId,
-                        title = categoryName,
-                        icon = iconEnum,
-                        color = colorEnum
-                    )
-                    CategoryRepository.getInstance().addCategory(categoryModel)
-                    // Add to local list
-                    val newCategory = Category(
-                        title = categoryName,
-                        icon = iconEnum,
-                        color = colorEnum,
-                        habitCount = 0
-                    )
-                    categories.add(0, newCategory)
-                    categoryAdapter.notifyItemInserted(0)
-                    binding.rvCategories.scrollToPosition(0)
-                }
+                val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@setFragmentResultListener
+                val iconEnum = CategoryIcon.entries.firstOrNull { it.resId == categoryIcon } ?: CategoryIcon.HEART
+                val colorEnum = CategoryColor.entries.firstOrNull { it.resId == categoryBackground } ?: CategoryColor.RED
+                val categoryModel = Category(
+                    userId = userId,
+                    title = categoryName,
+                    icon = iconEnum,
+                    color = colorEnum
+                )
+                viewModel.addCategory(categoryModel)
             }
         }
     }
 
-    private fun loadUserCategories() {
-        lifecycleScope.launch {
-            val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
-            val userCategories = CategoryRepository.getInstance().getCategoriesForUser(userId)
-            for (cat in userCategories) {
-                if (categories.none { it.title == cat.title }) {
-                    // Preserve the original Category object with ID instead of rebuilding
-                    categories.add(cat.copy(habitCount = 0))
-                }
-            }
-            categoryAdapter.notifyDataSetChanged()
-        }
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+    }
+
+    private fun showSuccess(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

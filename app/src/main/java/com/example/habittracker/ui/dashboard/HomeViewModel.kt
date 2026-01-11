@@ -9,8 +9,11 @@ import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 /**
@@ -38,6 +41,10 @@ class HomeViewModel : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    // Error state
+    private val _error = MutableSharedFlow<String?>()
+    val error: SharedFlow<String?> = _error.asSharedFlow()
 
     // Current user ID from Firebase Auth
     private val currentUserId: String?
@@ -72,7 +79,7 @@ class HomeViewModel : ViewModel() {
                     _categories.value = categoriesList
                 }
             } catch (e: Exception) {
-                println("Error loading user and habits: ${e.message}")
+                _error.emit("Error loading user and habits: ${e.message}")
                 _habits.value = emptyList()
                 _currentUser.value = null
             } finally {
@@ -97,7 +104,7 @@ class HomeViewModel : ViewModel() {
                     _categories.value = categoriesList
                 }
             } catch (e: Exception) {
-                println("Error loading habits: ${e.message}")
+                _error.emit("Error loading habits: ${e.message}")
                 _habits.value = emptyList()
             } finally {
                 _isLoading.value = false
@@ -115,7 +122,7 @@ class HomeViewModel : ViewModel() {
                 habitRepository.updateHabit(updatedHabit)
                 loadHabits() // Reload habits to reflect changes
             } catch (e: Exception) {
-                println("Error updating habit: ${e.message}")
+                _error.emit("Error updating habit: ${e.message}")
             }
         }
     }
@@ -135,7 +142,7 @@ class HomeViewModel : ViewModel() {
                     loadHabits() // Reload habits to reflect changes
                 }
             } catch (e: Exception) {
-                println("Error updating habit: ${e.message}")
+                _error.emit("Error updating habit: ${e.message}")
             }
         }
     }
@@ -149,7 +156,7 @@ class HomeViewModel : ViewModel() {
                 habitRepository.deleteHabit(habitId)
                 loadHabits() // Reload habits to reflect changes
             } catch (e: Exception) {
-                println("Error deleting habit: ${e.message}")
+                _error.emit("Error deleting habit: ${e.message}")
             }
         }
     }
@@ -175,7 +182,7 @@ class HomeViewModel : ViewModel() {
                     _currentUser.value = updatedUser
                 }
             } catch (e: Exception) {
-                println("Error updating user points: ${e.message}")
+                _error.emit("Error updating user points: ${e.message}")
             }
         }
     }
