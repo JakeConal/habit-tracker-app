@@ -18,6 +18,9 @@ class ChallengeAdapter (
     private val onChallengeClick: ((Challenge) -> Unit)? = null
 ) : RecyclerView.Adapter<ChallengeAdapter.ViewHolder>() {
 
+    // Create a map for faster lookup by challenge ID
+    private val statusMap = challengeStatusList.associateBy { it.challenge.id }
+
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val challengeImg = itemView.findViewById<ShapeableImageView>(R.id.ivChallengeImage)
         val durationBadge = itemView.findViewById<TextView>(R.id.tvBadge)
@@ -40,11 +43,8 @@ class ChallengeAdapter (
         position: Int
     ) {
         val challenge = challengeList[position]
-        val isJoined = if (challengeStatusList.isNotEmpty() && position < challengeStatusList.size) {
-            challengeStatusList[position].isJoined
-        } else {
-            false
-        }
+        // Look up join status by challenge ID instead of position
+        val isJoined = statusMap[challenge.id]?.isJoined ?: false
 
         Glide.with(holder.itemView.context)
             .load(challenge.imgURL)

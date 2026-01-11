@@ -52,10 +52,16 @@ object FirestoreManager {
         docId: String
     ): DocumentSnapshot? {
         return try {
-            db.collection(collectionName)
+            val snapshot = db.collection(collectionName)
                 .document(docId)
                 .get()
                 .await()
+            // Check if document actually exists, not just if we got a snapshot
+            if (snapshot.exists()) {
+                snapshot
+            } else {
+                null
+            }
         } catch (e: Exception) {
             println("Error getting document '$docId': ${e.message}")
             null

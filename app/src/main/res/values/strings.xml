@@ -187,4 +187,24 @@
 
     <!-- Post Options -->
     <string name="delete_post">Delete Post</string>
+
+    <!-- Challenge Create Screen -->
+    <string name="create_challenge">Create Challenge</string>
+    <string name="challenge_title">Challenge Title</string>
+    <string name="enter_challenge_title">Enter challenge title</string>
+    <string name="short_description">Short Description</string>
+    <string name="enter_short_description">Brief description for card preview</string>
+    <string name="detailed_description">Detailed Description</string>
+    <string name="enter_detailed_description">Full description of the challenge</string>
+    <string name="key_results_hint">Separate each result with a comma or new line</string>
+    <string name="enter_key_results">Expected outcomes, goals, benefits…</string>
+    <string name="challenge_duration">Challenge Duration</string>
+    <string name="reward_points">Reward Points</string>
+    <string name="enter_reward_points">100</string>
+    <string name="points_prefix">🏆 </string>
+    <string name="create_challenge_button">Create Challenge</string>
+    <string name="add_image">Add Image</string>
+    <string name="tap_to_add_image">Tap to add challenge image</string>
+    <string name="challenge_created">Challenge created successfully!</string>
+    <string name="fill_all_fields">Please fill all required fields</string>
 </resources>

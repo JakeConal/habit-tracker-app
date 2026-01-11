@@ -48,7 +48,6 @@ class UserChallengeRepository {
             val doc = FirestoreManager.getDocument(collectionName, id)
             doc != null
         } catch (e: Exception) {
-            println("Error checking if user joined challenge: ${e.message}")
             false
         }
     }
@@ -79,14 +78,18 @@ class UserChallengeRepository {
                 status = ChallengeStatus.ONGOING
             )
             val id = userChallenge.generateId()
+            println("DEBUG: Attempting to join challenge - userId: $userId, challengeId: $challengeId, id: $id")
             val result = FirestoreManager.addDocumentWithId(
                 collectionName,
                 id,
                 userChallenge.toMap()
             )
-            result != null
+            val success = result != null
+            println("DEBUG: Join result - success: $success, result: $result")
+            success
         } catch (e: Exception) {
             println("Error joining challenge: ${e.message}")
+            e.printStackTrace()
             false
         }
     }

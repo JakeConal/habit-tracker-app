@@ -94,6 +94,16 @@ dependencies {
     // Firebase Auth (nếu cần authentication)
     implementation("com.google.firebase:firebase-auth-ktx")
 
+    // Firebase Storage (optional - nếu dùng)
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Supabase
+    implementation("io.github.jan-tennert.supabase:storage-kt:2.6.0")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.6.0")
+    implementation("io.ktor:ktor-client-android:2.3.12")
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-utils:2.3.12")
+
     // Room Database (cho local storage)
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")

@@ -13,12 +13,14 @@ import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.repository.ChallengeRepository
 import com.example.habittracker.data.repository.UserChallengeRepository
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class ChallengesFragment : Fragment() {
 
     private lateinit var recyclerViewChallenges: RecyclerView
+    private lateinit var fabCreateChallenge: FloatingActionButton
     private lateinit var challengeAdapter: ChallengeAdapter
     private val challengeRepository = ChallengeRepository()
     private val userChallengeRepository = UserChallengeRepository()
@@ -35,6 +37,14 @@ class ChallengesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView(view)
+        setupFab(view)
+        loadData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh data every time fragment comes back to foreground
+        // This ensures newly created challenges appear in the list
         loadData()
     }
 
@@ -76,6 +86,15 @@ class ChallengesFragment : Fragment() {
         recyclerViewChallenges.apply {
             layoutManager = LinearLayoutManager(requireContext())
             setHasFixedSize(true)
+        }
+    }
+
+    private fun setupFab(view: View) {
+        fabCreateChallenge = view.findViewById(R.id.fabCreateChallenge)
+
+        fabCreateChallenge.setOnClickListener {
+            val intent = Intent(requireContext(), ChallengeCreateActivity::class.java)
+            startActivity(intent)
         }
     }
 
