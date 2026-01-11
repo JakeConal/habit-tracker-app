@@ -18,14 +18,16 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/challenge_card_padding">
 
-        <!-- Challenge Image -->
+        <!-- Create Icon Container -->
         <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivChallengeImage"
+            android:id="@+id/ivCreateIcon"
             android:layout_width="@dimen/challenge_card_image_width"
             android:layout_height="@dimen/challenge_card_image_height"
-            android:scaleType="centerCrop"
-            android:background="@color/secondary_gray"
-            android:contentDescription="Challenge image"
+            android:scaleType="center"
+            android:background="@color/white"
+            android:contentDescription="@string/create_challenge"
+            android:src="@android:drawable/ic_input_add"
+            android:tint="@color/accent_blue_dark"
             app:shapeAppearanceOverlay="@style/RoundedImageStyle"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
@@ -35,18 +37,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            app:layout_constraintTop_toTopOf="@id/ivChallengeImage"
-            app:layout_constraintStart_toEndOf="@id/ivChallengeImage"
+            app:layout_constraintTop_toTopOf="@id/ivCreateIcon"
+            app:layout_constraintStart_toEndOf="@id/ivCreateIcon"
             app:layout_constraintEnd_toEndOf="parent">
 
             <!-- Badge -->
             <TextView
-                android:id="@+id/tvBadge"
+                android:id="@+id/tvCreateBadge"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingHorizontal="@dimen/badge_padding_horizontal"
                 android:paddingVertical="4dp"
-                android:text="7 Days Challenge"
+                android:text="New Challenge"
                 android:textSize="@dimen/text_sm"
                 android:textColor="@color/primary_blue"
                 android:fontFamily="sans-serif"
@@ -55,58 +57,39 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
-            <!-- Joined Indicator Badge (optional) -->
-            <TextView
-                android:id="@+id/tvJoinedIndicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="Joined"
-                android:textSize="@dimen/text_sm"
-                android:textColor="@color/primary_blue"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
-                android:background="@drawable/badge_color_pink"
-                android:fontFamily="sans-serif-medium"
-                android:visibility="gone"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toEndOf="@id/tvBadge"
-                />
-
             <!-- Challenge Title -->
             <TextView
-                android:id="@+id/tvChallengeTitle"
+                android:id="@+id/tvCreateTitle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Sleep Hygiene Challenge"
+                android:text="Create Challenge"
                 android:textSize="@dimen/text_lg"
                 android:textColor="@color/primary_blue"
                 android:textStyle="bold"
                 android:fontFamily="sans-serif"
                 android:maxLines="1"
                 android:ellipsize="end"
-                app:layout_constraintTop_toBottomOf="@id/tvBadge"
+                app:layout_constraintTop_toBottomOf="@id/tvCreateBadge"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
             <!-- Challenge Description -->
             <TextView
-                android:id="@+id/tvChallengeDescription"
+                android:id="@+id/tvCreateDescription"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Establish a bedtime routine and aim for 7-8 hours of sleep nightly"
+                android:text="Start a new challenge and inspire your community"
                 android:textSize="@dimen/text_md"
                 android:textColor="@color/text_secondary"
                 android:fontFamily="sans-serif"
                 android:lineSpacingMultiplier="1.375"
                 android:maxLines="2"
                 android:ellipsize="end"
-                app:layout_constraintTop_toBottomOf="@id/tvChallengeTitle"
+                app:layout_constraintTop_toBottomOf="@id/tvCreateTitle"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
-
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -13,14 +13,12 @@ import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.repository.ChallengeRepository
 import com.example.habittracker.data.repository.UserChallengeRepository
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class ChallengesFragment : Fragment() {
 
     private lateinit var recyclerViewChallenges: RecyclerView
-    private lateinit var fabCreateChallenge: FloatingActionButton
     private lateinit var challengeAdapter: ChallengeAdapter
     private val challengeRepository = ChallengeRepository()
     private val userChallengeRepository = UserChallengeRepository()
@@ -37,7 +35,6 @@ class ChallengesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView(view)
-        setupFab(view)
         loadData()
     }
 
@@ -62,16 +59,20 @@ class ChallengesFragment : Fragment() {
                             // We'll handle this in the adapter separately
                         )
                     }
-                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), challengesWithStatus) { challenge ->
+                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), challengesWithStatus, { challenge ->
                         onChallengeClicked(challenge)
-                    }
+                    }, {
+                        onCreateChallengeClicked()
+                    })
                     recyclerViewChallenges.adapter = challengeAdapter
                 } else {
                     // Fallback if user not authenticated
                     val challenges = challengeRepository.getAllChallenges()
-                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), emptyList()) { challenge ->
+                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), emptyList(), { challenge ->
                         onChallengeClicked(challenge)
-                    }
+                    }, {
+                        onCreateChallengeClicked()
+                    })
                     recyclerViewChallenges.adapter = challengeAdapter
                 }
             } catch (e: Exception) {
@@ -89,15 +90,6 @@ class ChallengesFragment : Fragment() {
         }
     }
 
-    private fun setupFab(view: View) {
-        fabCreateChallenge = view.findViewById(R.id.fabCreateChallenge)
-
-        fabCreateChallenge.setOnClickListener {
-            val intent = Intent(requireContext(), ChallengeCreateActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
     private fun onChallengeClicked(challenge: Challenge) {
         val intent = Intent(requireContext(), ChallengeDetailActivity::class.java).apply {
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_ID, challenge.id)
@@ -112,6 +104,12 @@ class ChallengesFragment : Fragment() {
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_CREATED_AT, challenge.createdAt)
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_PARTICIPANT_COUNT, challenge.participantCount)
         }
+        startActivity(intent)
+    }
+
+    private fun onCreateChallengeClicked() {
+        // Handle create challenge click
+        val intent = Intent(requireContext(), ChallengeCreateActivity::class.java)
         startActivity(intent)
     }
 

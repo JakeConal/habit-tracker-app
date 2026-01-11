@@ -15,8 +15,14 @@ import com.google.android.material.imageview.ShapeableImageView
 class ChallengeAdapter (
     private val challengeList: Array<Challenge>,
     private val challengeStatusList: List<ChallengeWithStatus> = emptyList(),
-    private val onChallengeClick: ((Challenge) -> Unit)? = null
-) : RecyclerView.Adapter<ChallengeAdapter.ViewHolder>() {
+    private val onChallengeClick: ((Challenge) -> Unit)? = null,
+    private val onCreateChallengeClick: (() -> Unit)? = null
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+
+    companion object {
+        private const val VIEW_TYPE_CHALLENGE = 0
+        private const val VIEW_TYPE_CREATE = 1
+    }
 
     // Create a map for faster lookup by challenge ID
     private val statusMap = challengeStatusList.associateBy { it.challenge.id }
@@ -29,20 +35,41 @@ class ChallengeAdapter (
         val joinedIndicator = itemView.findViewById<TextView?>(R.id.tvJoinedIndicator) // Optional view to show join status
     }
 
+    class CreateViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        // Define views for the create challenge item if needed
+    }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
-    ): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_challenge_card, parent, false)
-        return ViewHolder(view)
+    ): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_CHALLENGE -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_challenge_card, parent, false)
+                ViewHolder(view)
+            }
+            VIEW_TYPE_CREATE -> {
+                val view = LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_create_challenge, parent, false)
+                CreateViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
     }
 
     override fun onBindViewHolder(
-        holder: ViewHolder,
+        holder: RecyclerView.ViewHolder,
         position: Int
     ) {
-        val challenge = challengeList[position]
+        when (holder) {
+            is ViewHolder -> bindChallengeViewHolder(holder, position)
+            is CreateViewHolder -> bindCreateViewHolder(holder)
+        }
+    }
+
+    private fun bindChallengeViewHolder(holder: ViewHolder, position: Int) {
+        val challenge = challengeList[position] // No offset needed since create item is at the end
         // Look up join status by challenge ID instead of position
         val isJoined = statusMap[challenge.id]?.isJoined ?: false
 
@@ -80,5 +107,20 @@ class ChallengeAdapter (
         }
     }
 
-    override fun getItemCount(): Int = challengeList.size
+    private fun bindCreateViewHolder(holder: CreateViewHolder) {
+        // Handle binding for the create challenge view holder
+        holder.itemView.setOnClickListener {
+            onCreateChallengeClick?.invoke()
+        }
+    }
+
+    override fun getItemCount(): Int = challengeList.size + 1 // +1 for create challenge item
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == challengeList.size) {
+            VIEW_TYPE_CREATE
+        } else {
+            VIEW_TYPE_CHALLENGE
+        }
+    }
 }
