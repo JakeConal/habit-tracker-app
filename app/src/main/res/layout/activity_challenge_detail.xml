@@ -28,7 +28,7 @@
             android:src="@mipmap/ic_back"
             android:scaleType="fitCenter"
             android:background="@drawable/button_background_round"
-            android:contentDescription="Back" />
+            android:contentDescription="@string/back" />
 
         <!-- Title: Details -->
         <TextView
@@ -52,7 +52,7 @@
             android:src="@mipmap/ic_notification"
             android:scaleType="fitCenter"
             android:background="@drawable/button_background_round"
-            android:contentDescription="Notifications" />
+            android:contentDescription="@string/notifications" />
 
     </RelativeLayout>
 
@@ -64,16 +64,16 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <!-- Challenge Image -->
+            <!-- Hero Image Card with 24dp corner radius -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp">
+                android:layout_height="220dp"
+                android:layout_margin="16dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
 
                 <ImageView
                     android:id="@+id/ivChallengeImage"
@@ -85,114 +85,201 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Challenge Title -->
-            <TextView
-                android:id="@+id/tvChallengeTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:textColor="@android:color/black"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                tools:text="Sleep Hygiene Challenge" />
-
-            <!-- Challenge Description -->
-            <TextView
-                android:id="@+id/tvChallengeDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
-                android:lineSpacingExtra="4dp"
-                android:textColor="#666666"
-                android:textSize="14sp"
-                tools:text="Establish a bedtime routine and aim for 7-8 hours of sleep nightly to enhance your overall well-being. Create a calming pre-sleep ritual, such as reading or gentle stretching, to signal your body that it's time to wind down. Avoid screens and stimulants before bed to ensure high-quality rest. Track your sleep patterns and adjust your routine as needed for the best results." />
-
-            <!-- Key Results Section -->
-            <TextView
-                android:id="@+id/tvKeyResultsLabel"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:text="@string/key_results"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <!-- Key Results List -->
+            <!-- Main Content Container with padding -->
             <LinearLayout
-                android:id="@+id/llKeyResults"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingBottom="20dp">
 
-                <!-- Key Result Item -->
-                <LinearLayout
+                <!-- Challenge Info Card -->
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_marginEnd="12dp"
-                        app:cardBackgroundColor="#E3F2FD"
-                        app:cardCornerRadius="12dp"
-                        app:cardElevation="0dp">
-
-                        <ImageView
-                            android:id="@+id/ivKeyResultIcon"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="@string/key_result_icon"
-                            android:src="@drawable/ic_bed"
-                            app:tint="#2196F3" />
-
-                    </com.google.android.material.card.MaterialCardView>
+                    android:layout_marginBottom="24dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
 
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:padding="20dp">
 
+                        <!-- Challenge Title -->
                         <TextView
-                            android:id="@+id/tvKeyResultTitle"
+                            android:id="@+id/tvChallengeTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="@string/improved_sleep_quality"
-                            android:textColor="@android:color/black"
-                            android:textSize="14sp"
-                            android:textStyle="bold" />
+                            android:layout_marginBottom="12dp"
+                            android:textColor="@color/primary_blue"
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"
+                            tools:text="Sleep Hygiene Challenge" />
 
+                        <!-- Duration Badge -->
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipDuration"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:text="@string/seven_days_challenge"
+                            android:textColor="@color/primary_blue"
+                            app:chipBackgroundColor="@color/badge_7_days_cyan"
+                            app:chipCornerRadius="12dp"
+                            app:chipIconTint="@color/primary_blue"
+                            app:chipStrokeWidth="0dp"
+                            app:closeIconEnabled="false" />
+
+
+
+                        <!-- Challenge Description -->
                         <TextView
-                            android:id="@+id/tvKeyResultDescription"
+                            android:id="@+id/tvChallengeDetail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="@string/improved_sleep_quality_desc"
-                            android:textColor="#666666"
-                            android:textSize="12sp" />
+                            android:lineSpacingExtra="5dp"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="15sp"
+                            android:fontFamily="sans-serif"
+                            tools:text="Establish a bedtime routine and aim for 7-8 hours of sleep nightly to enhance your overall well-being. Create a calming pre-sleep ritual, such as reading or gentle stretching, to signal your body that it's time to wind down." />
 
                     </LinearLayout>
 
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Key Results Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <!-- Key Results Header -->
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:text="@string/key_results"
+                            android:textColor="@color/primary_blue"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <!-- Key Results Content -->
+                        <TextView
+                            android:id="@+id/tvKeyResults"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="14sp"
+                            android:fontFamily="sans-serif"
+                            android:lineSpacingMultiplier="1.2"
+                            tools:text="• Improved sleep quality\n• Better energy levels\n• Enhanced focus and concentration" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Rewards Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardBackgroundColor="@android:color/white"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    android:alpha="0.85">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="20dp"
+                        android:gravity="center">
+
+                        <!-- Reward Icon Background -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:layout_marginEnd="16dp"
+                            app:cardBackgroundColor="@color/transparent"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp">
+
+                            <ImageView
+                                android:layout_width="28dp"
+                                android:layout_height="28dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/reward"
+                                android:src="@drawable/ic_crown"
+                                app:tint="@color/primary_blue" />
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- Reward Information -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="@string/earn_reward_points"
+                                android:textColor="@color/primary_blue"
+                                android:textSize="15sp"
+                                android:textStyle="bold"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <TextView
+                                android:id="@+id/tvRewardPoints"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="13sp"
+                                tools:text="Complete this challenge to earn 500 points" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Join Now Button with full width and proper spacing -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnJoinNow"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="@string/join_now"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:backgroundTint="@color/accent_blue_dark"
+                    app:cornerRadius="14dp"
+                    app:elevation="0dp" />
 
             </LinearLayout>
-
-            <!-- Join Now Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnJoinNow"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:text="@string/join_now"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:backgroundTint="@android:color/holo_blue_light"
-                app:cornerRadius="12dp" />
 
         </LinearLayout>
 

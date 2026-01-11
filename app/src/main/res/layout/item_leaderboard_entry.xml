@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="@dimen/leaderboard_card_height"
     android:layout_marginBottom="@dimen/spacing_sm"
-    android:orientation="horizontal"
-    android:padding="@dimen/spacing_md"
-    android:gravity="center_vertical"
-    android:background="@color/card_background">
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="@dimen/challenge_card_radius"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp"
+    android:alpha="0.9">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_lg"
+        android:paddingTop="@dimen/spacing_sm"
+        android:paddingBottom="@dimen/spacing_sm"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/tv_rank"
@@ -36,18 +48,34 @@
                 android:id="@+id/tv_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/spacing_md"
                 android:text="David Martinez"
                 android:textColor="@color/leaderboard_text_primary"
-                android:textSize="@dimen/text_lg" />
+                android:textSize="@dimen/text_lg"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <TextView
+                android:id="@+id/tv_points"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="1850 pts"
+                android:textColor="@color/leaderboard_points"
+                android:textSize="@dimen/text_md" />
 
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_points"
+            android:id="@+id/tv_score"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
             android:text="1850 pts"
             android:textColor="@color/leaderboard_points"
-            android:textSize="@dimen/text_lg" />
+            android:textSize="@dimen/text_lg"
+            android:textStyle="bold" />
 
-</LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

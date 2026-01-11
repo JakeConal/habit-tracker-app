@@ -1,9 +1,11 @@
 package com.example.habittracker.ui.settings
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentProfileBinding
+import com.example.habittracker.ui.feed.Post
 import com.example.habittracker.ui.feed.PostAdapter
 import kotlinx.coroutines.launch
 
@@ -86,11 +89,36 @@ class ProfileFragment : Fragment() {
             onLikeClick = { post ->
                 viewModel.toggleLike(post.id)
             },
-            onCommentClick = { post ->
+            onCommentClick = { _ ->
                 // TODO: Navigate to comments screen
             },
-            onMoreOptionsClick = { post ->
-                // TODO: Show options menu
+            onMoreOptionsClick = { post: Post, anchorView: View ->
+                // Basic implementation for Profile - can be customized
+                val popupMenu = PopupMenu(requireContext(), anchorView)
+                // Profile usually shows own posts so default is Delete
+                popupMenu.menu.add("Delete")
+                popupMenu.menu.add("Share")
+
+                popupMenu.setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.title) {
+                        "Delete" -> {
+                            // TODO: Call delete in ViewModel
+                            Toast.makeText(requireContext(), "Delete clicked", Toast.LENGTH_SHORT).show()
+                            true
+                        }
+                        "Share" -> {
+                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                                putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                            }
+                            startActivity(Intent.createChooser(shareIntent, "Share post via"))
+                            true
+                        }
+                        else -> false
+                    }
+                }
+                popupMenu.show()
             }
         )
 
@@ -234,5 +262,4 @@ class ProfileFragment : Fragment() {
         fun newInstance() = ProfileFragment()
     }
 }
-
 

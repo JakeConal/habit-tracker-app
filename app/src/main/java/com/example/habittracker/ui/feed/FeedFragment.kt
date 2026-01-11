@@ -111,6 +111,8 @@ class FeedFragment : Fragment() {
         rvFeed.scrollToPosition(0)
     }
 
+    private val currentUserId = "user_current" // Placeholder for current user ID
+
     private fun setupRecyclerView(view: View) {
         rvFeed = view.findViewById(R.id.rvFeed)
         postAdapter = PostAdapter(
@@ -122,15 +124,70 @@ class FeedFragment : Fragment() {
                 // Open comments activity
                 openCommentsActivity(post)
             },
-            onMoreOptionsClick = { post ->
-                // Handle more options click
-                Toast.makeText(context, "More options for ${post.authorName}'s post", Toast.LENGTH_SHORT).show()
+            onMoreOptionsClick = { post, anchorView ->
+                showPostOptions(post, anchorView)
             }
         )
 
         rvFeed.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = postAdapter
+        }
+    }
+
+    private fun showPostOptions(post: Post, anchorView: View) {
+        val popupMenu = android.widget.PopupMenu(requireContext(), anchorView)
+
+        // Inflate logic based on ownership
+        if (post.userId == currentUserId) {
+            popupMenu.menu.add("Delete")
+        } else {
+            popupMenu.menu.add("Hide")
+        }
+        popupMenu.menu.add("Share")
+
+        popupMenu.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.title) {
+                "Delete" -> {
+                    deletePost(post)
+                    true
+                }
+                "Hide" -> {
+                    hidePost(post)
+                    true
+                }
+                "Share" -> {
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                        putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                    }
+                    startActivity(Intent.createChooser(shareIntent, "Share post via"))
+                    true
+                }
+                else -> false
+            }
+        }
+        popupMenu.show()
+    }
+
+    private fun hidePost(post: Post) {
+        val currentList = postAdapter.currentList.toMutableList()
+        val index = currentList.indexOfFirst { it.id == post.id }
+        if (index != -1) {
+            currentList.removeAt(index)
+            postAdapter.submitList(currentList)
+            Toast.makeText(context, "Post hidden", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun deletePost(post: Post) {
+        val currentList = postAdapter.currentList.toMutableList()
+        val index = currentList.indexOfFirst { it.id == post.id }
+        if (index != -1) {
+            currentList.removeAt(index)
+            postAdapter.submitList(currentList)
+            Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
         }
     }
 

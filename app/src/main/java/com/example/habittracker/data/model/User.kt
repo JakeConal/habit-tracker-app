@@ -10,7 +10,8 @@ data class User(
     val rank: Int = 0,
     val email: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
-    val lastLoginAt: Long = System.currentTimeMillis()
+    val lastLoginAt: Long = System.currentTimeMillis(),
+    val joinedChallengeIds: List<String> = emptyList() // Danh sách ID của challenge đã tham gia
 ) {
     companion object {
         const val COLLECTION_NAME = "users"
@@ -26,7 +27,8 @@ data class User(
                     rank = document.getLong("rank")?.toInt() ?: 0,
                     email = document.getString("email"),
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
-                    lastLoginAt = document.getLong("lastLoginAt") ?: System.currentTimeMillis()
+                    lastLoginAt = document.getLong("lastLoginAt") ?: System.currentTimeMillis(),
+                    joinedChallengeIds = (document.get("joinedChallengeIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
                 )
             } catch (e: Exception) {
                 null
@@ -43,7 +45,9 @@ data class User(
             "rank" to rank,
             "email" to (email ?: ""),
             "createdAt" to createdAt,
-            "lastLoginAt" to lastLoginAt
+            "lastLoginAt" to lastLoginAt,
+            "joinedChallengeIds" to joinedChallengeIds
         )
     }
 }
+
