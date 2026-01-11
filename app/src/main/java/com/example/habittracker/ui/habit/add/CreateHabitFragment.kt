@@ -16,6 +16,9 @@ import com.example.habittracker.data.repository.CategoryRepository
 import com.example.habittracker.util.formatFrequency
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 
 /**
  * CreateHabitFragment - Screen for creating a new habit
@@ -37,6 +40,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
 
     override fun setupView() {
         setupClickListeners()
+        applyWindowInsets()
         setupInitialValues()
         setupCategoryResultListener()
     }
@@ -73,6 +77,38 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
                 viewModel.updateCategory(categoryName)
                 viewModel.updateCategoryId(categoryId)
             }
+        }
+    }
+
+    private fun applyWindowInsets() {
+        // Xử lý edge-to-edge và window insets
+        
+        // 1. Root container xử lý top inset (status bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // Áp padding top cho status bar
+            view.updatePadding(
+                top = systemBarsInsets.top
+            )
+            
+            // Truyền insets xuống các child views
+            windowInsets
+        }
+        
+        // 2. Content container xử lý bottom inset (navigation/gesture bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.contentContainer) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navBarHeight = systemBarsInsets.bottom
+            
+            // Áp padding bottom = spacing_md (16dp) + chiều cao nav bar
+            val basePadding = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            view.updatePadding(
+                bottom = basePadding + navBarHeight
+            )
+            
+            // Consume bottom inset để không ảnh hưởng views khác
+            WindowInsetsCompat.CONSUMED
         }
     }
 
