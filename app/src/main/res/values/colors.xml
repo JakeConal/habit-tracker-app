@@ -55,6 +55,8 @@
     
     <!-- Action colors -->
     <color name="red">#FF6B6B</color>
+    <color name="destructive_red">#DC2626</color>
+    <color name="destructive_red_light">#EF4444</color>
     
     <!-- Action button colors -->
     <color name="edit_button_bg">#E6F0F9</color>

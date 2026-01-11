@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient">
+    android:background="@drawable/background_gradient"
+    android:clipToPadding="false">
 
     <!-- Header Container -->
     <LinearLayout
@@ -39,12 +40,14 @@
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
+            style="@style/HeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="sans-serif"
             android:gravity="center"
-            android:text="Select Category"
+            android:text="SELECT CATEGORY"
+            android:textAllCaps="true"
             android:textColor="@color/primary_blue"
             android:textSize="@dimen/text_lg" />
 

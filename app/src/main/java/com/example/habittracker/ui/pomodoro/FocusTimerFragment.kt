@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -45,6 +48,7 @@ class FocusTimerFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        applyWindowInsets()
         setupSessionDots()
         setupClickListeners()
         observeViewModel()
@@ -52,6 +56,24 @@ class FocusTimerFragment : Fragment() {
         // Get task name from arguments if provided
         arguments?.getString("taskName")?.let { taskName ->
             viewModel.setTaskName(taskName)
+        }
+    }
+
+    /**
+     * Apply window insets to handle status bar properly
+     */
+    private fun applyWindowInsets() {
+        // Xử lý edge-to-edge và window insets
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // Áp padding top cho status bar
+            view.updatePadding(
+                top = systemBarsInsets.top
+            )
+            
+            // Truyền insets xuống các child views
+            windowInsets
         }
     }
 
@@ -70,6 +92,11 @@ class FocusTimerFragment : Fragment() {
      * Setup click listeners for all interactive elements
      */
     private fun setupClickListeners() {
+        // Back button
+        binding.btnBack.setOnClickListener {
+            findNavController().navigateUp()
+        }
+        
         // Task selector - opens task picker
         binding.focusTaskContainer.setOnClickListener {
             onTaskSelectorClicked()

@@ -10,11 +10,19 @@ import com.example.habittracker.data.model.Category
  * CategoryAdapter - Adapter for displaying categories in a list
  */
 class CategoryAdapter(
-    private val categories: List<Category>,
+    private var categories: MutableList<Category>,
     private val onCategoryClick: ((Category) -> Unit)? = null,
     private val onEditClick: (Category) -> Unit,
     private val onDeleteClick: (Category) -> Unit
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+
+    /**
+     * Update the categories list and notify the adapter
+     */
+    fun updateCategories(newCategories: MutableList<Category>) {
+        categories = newCategories
+        notifyDataSetChanged()
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
         val binding = ItemCategoryBinding.inflate(

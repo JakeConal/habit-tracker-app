@@ -83,7 +83,7 @@
                 android:src="@drawable/ic_check"
                 android:background="@drawable/bg_accept_button"
                 android:scaleType="center"
-                android:tint="@color/white"
+                app:tint="@color/white"
                 android:contentDescription="@string/accept_request" />
 
             <!-- Reject Button -->

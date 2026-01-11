@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHomeBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -116,6 +117,15 @@ class HomeFragment : Fragment() {
                 updateHabits(habitsList)
             }
         }
+
+        // Observe errors
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.error.collect { errorMessage ->
+                errorMessage?.let {
+                    showError(it)
+                }
+            }
+        }
     }
 
     private fun updateHabits(habitsList: List<com.example.habittracker.data.model.Habit>) {
@@ -181,9 +191,9 @@ class HomeFragment : Fragment() {
         habitsAdapter = HabitsAdapter(
             habits = habits,
             categories = viewModel.categories.value,
-            onHabitClick = { _ ->
-                // TODO: Handle habit click - show dialog with habit details
-                // navigateToViewHabit(habit)
+            onHabitClick = { habit ->
+                // Navigate to ViewHabitFragment to view/edit habit details
+                navigateToViewHabit(habit)
             },
             onCheckClick = { habit ->
                 // Handle check button click - toggle completion
@@ -202,6 +212,18 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.toggleHabitCompletion(habit)
         }
+    }
+
+    private fun navigateToViewHabit(habit: com.example.habittracker.data.model.Habit) {
+        // Navigate to ViewHabitFragment with habitId
+        val bundle = Bundle().apply {
+            putString("habitId", habit.id)
+        }
+        findNavController().navigate(R.id.action_global_to_view_habit, bundle)
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     private fun setupClickListeners() {

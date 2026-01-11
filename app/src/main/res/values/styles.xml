@@ -23,4 +23,12 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">50%</item>
     </style>
+
+    <!-- CAPLOCKS -->
+    <style name="HeaderTitle">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textSize">@dimen/text_lg</item>
+        <item name="android:textColor">@color/primary_blue</item>
+        <item name="android:fontFamily">sans-serif</item>
+    </style>
 </resources>
