@@ -144,19 +144,25 @@ class CategoryFragment : Fragment() {
 
         // Observe category added
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.categoryAdded.collect { success ->
-                if (success) {
+            viewModel.categoryAdded.collect { category ->
+                if (category != null) {
                     showSuccess("Category added successfully")
                     binding.rvCategories.scrollToPosition(0)
+                    // Automatically send the new category back to CreateHabitFragment
+                    sendCategoryResult(category)
+                    findNavController().navigateUp()
                 }
             }
         }
 
         // Observe category updated
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.categoryUpdated.collect { success ->
-                if (success) {
+            viewModel.categoryUpdated.collect { category ->
+                if (category != null) {
                     showSuccess("Category updated successfully")
+                    // Automatically send the updated category back to CreateHabitFragment
+                    sendCategoryResult(category)
+                    findNavController().navigateUp()
                 }
             }
         }
@@ -202,6 +208,18 @@ class CategoryFragment : Fragment() {
 
     private fun showSuccess(message: String) {
         Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun sendCategoryResult(category: Category) {
+        setFragmentResult(
+            "category_request_key",
+            bundleOf(
+                "selected_category_name" to category.title,
+                "selected_category_icon" to category.icon.resId,
+                "selected_category_icon_background" to category.color.resId,
+                "selected_category_id" to category.id
+            )
+        )
     }
 
     override fun onDestroyView() {

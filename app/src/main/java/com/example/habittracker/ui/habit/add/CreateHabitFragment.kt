@@ -9,6 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
+import com.example.habittracker.data.model.Category
 import com.example.habittracker.databinding.FragmentCreateHabitBinding
 import com.example.habittracker.ui.common.BaseFragment
 import com.example.habittracker.data.repository.AuthRepository
@@ -28,6 +29,9 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
 
     private val viewModel: CreateHabitViewModel by viewModels()
     
+    // Flag to prevent setupInitialValues from overwriting user-selected category
+    private var isInitialCategoryLoaded = false
+    
     private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
     private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
@@ -42,42 +46,6 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         setupClickListeners()
         applyWindowInsets()
         setupInitialValues()
-        setupCategoryResultListener()
-    }
-
-    private fun setupCategoryResultListener() {
-        // Listen for category selection result from CategoryFragment
-        parentFragmentManager.setFragmentResultListener(
-            "category_request_key",
-            viewLifecycleOwner
-        ) { _, bundle ->
-            val categoryName = bundle.getString("selected_category_name")
-            val categoryIcon = bundle.getInt("selected_category_icon")
-            val categoryIconBackground = bundle.getInt("selected_category_icon_background")
-            val categoryId = bundle.getString("selected_category_id")
-
-            if (categoryName != null && categoryIcon != 0 && categoryId != null) {
-                binding.ivCategoryIcon.setImageResource(categoryIcon)
-                binding.tvCategoryName.text = categoryName
-                binding.categoryIconBackground.setCardBackgroundColor(
-                    requireContext().getColor(
-                        when (categoryIconBackground) {
-                            R.drawable.bg_category_icon_red -> R.color.icon_bg_red
-                            R.drawable.bg_category_icon_blue -> R.color.icon_bg_blue
-                            R.drawable.bg_category_icon_yellow -> R.color.icon_bg_yellow
-                            R.drawable.bg_category_icon_pink_light -> R.color.icon_bg_pink_light
-                            R.drawable.bg_category_icon_purple -> R.color.icon_bg_purple
-                            R.drawable.bg_category_icon_orange_light -> R.color.icon_bg_orange_light
-                            R.drawable.bg_category_icon_green -> R.color.icon_bg_green
-                            R.drawable.bg_category_icon_indigo -> R.color.icon_bg_indigo
-                            else -> R.color.icon_bg_pink
-                        }
-                    )
-                )
-                viewModel.updateCategory(categoryName)
-                viewModel.updateCategoryId(categoryId)
-            }
-        }
     }
 
     private fun applyWindowInsets() {
@@ -113,6 +81,15 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     }
 
     override fun observeData() {
+        // Observe category changes and update UI
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.category.collect { category ->
+                category?.let {
+                    updateCategoryUI(it)
+                }
+            }
+        }
+
         // Observe habit creation success
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.habitCreated.collect { success ->
@@ -145,31 +122,56 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
                 binding.tvTime.text = time
             }
         }
+
+        // Listen for category selection result from CategoryFragment
+        parentFragmentManager.setFragmentResultListener(
+            "category_request_key",
+            viewLifecycleOwner
+        ) { _, bundle ->
+            val categoryId = bundle.getString("selected_category_id")
+            
+            // Only use categoryId - load full Category from repository
+            if (categoryId != null) {
+                isInitialCategoryLoaded = true // Mark as loaded to prevent default from overwriting
+                viewModel.loadCategory(categoryId)
+            }
+        }
+    }
+
+    /**
+     * Update category UI from Category object
+     * This is the single source of truth for category display
+     */
+    private fun updateCategoryUI(category: Category) {
+        binding.tvCategoryName.text = category.title
+        binding.ivCategoryIcon.setImageResource(category.icon.resId)
+        binding.categoryIconBackground.setCardBackgroundColor(
+            requireContext().getColor(category.color.colorResId)
+        )
     }
 
     private fun setupInitialValues() {
-        // Load default category from repository
-        lifecycleScope.launch {
-            try {
-                val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
-                val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
-                if (categories.isNotEmpty()) {
-                    val defaultCategory = categories[0]
-                    binding.ivCategoryIcon.setImageResource(defaultCategory.icon.resId)
-                    binding.tvCategoryName.text = defaultCategory.title
-                    binding.categoryIconBackground.setCardBackgroundColor(
-                        requireContext().getColor(defaultCategory.color.colorResId)
-                    )
-                    viewModel.updateCategory(defaultCategory.title)
-                    viewModel.updateCategoryId(defaultCategory.id)
-                } else {
-                    // No categories available, show error or default
-                    showError("No categories available. Please create a category first.")
+        // Load default category from repository only if not already loaded
+        // This prevents overwriting user-selected category from CategoryFragment
+        if (!isInitialCategoryLoaded) {
+            lifecycleScope.launch {
+                try {
+                    val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
+                    val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
+                    if (categories.isNotEmpty()) {
+                        val defaultCategory = categories[0]
+                        // Load category through ViewModel to ensure consistency
+                        viewModel.loadCategory(defaultCategory.id)
+                        isInitialCategoryLoaded = true
+                    } else {
+                        // No categories available, show error or default
+                        showError("No categories available. Please create a category first.")
+                    }
+                } catch (e: Exception) {
+                    println("Error loading default category: ${e.message}")
+                    e.printStackTrace()
+                    showError("Failed to load categories: ${e.message}")
                 }
-            } catch (e: Exception) {
-                println("Error loading default category: ${e.message}")
-                e.printStackTrace()
-                showError("Failed to load categories: ${e.message}")
             }
         }
 

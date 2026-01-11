@@ -94,7 +94,7 @@
                             android:layout_width="48dp"
                             android:layout_height="48dp"
                             android:src="@android:drawable/ic_menu_camera"
-                            android:tint="@color/secondary_gray"
+                            app:tint="@color/secondary_gray"
                             android:contentDescription="@string/add_image" />
 
                         <TextView
