@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentViewHabitBinding
 import com.example.habittracker.ui.common.BaseFragment
+import com.example.habittracker.util.formatFrequency
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import androidx.core.view.ViewCompat
@@ -42,19 +43,43 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
 
     override fun setupView() {
         setupClickListeners()
-        applyBottomInsets()
-        // Load habit data
-        viewModel.loadHabit(habitId)
+        applyWindowInsets()
+        // Load habit data only if not already loaded
+        // This prevents overwriting category selection from fragment result
+        if (viewModel.habit.value == null) {
+            viewModel.loadHabit(habitId)
+        }
     }
 
-    private fun applyBottomInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.actionBarContainer) { v, insets ->
-            val systemBarsInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-
-            v.updatePadding(
-                bottom = systemBarsInsets.bottom
+    private fun applyWindowInsets() {
+        // Xử lý edge-to-edge và window insets
+        
+        // 1. Root container xử lý top inset (status bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // Áp padding top cho status bar
+            view.updatePadding(
+                top = systemBarsInsets.top
             )
-            insets
+            
+            // Truyền insets xuống các child views
+            windowInsets
+        }
+        
+        // 2. Content container xử lý bottom inset (navigation/gesture bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.contentContainer) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navBarHeight = systemBarsInsets.bottom
+            
+            // Áp padding bottom = spacing_md (16dp) + chiều cao nav bar
+            val basePadding = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            view.updatePadding(
+                bottom = basePadding + navBarHeight
+            )
+            
+            // Consume bottom inset để không ảnh hưởng views khác
+            WindowInsetsCompat.CONSUMED
         }
     }
 
@@ -97,7 +122,7 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
         // Observe frequency
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.frequency.collect { frequency ->
-                binding.tvFrequency.text = frequency.joinToString(", ")
+                binding.tvFrequency.text = frequency.formatFrequency()
             }
         }
 
@@ -143,7 +168,18 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
             viewLifecycleOwner
         ) { _, bundle ->
             val categoryId = bundle.getString("selected_category_id")
+            val categoryName = bundle.getString("selected_category_name")
+            val categoryIcon = bundle.getInt("selected_category_icon")
+            val categoryBackground = bundle.getInt("selected_category_icon_background")
 
+            // Update UI immediately with received data
+            if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
+                binding.tvCategoryName.text = categoryName
+                binding.ivCategoryIcon.setImageResource(categoryIcon)
+                updateCategoryIconBackground(categoryBackground)
+            }
+
+            // Also update ViewModel if categoryId is available
             if (categoryId != null) {
                 viewModel.updateCategoryId(categoryId)
                 viewModel.loadCategory(categoryId)

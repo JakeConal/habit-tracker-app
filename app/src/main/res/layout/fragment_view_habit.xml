@@ -2,9 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient">
+    android:background="@drawable/background_gradient"
+    android:clipToPadding="false">
 
     <!-- Header Container -->
     <LinearLayout
@@ -39,6 +41,7 @@
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
+            style="@style/HeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -54,26 +57,28 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/bg_action_button"
-            android:visibility="gone" />
+            android:visibility="invisible" />
     </LinearLayout>
 
-    <!-- Scrollable Form Content -->
+    <!-- Form Content with ScrollView -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingHorizontal="@dimen/spacing_xl"
-        android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_md"
-        app:layout_constraintBottom_toTopOf="@id/divider"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
         <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_xl"
+            android:paddingTop="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_lg"
             android:orientation="vertical">
 
             <!-- Habit Title Input -->
@@ -359,84 +364,61 @@
                         android:src="@drawable/ic_chevron_down" />
                 </LinearLayout>
             </LinearLayout>
+
+            <!-- Action Buttons Section -->
+            <!-- Primary Action: Start Pomodoro Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStartPomodoro"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="@dimen/spacing_xl"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:background="@drawable/bg_create_button"
+                android:fontFamily="sans-serif"
+                android:text="@string/start_pomodoro"
+                android:textAllCaps="false"
+                android:textColor="@color/primary_blue"
+                android:textSize="@dimen/text_lg"
+                app:backgroundTint="@null" />
+
+            <!-- Secondary Actions: Delete and Save side-by-side -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_md"
+                android:orientation="horizontal">
+
+                <!-- Delete Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/bg_button_rounded_white"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/delete"
+                    android:textAllCaps="false"
+                    android:textColor="#364153"
+                    android:textSize="@dimen/text_md"
+                    app:backgroundTint="@null" />
+
+                <!-- Save Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSave"
+                    android:layout_width="0dp"
+                    android:layout_height="52dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_button_rounded_white"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/save"
+                    android:textAllCaps="false"
+                    android:textColor="#364153"
+                    android:textSize="@dimen/text_md"
+                    app:backgroundTint="@null" />
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
-    <!-- Divider: Visually separates form content from action area -->
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginHorizontal="@dimen/spacing_lg"
-        android:background="@drawable/divider_horizontal"
-        app:layout_constraintBottom_toTopOf="@id/actionBarContainer"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <!-- Action Bar Container: Sticky bottom action bar with proper elevation -->
-    <LinearLayout
-        android:id="@+id/actionBarContainer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_md"
-        android:elevation="4dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <!-- Primary Action: Start Pomodoro Button (highest visual weight) -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnStartPomodoro"
-            android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:layout_marginBottom="@dimen/spacing_sm"
-            android:background="@drawable/bg_create_button"
-            android:fontFamily="sans-serif"
-            android:text="@string/start_pomodoro"
-            android:textAllCaps="false"
-            android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg"
-            app:backgroundTint="@null" />
-
-        <!-- Secondary Actions: Delete and Save side-by-side -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <!-- Delete Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDelete"
-                android:layout_width="0dp"
-                android:layout_height="58dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:background="@drawable/bg_button_outlined"
-                android:fontFamily="sans-serif"
-                android:text="@string/delete"
-                android:textAllCaps="false"
-                android:textColor="@color/primary_blue"
-                android:textSize="@dimen/text_lg"
-                app:backgroundTint="@null" />
-
-            <!-- Save Button -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSave"
-                android:layout_width="0dp"
-                android:layout_height="58dp"
-                android:layout_weight="1"
-                android:layout_marginStart="4dp"
-                android:background="@drawable/bg_button_outlined"
-                android:fontFamily="sans-serif"
-                android:text="@string/save"
-                android:textAllCaps="false"
-                android:textColor="@color/primary_blue"
-                android:textSize="@dimen/text_lg"
-                app:backgroundTint="@null" />
-        </LinearLayout>
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

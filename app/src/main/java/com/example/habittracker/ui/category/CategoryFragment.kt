@@ -5,6 +5,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.lifecycleScope
@@ -43,6 +46,7 @@ class CategoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupView()
+        applyWindowInsets()
         setupRecyclerView()
         setupClickListeners()
         setupFragmentResultListener()
@@ -50,7 +54,24 @@ class CategoryFragment : Fragment() {
     }
 
     private fun setupView() {
-        binding.tvTitle.text = getString(R.string.manage_categories)
+        binding.tvTitle.text = getString(R.string.manage_categories).uppercase()
+    }
+
+    private fun applyWindowInsets() {
+        // Handle edge-to-edge and window insets
+        
+        // Root container handles top inset (status bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            
+            // Apply padding top for status bar
+            view.updatePadding(
+                top = systemBarsInsets.top
+            )
+            
+            // Pass insets down to child views
+            windowInsets
+        }
     }
 
     private fun setupRecyclerView() {
@@ -136,7 +157,8 @@ class CategoryFragment : Fragment() {
             val userCategories = CategoryRepository.getInstance().getCategoriesForUser(userId)
             for (cat in userCategories) {
                 if (categories.none { it.title == cat.title }) {
-                    categories.add(Category(title = cat.title, icon = cat.icon, color = cat.color, habitCount = 0))
+                    // Preserve the original Category object with ID instead of rebuilding
+                    categories.add(cat.copy(habitCount = 0))
                 }
             }
             categoryAdapter.notifyDataSetChanged()

@@ -48,7 +48,7 @@ class ViewHabitViewModel : ViewModel() {
     private val _frequency = MutableStateFlow<List<String>>(emptyList())
     val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
-    private val _time = MutableStateFlow("5:00 - 12:00")
+    private val _time = MutableStateFlow("Every Time")
     val time: StateFlow<String> = _time.asStateFlow()
 
     // Events
@@ -67,6 +67,7 @@ class ViewHabitViewModel : ViewModel() {
 
     /**
      * Load habit by ID
+     * Loads all fields directly from the Habit model, not from description string
      */
     fun loadHabit(habitId: String) {
         viewModelScope.launch {
@@ -77,9 +78,19 @@ class ViewHabitViewModel : ViewModel() {
                     _habit.value = habit
                     _title.value = habit.name
                     _categoryId.value = habit.categoryId
+                    
+                    // Load frequency directly from habit.frequency field
                     _frequency.value = habit.frequency
-                    _time.value = habit.time
-                    // Parse description for other fields if available
+                    
+                    // Load time directly from habit.time field with validation
+                    _time.value = if (isValidTimeFormat(habit.time)) {
+                        habit.time
+                    } else {
+                        "5:00 - 12:00"
+                    }
+                    
+                    // Parse quantity/measurement from description only
+                    // (time and frequency are loaded directly from habit fields above)
                     parseDescription(habit.description)
 
                     // Load category details
@@ -110,21 +121,28 @@ class ViewHabitViewModel : ViewModel() {
     }
 
     /**
-     * Parse habit description to extract quantity, measurement, time
+     * Parse habit description to extract quantity and measurement ONLY
+     * 
+     * NOTE: Time and frequency are NOT parsed from description to avoid conflicts.
+     * - Time is loaded directly from habit.time field in loadHabit()
+     * - Frequency is loaded directly from habit.frequency field in loadHabit()
+     * 
+     * Description format: "Category: ... • Goal: 30 Mins • Frequency: ... • Time: ..."
+     * We use regex to extract Goal values to handle the bullet-separated format correctly.
      */
     private fun parseDescription(description: String) {
-        // Description format: "30 Mins, Everyday, 5:00 - 12:00"
-        val parts = description.split(", ")
-        if (parts.isNotEmpty()) {
-            val quantityMeasurement = parts[0].split(" ")
-            if (quantityMeasurement.size >= 2) {
-                _quantity.value = quantityMeasurement[0].toIntOrNull() ?: 30
-                _measurement.value = quantityMeasurement[1]
-            }
-        }
-        if (parts.size >= 3) {
-            _time.value = parts[2]
-        }
+        // Use regex to extract "Goal: <number> <unit>" from description
+        // This handles format: "Category: Reading • Goal: 30 Mins • Frequency: ..."
+        val goalRegex = Regex("""Goal:\s*(\d+)\s+([A-Za-z]+)""")
+        val match = goalRegex.find(description)
+        
+        // Extract and set quantity if found
+        match?.groups?.get(1)?.value?.toIntOrNull()?.let { _quantity.value = it }
+        // Extract and set measurement if found
+        match?.groups?.get(2)?.value?.let { _measurement.value = it }
+        
+        // DO NOT parse time from description - it's already loaded from habit.time in loadHabit()
+        // DO NOT parse frequency from description - it's already loaded from habit.frequency in loadHabit()
     }
 
     /**
@@ -243,8 +261,33 @@ class ViewHabitViewModel : ViewModel() {
 
     /**
      * Build habit description from selected options
+     * 
+     * NOTE: This description is for display purposes. The actual time and frequency
+     * are stored separately in habit.time and habit.frequency fields.
+     * When loading, we use those fields directly, not this description string.
      */
     private fun buildHabitDescription(): String {
-        return "${_quantity.value} ${_measurement.value}, ${_frequency.value}, ${_time.value}"
+        return buildString {
+            append("${_quantity.value} ${_measurement.value}")
+            append(", ")
+            append(_frequency.value.joinToString(", "))
+            append(", ")
+            append(_time.value)
+        }
+    }
+
+    /**
+     * Validate if time string is in valid format (HH:MM - HH:MM)
+     * Returns true if valid, false otherwise
+     */
+    private fun isValidTimeFormat(time: String): Boolean {
+        // Check for empty or common invalid values
+        if (time.isBlank() || time == "Every Time") {
+            return false
+        }
+        
+        // Regex pattern for time range format: HH:MM - HH:MM
+        val timeRangePattern = """^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$""".toRegex()
+        return timeRangePattern.matches(time)
     }
 }

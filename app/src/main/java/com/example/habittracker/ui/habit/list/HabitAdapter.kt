@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.util.formatFrequency
 
 /**
  * Adapter for displaying a list of habits in a RecyclerView
@@ -36,7 +37,7 @@ class HabitAdapter(
         
         fun bind(habit: Habit) {
             titleText.text = habit.name
-            descriptionText.text = "${habit.frequency} - ${if (habit.isCompleted) "✓ Completed" else "Pending"}"
+            descriptionText.text = "${habit.frequency.formatFrequency()} - ${if (habit.isCompleted) "✓ Completed" else "Pending"}"
             itemView.setOnClickListener { onHabitClick(habit) }
         }
     }

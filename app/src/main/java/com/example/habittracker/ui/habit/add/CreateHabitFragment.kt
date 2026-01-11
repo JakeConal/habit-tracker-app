@@ -13,6 +13,7 @@ import com.example.habittracker.databinding.FragmentCreateHabitBinding
 import com.example.habittracker.ui.common.BaseFragment
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.CategoryRepository
+import com.example.habittracker.util.formatFrequency
 import kotlinx.coroutines.launch
 import java.util.Calendar
 
@@ -92,6 +93,20 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
                 errorMessage?.let {
                     showError(it)
                 }
+            }
+        }
+
+        // Observe frequency changes
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.frequency.collect { frequency ->
+                binding.tvFrequency.text = frequency.formatFrequency()
+            }
+        }
+
+        // Observe time changes
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.time.collect { time ->
+                binding.tvTime.text = time
             }
         }
     }
@@ -219,7 +234,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
             .setPositiveButton("OK") { _, _ ->
                 val selectedDays = frequencies.filterIndexed { index, _ -> checkedItems[index] }
                 if (selectedDays.isNotEmpty()) {
-                    binding.tvFrequency.text = selectedDays.joinToString(", ")
+                    binding.tvFrequency.text = selectedDays.formatFrequency()
                     viewModel.updateFrequency(selectedDays)
                 } else {
                     showError("Please select at least one day")
