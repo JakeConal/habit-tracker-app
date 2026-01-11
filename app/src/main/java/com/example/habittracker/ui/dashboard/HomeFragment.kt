@@ -12,9 +12,14 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
+import com.example.habittracker.data.api.QuoteApiService
 import com.example.habittracker.databinding.FragmentHomeBinding
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 
 /**
@@ -30,6 +35,17 @@ class HomeFragment : Fragment() {
     private lateinit var habitsAdapter: HabitsAdapter
     private lateinit var calendarAdapter: CalendarAdapter
     private var selectedDay: CalendarDay? = null
+
+    private val retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.dailyquotes.dev/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    private val quoteApiService by lazy {
+        retrofit.create(QuoteApiService::class.java)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -93,6 +109,7 @@ class HomeFragment : Fragment() {
 
     private fun loadQuote() {
         val sharedPref = requireActivity().getSharedPreferences("HabitTrackerPrefs", Context.MODE_PRIVATE)
+        val customQuote = sharedPref.getString("custom_quote", "")
         val useSystemQuotes = sharedPref.getBoolean("use_system_quotes", false)
         val showOnDashboard = sharedPref.getBoolean("show_quote_on_dashboard", true)
         
@@ -103,15 +120,52 @@ class HomeFragment : Fragment() {
         
         binding.quoteCard.visibility = View.VISIBLE
         
-        if (useSystemQuotes) {
-            // Use default motivational quote
-            binding.tvQuote.text = getString(R.string.motivational_quote)
-        } else {
-            // Use custom quote if available
-            val customQuote = sharedPref.getString("custom_quote", null)
-            if (!customQuote.isNullOrEmpty()) {
-                binding.tvQuote.text = customQuote
+        // Priority: Show custom quote if not empty, otherwise show API quote
+        if (!customQuote.isNullOrEmpty()) {
+            binding.tvQuote.text = customQuote
+        } else if (useSystemQuotes) {
+            // Check if we need to fetch a new quote (once per day)
+            val lastFetchTime = sharedPref.getLong("last_quote_fetch_time", 0L)
+            val currentTime = System.currentTimeMillis()
+            val oneDayInMillis = 24 * 60 * 60 * 1000
+            val shouldRefresh = (currentTime - lastFetchTime) >= oneDayInMillis
+
+            if (shouldRefresh) {
+                // Fetch new quote from API
+                fetchAndDisplayQuote(sharedPref)
             } else {
+                // Use cached quote
+                val cachedQuote = sharedPref.getString("api_quote", "Believe in yourself and all that you are.")
+                binding.tvQuote.text = cachedQuote
+            }
+        } else {
+            // No custom quote and system quotes disabled - use default
+            binding.tvQuote.text = getString(R.string.motivational_quote)
+        }
+    }
+
+    private fun fetchAndDisplayQuote(sharedPref: android.content.SharedPreferences) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    quoteApiService.getMotivationalQuote()
+                }
+                if (response.isSuccessful) {
+                    response.body()?.let { quoteResponse ->
+                        binding.tvQuote.text = quoteResponse.quote
+                        // Cache the quote and update fetch time
+                        with(sharedPref.edit()) {
+                            putString("api_quote", quoteResponse.quote)
+                            putLong("last_quote_fetch_time", System.currentTimeMillis())
+                            apply()
+                        }
+                    } ?: run {
+                        binding.tvQuote.text = getString(R.string.motivational_quote)
+                    }
+                } else {
+                    binding.tvQuote.text = getString(R.string.motivational_quote)
+                }
+            } catch (_: Exception) {
                 binding.tvQuote.text = getString(R.string.motivational_quote)
             }
         }
