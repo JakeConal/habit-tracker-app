@@ -55,7 +55,7 @@ class CategoryFragment : Fragment() {
     }
 
     private fun setupView() {
-        binding.tvTitle.text = getString(R.string.manage_categories).uppercase()
+        binding.tvTitle.text = getString(R.string.manage_categories)
     }
 
     private fun applyWindowInsets() {

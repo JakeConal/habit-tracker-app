@@ -103,126 +103,123 @@
 
     </RelativeLayout>
 
-    <ScrollView
+    <!-- Quote Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/quoteCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:minHeight="@dimen/quote_card_height"
+        android:clickable="true"
+        android:focusable="true"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="#99FFFFFF"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        app:strokeColor="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_lg"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_quote"
+                android:contentDescription="@string/app_name"
+                android:layout_marginBottom="@dimen/spacing_sm" />
+
+            <TextView
+                android:id="@+id/tvQuote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/motivational_quote"
+                android:textSize="@dimen/text_lg"
+                android:textColor="@color/primary_blue"
+                android:fontFamily="serif"
+                android:textStyle="italic"
+                android:lineSpacingExtra="2dp"
+                tools:text="Believe in yourself and all that you are." />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Calendar Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/calendarCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:fillViewport="true"
-        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:layout_marginEnd="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        app:cardCornerRadius="16dp"
+        app:cardBackgroundColor="#99FFFFFF"
+        app:cardElevation="0dp"
+        app:strokeWidth="0dp"
+        app:strokeColor="@android:color/transparent"
+        app:layout_constraintTop_toBottomOf="@id/quoteCard"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/spacing_md"
-            android:paddingBottom="@dimen/spacing_xl">
+            android:layout_height="match_parent"
+            android:padding="@dimen/spacing_md">
 
-        <!-- Quote Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/quoteCard"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:minHeight="@dimen/quote_card_height"
-            android:clickable="true"
-            android:focusable="true"
-            android:foreground="?attr/selectableItemBackground"
-            app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="@color/white"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:strokeColor="@android:color/transparent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_quote_card"
-                android:orientation="vertical"
-                android:padding="@dimen/spacing_lg"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_quote"
-                    android:contentDescription="@string/app_name"
-                    android:layout_marginBottom="@dimen/spacing_sm" />
-
-                <TextView
-                    android:id="@+id/tvQuote"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/motivational_quote"
-                    android:textSize="@dimen/text_lg"
-                    android:textColor="@color/primary_blue"
-                    android:fontFamily="serif"
-                    android:textStyle="italic"
-                    android:lineSpacingExtra="2dp"
-                    tools:text="Believe in yourself and all that you are." />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Calendar Card -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/calendarCard"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            app:cardCornerRadius="16dp"
-            app:cardBackgroundColor="@color/white"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:strokeColor="@android:color/transparent"
-            app:layout_constraintTop_toBottomOf="@id/quoteCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
+            <!-- Calendar Grid -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvCalendar"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingVertical="@dimen/spacing_md"
-                android:paddingHorizontal="@dimen/spacing_sm"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:clipToPadding="false"
-                android:layout_gravity="center"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
                 tools:listitem="@layout/item_calendar_day"
                 tools:itemCount="6" />
-        </com.google.android.material.card.MaterialCardView>
 
-        <!-- Your Habits Title -->
-        <TextView
-            android:id="@+id/tvHabitsTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:text="@string/your_habits"
-            android:textSize="@dimen/text_lg"
-            android:textColor="@color/primary_blue"
-            android:fontFamily="sans-serif"
-            app:layout_constraintTop_toBottomOf="@id/calendarCard"
-            app:layout_constraintStart_toStartOf="parent" />
+            <!-- Habits Title -->
+            <TextView
+                android:id="@+id/tvHabitsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:text="@string/your_habits"
+                android:textSize="@dimen/text_lg"
+                android:textColor="@color/primary_blue"
+                android:fontFamily="sans-serif-medium"
+                android:textStyle="bold"
+                app:layout_constraintTop_toBottomOf="@id/rvCalendar"
+                app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Habits List -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvHabits"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:nestedScrollingEnabled="false"
-            app:layout_constraintTop_toBottomOf="@id/tvHabitsTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:listitem="@layout/item_habit"
-            tools:itemCount="3" />
+            <!-- Habits List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvHabits"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="@dimen/spacing_md"
+                android:nestedScrollingEnabled="true"
+                app:layout_constraintTop_toBottomOf="@id/tvHabitsTitle"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:listitem="@layout/item_habit"
+                tools:itemCount="3" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+    </com.google.android.material.card.MaterialCardView>
 
     <!-- Floating Action Button for adding new habit -->
 

@@ -24,16 +24,16 @@ class CalendarAdapter(
 
                 // Update background and text colors based on selection
                 if (isSelected) {
-                    // Selected state - primary blue background with white text
+                    // Selected state - light blue background with dark blue text
                     root.setCardBackgroundColor(
-                        ContextCompat.getColor(itemView.context, R.color.primary_blue)
+                        ContextCompat.getColor(itemView.context, R.color.accent_blue)
                     )
                     root.cardElevation = itemView.context.resources.getDimension(R.dimen.elevation_card)
                     tvDayNumber.setTextColor(
-                        ContextCompat.getColor(itemView.context, R.color.white)
+                        ContextCompat.getColor(itemView.context, R.color.primary_blue)
                     )
                     tvDayName.setTextColor(
-                        ContextCompat.getColor(itemView.context, R.color.white)
+                        ContextCompat.getColor(itemView.context, R.color.primary_blue)
                     )
                 } else {
                     // Unselected state - pure white background with original text colors

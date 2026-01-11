@@ -10,6 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentHomeBinding
 import com.google.android.material.snackbar.Snackbar
@@ -28,6 +29,7 @@ class HomeFragment : Fragment() {
     
     private lateinit var habitsAdapter: HabitsAdapter
     private lateinit var calendarAdapter: CalendarAdapter
+    private var selectedDay: CalendarDay? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,10 +56,23 @@ class HomeFragment : Fragment() {
                 if (user != null) {
                     // Set greeting text with user name from Firebase
                     binding.tvGreeting.text = "Hi, ${user.name}"
+                    // Load user avatar from Firebase
+                    user.avatarUrl?.let { url ->
+                        Glide.with(this@HomeFragment)
+                            .load(url)
+                            .placeholder(R.drawable.ic_person)
+                            .error(R.drawable.ic_person)
+                            .circleCrop()
+                            .into(binding.ivAvatar)
+                    } ?: run {
+                        // If no avatar URL, use default
+                        binding.ivAvatar.setImageResource(R.drawable.ic_person)
+                    }
                     // You could also show user points or other info here
                     // binding.tvUserPoints.text = "${user.points} pts"
                 } else {
                     binding.tvGreeting.text = "Hi, User"
+                    binding.ivAvatar.setImageResource(R.drawable.ic_person)
                 }
             }
         }
@@ -129,22 +144,32 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateHabits(habitsList: List<com.example.habittracker.data.model.Habit>) {
-        if (habitsList.isEmpty()) {
+        val filteredHabits = selectedDay?.let { day ->
+            habitsList.filter { habit ->
+                val fullDayName = getFullDayName(day.dayName)
+                habit.frequency.contains("Daily") || habit.frequency.contains(fullDayName)
+            }
+        } ?: habitsList
+
+        if (filteredHabits.isEmpty()) {
             // No habits found - show empty state or sample data
             binding.rvHabits.visibility = View.VISIBLE // Keep visible to show empty state
             // Convert empty list to UI model
             habitsAdapter.updateHabits(mutableListOf(), viewModel.categories.value)
         } else {
             binding.rvHabits.visibility = View.VISIBLE
-            habitsAdapter.updateHabits(habitsList.toMutableList(), viewModel.categories.value)
+            habitsAdapter.updateHabits(filteredHabits.toMutableList(), viewModel.categories.value)
         }
     }
 
     private fun setupCalendar() {
         val days = generateCalendarDays()
+        selectedDay = days.find { it.isSelected }
         calendarAdapter = CalendarAdapter(days) { day ->
             // Handle day click
+            selectedDay = day
             calendarAdapter.setSelectedDay(day)
+            updateHabits(viewModel.habits.value)
         }
         
         binding.rvCalendar.apply {
@@ -230,6 +255,19 @@ class HomeFragment : Fragment() {
         // Navigate to Daily Quote screen when quote card is clicked
         binding.quoteCard.setOnClickListener {
             findNavController().navigate(R.id.nav_daily_quote)
+        }
+    }
+
+    private fun getFullDayName(shortName: String): String {
+        return when (shortName) {
+            "Sun" -> "Sunday"
+            "Mon" -> "Monday"
+            "Tue" -> "Tuesday"
+            "Wed" -> "Wednesday"
+            "Thu" -> "Thursday"
+            "Fri" -> "Friday"
+            "Sat" -> "Saturday"
+            else -> ""
         }
     }
 

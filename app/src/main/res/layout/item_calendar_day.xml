@@ -4,10 +4,12 @@
     android:id="@+id/cardView"
     android:layout_width="@dimen/calendar_day_width"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="6dp"
+    android:layout_marginHorizontal="4dp"
     android:minWidth="@dimen/calendar_day_width"
+    android:clickable="true"
+    android:focusable="true"
     app:cardCornerRadius="50dp"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/card_calendar_day_bg"
     app:cardElevation="0dp"
     app:strokeWidth="0dp"
     app:strokeColor="@android:color/transparent">
@@ -26,7 +28,7 @@
             android:layout_height="wrap_content"
             android:text="16"
             android:textSize="18sp"
-            android:textColor="@color/primary_blue"
+            android:textColor="@color/text_calendar_day"
             android:fontFamily="sans-serif-medium"
             android:layout_marginBottom="4dp"
             android:gravity="center" />
@@ -37,9 +39,10 @@
             android:layout_height="wrap_content"
             android:text="Tue"
             android:textSize="@dimen/text_sm"
-            android:textColor="@color/text_secondary"
+            android:textColor="@color/text_calendar_day"
             android:fontFamily="sans-serif"
             android:gravity="center" />
 
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
+

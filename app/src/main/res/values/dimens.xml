@@ -33,7 +33,7 @@
     <dimen name="calendar_card_height">106dp</dimen>
     <dimen name="habit_item_height">82dp</dimen>
     <dimen name="habit_item_radius">16dp</dimen>
-    <dimen name="calendar_day_width">44dp</dimen>
+    <dimen name="calendar_day_width">42dp</dimen>
     <dimen name="calendar_day_height">72dp</dimen>
     <dimen name="calendar_day_radius">20dp</dimen>
     <dimen name="habit_icon_size">56dp</dimen>
