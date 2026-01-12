@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.main
 
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -81,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_login, 
                 R.id.nav_register,
                 R.id.nav_create_habit,
-                R.id.nav_category,
                 R.id.nav_create_category,
                 R.id.nav_view_habit,
                 R.id.nav_focus_timer -> {
@@ -131,8 +131,9 @@ class MainActivity : AppCompatActivity() {
      */
     private fun setupFab() {
         binding.fabAdd.setOnClickListener {
-            // Navigate to Create Habit screen
-            navController.navigate(R.id.nav_create_habit)
+            // Start CreateHabitActivity instead of navigating to fragment
+            val intent = Intent(this, com.example.habittracker.ui.habit.add.CreateHabitActivity::class.java)
+            startActivity(intent)
         }
     }
 

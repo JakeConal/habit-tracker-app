@@ -3,31 +3,33 @@ package com.example.habittracker.ui.habit.add
 import android.app.AlertDialog
 import android.app.TimePickerDialog
 import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.ViewGroup
 import android.widget.NumberPicker
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
-import com.example.habittracker.R
-import com.example.habittracker.data.model.Category
-import com.example.habittracker.databinding.FragmentCreateHabitBinding
-import com.example.habittracker.ui.common.BaseFragment
-import com.example.habittracker.data.repository.AuthRepository
-import com.example.habittracker.data.repository.CategoryRepository
-import com.example.habittracker.util.formatFrequency
-import kotlinx.coroutines.launch
-import java.util.Calendar
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
+import com.example.habittracker.R
+import com.example.habittracker.data.model.Category
+import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.CategoryRepository
+import com.example.habittracker.databinding.ActivityCreateHabitBinding
+import com.example.habittracker.ui.category.CategoryActivity
+import com.example.habittracker.util.formatFrequency
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
+import java.util.Calendar
 
 /**
- * CreateHabitFragment - Screen for creating a new habit
+ * CreateHabitActivity - Activity for creating a new habit
  * Follows MVVM architecture pattern
  */
-class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
+class CreateHabitActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityCreateHabitBinding
     private val viewModel: CreateHabitViewModel by viewModels()
     
     // Flag to prevent setupInitialValues from overwriting user-selected category
@@ -36,54 +38,64 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
     private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
-    override fun getViewBinding(
-        inflater: LayoutInflater,
-        container: ViewGroup?
-    ): FragmentCreateHabitBinding {
-        return FragmentCreateHabitBinding.inflate(inflater, container, false)
+    companion object {
+        private const val REQUEST_CODE_CATEGORY = 1001
+        const val EXTRA_CATEGORY_ID = "extra_category_id"
     }
 
-    override fun setupView() {
-        setupClickListeners()
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityCreateHabitBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        
+        setupView()
         applyWindowInsets()
+        setupClickListeners()
+        observeData()
         setupInitialValues()
     }
 
+    private fun setupView() {
+        // Enable edge-to-edge
+        window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+    }
+
     private fun applyWindowInsets() {
-        // Xử lý edge-to-edge và window insets
+        // Handle edge-to-edge and window insets
         
-        // 1. Root container xử lý top inset (status bar)
+        // 1. Root container handles top inset (status bar)
         ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer) { view, windowInsets ->
             val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             
-            // Áp padding top cho status bar
+            // Apply padding top for status bar
             view.updatePadding(
                 top = systemBarsInsets.top
             )
             
-            // Truyền insets xuống các child views
+            // Pass insets down to child views
             windowInsets
         }
         
-        // 2. Content container xử lý bottom inset (navigation/gesture bar)
+        // 2. Content container handles bottom inset (navigation/gesture bar)
         ViewCompat.setOnApplyWindowInsetsListener(binding.contentContainer) { view, windowInsets ->
             val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
             val navBarHeight = systemBarsInsets.bottom
             
-            // Áp padding bottom = spacing_md (16dp) + chiều cao nav bar
+            // Apply padding bottom = spacing_md (16dp) + nav bar height
             val basePadding = resources.getDimensionPixelSize(R.dimen.spacing_md)
             view.updatePadding(
                 bottom = basePadding + navBarHeight
             )
             
-            // Consume bottom inset để không ảnh hưởng views khác
+            // Consume bottom inset
             WindowInsetsCompat.CONSUMED
         }
     }
 
-    override fun observeData() {
+    private fun observeData() {
         // Observe category changes and update UI
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewModel.category.collect { category ->
                 category?.let {
                     updateCategoryUI(it)
@@ -92,17 +104,17 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         }
 
         // Observe habit creation success
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewModel.habitCreated.collect { success ->
                 if (success) {
                     showSuccess("Habit created successfully!")
-                    findNavController().navigateUp()
+                    finish()
                 }
             }
         }
 
         // Observe errors
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewModel.error.collect { errorMessage ->
                 errorMessage?.let {
                     showError(it)
@@ -111,30 +123,16 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         }
 
         // Observe frequency changes
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewModel.frequency.collect { frequency ->
                 binding.tvFrequency.text = frequency.formatFrequency()
             }
         }
 
         // Observe time changes
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             viewModel.time.collect { time ->
                 binding.tvTime.text = time
-            }
-        }
-
-        // Listen for category selection result from CategoryActivity
-        parentFragmentManager.setFragmentResultListener(
-            "category_request_key",
-            viewLifecycleOwner
-        ) { _, bundle ->
-            val categoryId = bundle.getString("selected_category_id")
-            
-            // Only use categoryId - load full Category from repository
-            if (categoryId != null) {
-                isInitialCategoryLoaded = true // Mark as loaded to prevent default from overwriting
-                viewModel.loadCategory(categoryId)
             }
         }
     }
@@ -147,13 +145,12 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         binding.tvCategoryName.text = category.title
         binding.ivCategoryIcon.setImageResource(category.icon.resId)
         binding.categoryIconBackground.setCardBackgroundColor(
-            requireContext().getColor(category.color.colorResId)
+            getColor(category.color.colorResId)
         )
     }
 
     private fun setupInitialValues() {
         // Load default category from repository only if not already loaded
-        // This prevents overwriting user-selected category from CategoryActivity
         if (!isInitialCategoryLoaded) {
             lifecycleScope.launch {
                 try {
@@ -161,16 +158,12 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
                     val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
                     if (categories.isNotEmpty()) {
                         val defaultCategory = categories[0]
-                        // Load category through ViewModel to ensure consistency
                         viewModel.loadCategory(defaultCategory.id)
                         isInitialCategoryLoaded = true
                     } else {
-                        // No categories available, show error or default
                         showError("No categories available. Please create a category first.")
                     }
                 } catch (e: Exception) {
-                    println("Error loading default category: ${e.message}")
-                    e.printStackTrace()
                     showError("Failed to load categories: ${e.message}")
                 }
             }
@@ -186,7 +179,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     private fun setupClickListeners() {
         // Back button
         binding.btnBack.setOnClickListener {
-            findNavController().navigateUp()
+            finish()
         }
         
         // Category selector
@@ -221,13 +214,13 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     }
 
     private fun showCategorySelector() {
-        // Launch CategoryActivity to select a category
-        val intent = Intent(requireContext(), com.example.habittracker.ui.category.CategoryActivity::class.java)
-        startActivity(intent)
+        // Start CategoryActivity for result
+        val intent = Intent(this, CategoryActivity::class.java)
+        startActivityForResult(intent, REQUEST_CODE_CATEGORY)
     }
 
     private fun showQuantitySelector() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_number_picker, null)
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_number_picker, null)
         val numberPicker = dialogView.findViewById<NumberPicker>(R.id.numberPicker).apply {
             minValue = 1
             maxValue = 999
@@ -235,7 +228,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
             wrapSelectorWheel = false
         }
         
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(this)
             .setTitle("Select Quantity")
             .setView(dialogView)
             .setPositiveButton("OK") { _, _ ->
@@ -250,7 +243,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     private fun showMeasurementSelector() {
         val currentIndex = measurements.indexOf(viewModel.measurement.value)
         
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(this)
             .setTitle("Select Measurement")
             .setSingleChoiceItems(measurements.toTypedArray(), currentIndex) { dialog, which ->
                 val selectedMeasurement = measurements[which]
@@ -266,7 +259,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
             viewModel.frequency.value.contains(frequencies[index])
         }
 
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(this)
             .setTitle("Select Frequency (Days of the Week)")
             .setMultiChoiceItems(frequencies.toTypedArray(), checkedItems) { _, which, isChecked ->
                 checkedItems[which] = isChecked
@@ -289,11 +282,11 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         
         // Show start time picker
         TimePickerDialog(
-            requireContext(),
+            this,
             { _, startHour, startMinute ->
                 // Show end time picker after start time is selected
                 TimePickerDialog(
-                    requireContext(),
+                    this,
                     { _, endHour, endMinute ->
                         val timeRange = String.format(
                             "%02d:%02d - %02d:%02d",
@@ -342,7 +335,22 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
         viewModel.createHabit()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CATEGORY && resultCode == RESULT_OK) {
+            val categoryId = data?.getStringExtra(EXTRA_CATEGORY_ID)
+            if (categoryId != null) {
+                isInitialCategoryLoaded = true
+                viewModel.loadCategory(categoryId)
+            }
+        }
+    }
+
+    private fun showSuccess(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun showError(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 }

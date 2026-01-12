@@ -16,16 +16,16 @@ import com.example.habittracker.data.model.Category
 import com.example.habittracker.data.model.CategoryColor
 import com.example.habittracker.data.model.CategoryIcon
 import com.example.habittracker.data.repository.AuthRepository
-import com.example.habittracker.databinding.FragmentCreateCategoryBinding
+import com.example.habittracker.databinding.FragmentEditCategoryBinding
 import kotlinx.coroutines.launch
 
 /**
- * CreateCategoryFragment - Screen for creating a new category
+ * EditCategoryFragment - Screen for editing an existing category
+ * Uses fragment_edit_category.xml layout
  */
-class CreateCategoryFragment : Fragment() {
+class EditCategoryFragment : Fragment() {
 
     companion object {
-        const val RESULT_CATEGORY_CREATED = "result_category_created"
         const val RESULT_CATEGORY_UPDATED = "result_category_updated"
         
         // Argument keys
@@ -35,23 +35,22 @@ class CreateCategoryFragment : Fragment() {
         const val ARG_CATEGORY_BACKGROUND = "category_background"
     }
 
-    private var _binding: FragmentCreateCategoryBinding? = null
+    private var _binding: FragmentEditCategoryBinding? = null
     private val binding get() = _binding!!
     private val viewModel: CategoryViewModel by viewModels()
     
     private var selectedColorRes: Int = R.drawable.bg_category_icon_purple
     private var selectedIconRes: Int = R.drawable.ic_book
     
-    // Edit mode variables
-    private var isEditMode: Boolean = false
-    private var categoryId: String? = null
+    // Edit category data
+    private lateinit var categoryId: String
     
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentCreateCategoryBinding.inflate(inflater, container, false)
+        _binding = FragmentEditCategoryBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -62,47 +61,8 @@ class CreateCategoryFragment : Fragment() {
         setupClickListeners()
         observeData()
     }
-    
-    private fun loadArguments() {
-        arguments?.let { bundle ->
-            val id = bundle.getString(ARG_CATEGORY_ID)
-            if (!id.isNullOrEmpty()) {
-                // Edit mode
-                isEditMode = true
-                categoryId = id
-                
-                val categoryName = bundle.getString(ARG_CATEGORY_NAME) ?: ""
-                val categoryIcon = bundle.getInt(ARG_CATEGORY_ICON, R.drawable.ic_book)
-                val categoryBackground = bundle.getInt(ARG_CATEGORY_BACKGROUND, R.drawable.bg_category_icon_purple)
-                
-                // Prefill the values
-                if (categoryIcon != 0) selectedIconRes = categoryIcon
-                if (categoryBackground != 0) selectedColorRes = categoryBackground
-                binding.etCategoryTitle.setText(categoryName)
-            }
-        }
-    }
 
     private fun observeData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.categoryAdded.collect { category ->
-                if (category != null) {
-                    val bundle = bundleOf(
-                        "category_id" to category.id,
-                        "category_name" to category.title,
-                        "category_icon" to category.icon.resId,
-                        "category_background" to category.color.resId
-                    )
-                    setFragmentResult(RESULT_CATEGORY_CREATED, bundle)
-                    
-                    Toast.makeText(requireContext(), "Category created successfully", Toast.LENGTH_SHORT).show()
-                    if (!findNavController().navigateUp()) {
-                        requireActivity().finish()
-                    }
-                }
-            }
-        }
-        
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.categoryUpdated.collect { category ->
                 if (category != null) {
@@ -131,20 +91,30 @@ class CreateCategoryFragment : Fragment() {
         }
     }
     
+    private fun loadArguments() {
+        arguments?.let { bundle ->
+            categoryId = bundle.getString(ARG_CATEGORY_ID) 
+                ?: throw IllegalArgumentException("category_id is required for EditCategoryFragment")
+            
+            val categoryName = bundle.getString(ARG_CATEGORY_NAME) ?: ""
+            val categoryIcon = bundle.getInt(ARG_CATEGORY_ICON, R.drawable.ic_book)
+            val categoryBackground = bundle.getInt(ARG_CATEGORY_BACKGROUND, R.drawable.bg_category_icon_purple)
+            
+            // Prefill the values
+            selectedIconRes = categoryIcon
+            selectedColorRes = categoryBackground
+            binding.etCategoryTitle.setText(categoryName)
+        } ?: throw IllegalArgumentException("Arguments are required for EditCategoryFragment")
+    }
+
     private fun setupView() {
-        if (isEditMode) {
-            // Set title for edit mode
-            binding.tvTitleText.text = "Edit Category"
-            // Set button text for edit mode
-            binding.tvCreateButtonText.text = "Update"
-        } else {
-            // Set title for create mode
-            binding.tvTitleText.text = "Create Category"
-            // Set button text for create mode
-            binding.tvCreateButtonText.text = "Create"
-        }
+        // Set title for edit mode
+        binding.tvTitleText.text = "Edit Category"
         
-        // Set preview values
+        // Set button text for edit mode
+        binding.tvCreateButtonText.text = "Update"
+        
+        // Set preview values from arguments
         binding.viewColorPreview.setBackgroundResource(selectedColorRes)
         binding.ivIconPreview.setImageResource(selectedIconRes)
     }
@@ -162,8 +132,8 @@ class CreateCategoryFragment : Fragment() {
             showIconPickerDialog()
         }
         
-        binding.btnCreate.setOnClickListener {
-            createCategory()
+        binding.btnUpdate.setOnClickListener {
+            updateCategory()
         }
     }
 
@@ -215,7 +185,7 @@ class CreateCategoryFragment : Fragment() {
         }
     }
 
-    private fun createCategory() {
+    private fun updateCategory() {
         val categoryTitle = binding.etCategoryTitle.text.toString().trim()
         
         if (categoryTitle.isEmpty()) {
@@ -228,18 +198,14 @@ class CreateCategoryFragment : Fragment() {
         val colorEnum = CategoryColor.entries.firstOrNull { it.resId == selectedColorRes } ?: CategoryColor.RED
         
         val category = Category(
-            id = if (isEditMode) categoryId ?: "" else "",
+            id = categoryId,
             userId = userId,
             title = categoryTitle,
             icon = iconEnum,
             color = colorEnum
         )
         
-        if (isEditMode) {
-            viewModel.updateCategory(category)
-        } else {
-            viewModel.addCategory(category)
-        }
+        viewModel.updateCategory(category)
     }
 
     override fun onDestroyView() {
@@ -247,13 +213,3 @@ class CreateCategoryFragment : Fragment() {
         _binding = null
     }
 }
-
-data class ColorOption(
-    val name: String,
-    val backgroundRes: Int
-)
-
-data class IconOption(
-    val name: String,
-    val iconRes: Int
-)

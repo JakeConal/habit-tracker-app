@@ -153,24 +153,7 @@
         android:id="@+id/nav_create_habit"
         android:name="com.example.habittracker.ui.habit.add.CreateHabitFragment"
         android:label="Create New Habit"
-        tools:layout="@layout/fragment_create_habit">
-        
-        <action
-            android:id="@+id/action_create_habit_to_category"
-            app:destination="@id/nav_category" />
-    </fragment>
-
-    <!-- Category Fragment -->
-    <fragment
-        android:id="@+id/nav_category"
-        android:name="com.example.habittracker.ui.category.CategoryFragment"
-        android:label="Select Category"
-        tools:layout="@layout/fragment_category">
-        
-        <action
-            android:id="@+id/action_category_to_create_category"
-            app:destination="@id/nav_create_category" />
-    </fragment>
+        tools:layout="@layout/fragment_create_habit" />
 
     <!-- Create Category Fragment -->
     <fragment
@@ -178,6 +161,27 @@
         android:name="com.example.habittracker.ui.category.CreateCategoryFragment"
         android:label="Create Category"
         tools:layout="@layout/fragment_create_category" />
+
+    <!-- Edit Category Fragment -->
+    <fragment
+        android:id="@+id/nav_edit_category"
+        android:name="com.example.habittracker.ui.category.EditCategoryFragment"
+        android:label="Edit Category"
+        tools:layout="@layout/fragment_edit_category">
+        
+        <argument
+            android:name="category_id"
+            app:argType="string" />
+        <argument
+            android:name="category_name"
+            app:argType="string" />
+        <argument
+            android:name="category_icon"
+            app:argType="integer" />
+        <argument
+            android:name="category_background"
+            app:argType="integer" />
+    </fragment>
 
     <!-- Friend Profile Fragment -->
     <fragment
@@ -220,10 +224,6 @@
         <action
             android:id="@+id/action_view_habit_to_focus_timer"
             app:destination="@id/nav_focus_timer" />
-            
-        <action
-            android:id="@+id/action_view_habit_to_category"
-            app:destination="@id/nav_category" />
             
     </fragment>
 

@@ -44,7 +44,7 @@
             android:layout_weight="1"
             android:fontFamily="sans-serif"
             android:gravity="center"
-            android:text="Create Category"
+            android:text="Edit Category"
             android:textColor="@color/primary_blue"
             android:textSize="@dimen/text_lg" />
 
@@ -59,7 +59,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/btnCreate"
+        app:layout_constraintBottom_toTopOf="@id/btnUpdate"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
         <LinearLayout
@@ -230,9 +230,9 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Create Button -->
+    <!-- Update Button -->
     <FrameLayout
-        android:id="@+id/btnCreate"
+        android:id="@+id/btnUpdate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="24dp"
@@ -251,7 +251,7 @@
             android:layout_gravity="center"
             android:fontFamily="sans-serif"
             android:paddingVertical="18dp"
-            android:text="Create"
+            android:text="Update"
             android:textColor="@color/primary_blue"
             android:textSize="@dimen/text_lg" />
     </FrameLayout>

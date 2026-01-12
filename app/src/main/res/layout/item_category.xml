@@ -13,78 +13,101 @@
     app:strokeWidth="0dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mainContent"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Category Icon -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/categoryIconBackground"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:cardBackgroundColor="@color/icon_bg_pink"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-            <ImageView
-                android:id="@+id/ivCategoryIcon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_heart"
-                app:tint="@color/white" />
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- Category Info Container -->
-        <LinearLayout
-            android:id="@+id/categoryInfoContainer"
+        <!-- Selectable Area for Category (Icon + Info) - This is what triggers category selection -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/categorySelectableArea"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toStartOf="@id/actionButtonsContainer"
-            app:layout_constraintStart_toEndOf="@id/categoryIconBackground"
-            app:layout_constraintTop_toTopOf="@id/categoryIconBackground">
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
 
-            <!-- Category Name -->
-            <TextView
-                android:id="@+id/tvCategoryName"
-                android:layout_width="match_parent"
+            <!-- Category Icon -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/categoryIconBackground"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:clickable="false"
+                android:focusable="false"
+                app:cardBackgroundColor="@color/icon_bg_pink"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/ivCategoryIcon"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_heart"
+                    app:tint="@color/white" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Category Info Container -->
+            <LinearLayout
+                android:id="@+id/categoryInfoContainer"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:fontFamily="sans-serif-medium"
-                android:text="Physical Health"
-                android:textColor="@color/primary_blue"
-                android:textSize="16sp"
-                tools:text="Physical Health" />
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="8dp"
+                android:clickable="false"
+                android:focusable="false"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@id/categoryIconBackground"
+                app:layout_constraintTop_toTopOf="@id/categoryIconBackground">
 
-            <!-- Habit Count -->
-            <TextView
-                android:id="@+id/tvHabitCount"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="sans-serif"
-                android:text="5 Habits"
-                android:textColor="@color/secondary_gray"
-                android:textSize="12sp"
-                tools:text="5 Habits" />
-        </LinearLayout>
+                <!-- Category Name -->
+                <TextView
+                    android:id="@+id/tvCategoryName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Physical Health"
+                    android:textColor="@color/primary_blue"
+                    android:textSize="16sp"
+                    tools:text="Physical Health" />
 
-        <!-- Action Buttons Container -->
+                <!-- Habit Count -->
+                <TextView
+                    android:id="@+id/tvHabitCount"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="sans-serif"
+                    android:text="5 Habits"
+                    android:textColor="@color/secondary_gray"
+                    android:textSize="12sp"
+                    tools:text="5 Habits" />
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Action Buttons Container - Completely separate from selection area -->
         <LinearLayout
             android:id="@+id/actionButtonsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            app:layout_constraintBottom_toBottomOf="@id/categoryIconBackground"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/categoryIconBackground">
+            app:layout_constraintTop_toTopOf="parent">
 
             <!-- Edit Button -->
             <FrameLayout
@@ -92,13 +115,16 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginEnd="12dp"
-                android:background="@drawable/bg_edit_button">
+                android:background="@drawable/bg_edit_button"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/app_name"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/ic_edit"
                     app:tint="@color/edit_button_icon" />
             </FrameLayout>
@@ -108,13 +134,16 @@
                 android:id="@+id/btnDelete"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:background="@drawable/bg_delete_button">
+                android:background="@drawable/bg_delete_button"
+                android:clickable="true"
+                android:focusable="true">
 
                 <ImageView
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
                     android:contentDescription="@string/app_name"
+                    android:importantForAccessibility="no"
                     android:src="@drawable/ic_delete"
                     app:tint="@color/delete_button_icon" />
             </FrameLayout>
@@ -122,3 +151,4 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
+

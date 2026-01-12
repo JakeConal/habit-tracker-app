@@ -294,11 +294,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun navigateToViewHabit(habit: com.example.habittracker.data.model.Habit) {
-        // Navigate to ViewHabitFragment with habitId
-        val bundle = Bundle().apply {
-            putString("habitId", habit.id)
-        }
-        findNavController().navigate(R.id.action_global_to_view_habit, bundle)
+        // Start ViewHabitDetailActivity with habitId
+        val intent = com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity.newIntent(
+            requireContext(),
+            habit.id
+        )
+        startActivity(intent)
     }
 
     private fun showError(message: String) {

@@ -13,7 +13,14 @@ enum class CategoryIcon(val resId: Int) {
     BRIEFCASE(R.drawable.ic_briefcase),
     FOOD(R.drawable.ic_food),
     GROWTH(R.drawable.ic_growth),
-    MOON(R.drawable.ic_moon)
+    MOON(R.drawable.ic_moon),
+    FITNESS(R.drawable.ic_fitness),
+    HEALTH(R.drawable.ic_health),
+    WATER(R.drawable.ic_water),
+    WALK(R.drawable.ic_walk),
+    MEDITATION(R.drawable.ic_meditation),
+    WORK(R.drawable.ic_work),
+    OTHER(R.drawable.ic_other)
 }
 
 /**
