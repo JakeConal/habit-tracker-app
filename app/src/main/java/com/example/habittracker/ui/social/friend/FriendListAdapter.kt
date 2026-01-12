@@ -15,6 +15,9 @@ import com.example.habittracker.databinding.ItemFriendBinding
 import com.example.habittracker.databinding.ItemFriendRequestBinding
 import com.example.habittracker.databinding.ItemSearchHeaderBinding
 import com.example.habittracker.databinding.ItemSectionHeaderBinding
+import com.example.habittracker.ui.social.profile.Friend
+import com.example.habittracker.ui.social.profile.FriendRequest
+import com.example.habittracker.ui.social.profile.FriendListItem
 
 /**
  * FriendListAdapter - Adapter for displaying friend list with multiple view types
