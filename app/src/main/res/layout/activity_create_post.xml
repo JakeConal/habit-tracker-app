@@ -162,12 +162,14 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:layout_margin="8dp"
-                        android:src="@drawable/ic_minus_cirlce"
+                        android:padding="6dp"
+                        app:srcCompat="@drawable/ic_minus_cirlce"
                         android:background="@drawable/button_background_round"
+                        android:scaleType="fitCenter"
                         android:contentDescription="@string/remove_image"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:tint="@color/white" />
+                        app:tint="@color/primary_blue" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

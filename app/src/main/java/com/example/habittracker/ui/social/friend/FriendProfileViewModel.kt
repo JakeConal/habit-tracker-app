@@ -2,7 +2,7 @@ package com.example.habittracker.ui.social.friend
 
 import androidx.lifecycle.ViewModel
 import com.example.habittracker.data.model.FriendProfile
-import com.example.habittracker.ui.feed.Post
+import com.example.habittracker.data.model.Post
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -55,37 +55,37 @@ class FriendProfileViewModel : ViewModel() {
                 id = "post_001",
                 userId = friendId,
                 authorName = "Emma Thompson",
-                authorAvatar = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = "6 hours ago",
+                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
+                timestamp = System.currentTimeMillis() - 6 * 3600 * 1000,
                 content = "Hit my reading goal for the month! 📚 Knowledge is power, keep learning every day.",
                 imageUrl = null,
-                likesCount = 28,
-                commentsCount = 5,
-                isLiked = false
+                likeCount = 28,
+                commentCount = 5,
+                likedBy = emptyList()
             ),
             Post(
                 id = "post_002",
                 userId = friendId,
                 authorName = "Emma Thompson",
-                authorAvatar = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = "1 day ago",
+                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
+                timestamp = System.currentTimeMillis() - 24 * 3600 * 1000,
                 content = "Morning run completed! 🏃‍♀️ Feeling energized and ready for the day ahead.",
                 imageUrl = "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800",
-                likesCount = 45,
-                commentsCount = 8,
-                isLiked = false
+                likeCount = 45,
+                commentCount = 8,
+                likedBy = emptyList()
             ),
             Post(
                 id = "post_003",
                 userId = friendId,
                 authorName = "Emma Thompson",
-                authorAvatar = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = "3 days ago",
+                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
+                timestamp = System.currentTimeMillis() - 3 * 24 * 3600 * 1000,
                 content = "Trying out a new healthy recipe today! 🥗 Eating well is such an important habit.",
                 imageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800",
-                likesCount = 52,
-                commentsCount = 12,
-                isLiked = true
+                likeCount = 52,
+                commentCount = 12,
+                likedBy = listOf("current_user_id") // Simulate liked
             )
         )
 

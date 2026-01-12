@@ -72,7 +72,7 @@ object FirestoreManager {
     suspend fun addDocumentWithId(
         collectionName: String,
         docId: String,
-        data: Map<String, Any>
+        data: Map<String, Any?>
     ): String? {
         return try {
             db.collection(collectionName)
@@ -89,7 +89,7 @@ object FirestoreManager {
     // Generic: Add document
     suspend fun addDocument(
         collectionName: String,
-        data: Map<String, Any>
+        data: Map<String, Any?>
     ): String? {
         return try {
             db.collection(collectionName)
@@ -106,7 +106,7 @@ object FirestoreManager {
     suspend fun updateDocument(
         collectionName: String,
         docId: String,
-        updates: Map<String, Any>
+        updates: Map<String, Any?>
     ): Boolean {
         return try {
             db.collection(collectionName)

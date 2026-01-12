@@ -17,6 +17,8 @@ import com.example.habittracker.databinding.FragmentRegisterBinding
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import kotlinx.coroutines.launch
 
+import com.example.habittracker.utils.UserPreferences
+
 class RegisterFragment : Fragment() {
 
     private var _binding: FragmentRegisterBinding? = null
@@ -47,6 +49,11 @@ class RegisterFragment : Fragment() {
         viewModel.registerState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is RegisterState.Success -> {
+                    // Save user data to preferences
+                    UserPreferences.saveUserId(requireContext(), state.user.id)
+                    UserPreferences.saveUserName(requireContext(), state.user.name)
+                    UserPreferences.saveUserAvatar(requireContext(), state.user.avatarUrl ?: "")
+
                     Toast.makeText(requireContext(), "Welcome ${state.user.name}!", Toast.LENGTH_SHORT).show()
                     // Clear back stack to prevent going back to login/register
                     val navOptions = NavOptions.Builder()

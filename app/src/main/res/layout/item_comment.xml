@@ -101,6 +101,35 @@
                     android:fontFamily="sans-serif-medium"/>
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/containerCommentDislike"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp">
+
+                <ImageView
+                    android:id="@+id/ivCommentDislike"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_thumb_down_outline"
+                    android:contentDescription="Dislike comment"
+                    app:tint="@color/secondary_gray" />
+
+                <TextView
+                    android:id="@+id/tvCommentDislikeCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="0"
+                    android:textColor="@color/secondary_gray"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium"/>
+            </LinearLayout>
+
             <TextView
                 android:id="@+id/btnReply"
                 android:layout_width="wrap_content"
@@ -112,6 +141,20 @@
                 android:textStyle="bold"
                 android:background="?attr/selectableItemBackground"
                 android:padding="4dp" />
+
+            <TextView
+                android:id="@+id/btnDeleteComment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:text="Delete"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:background="?attr/selectableItemBackground"
+                android:padding="4dp"
+                android:visibility="gone"
+                tools:visibility="visible"/>
 
             <TextView
                 android:id="@+id/tvReplyCount"
