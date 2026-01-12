@@ -53,6 +53,23 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Create Habit Activity -->
+        <activity
+            android:name=".ui.habit.add.CreateHabitActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- View Habit Detail Activity -->
+        <activity
+            android:name=".ui.habit.detail.ViewHabitDetailActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+        <!-- Category Management Activity -->
+        <activity
+            android:name=".ui.category.CategoryActivity"
+            android:exported="false" />
+
         <!-- FileProvider for Camera -->
         <provider
             android:name="androidx.core.content.FileProvider"
