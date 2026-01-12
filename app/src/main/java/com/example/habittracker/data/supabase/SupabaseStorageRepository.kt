@@ -43,13 +43,23 @@ class SupabaseStorageRepository {
             inputStream.close()
 
             // Upload to Supabase Storage
-            val uploadResult = storage.from(bucketName).upload(finalFileName, bytes, upsert = false)
+            try {
+                storage.from(bucketName).upload(finalFileName, bytes, upsert = false)
+            } catch (e: Exception) {
+                if (e.message?.contains("Object does not exist") == true) {
+                    throw Exception("Bucket '$bucketName' does not exist in Supabase storage. Please create it.")
+                }
+                throw e
+            }
 
             // Get public URL
             val publicUrl = storage.from(bucketName).publicUrl(finalFileName)
 
             publicUrl
         } catch (e: Exception) {
+            e.printStackTrace()
+            // Rethrow or return empty string depending on requirement.
+            // Here rethrowing to let ViewModel handle it.
             throw e
         }
     }

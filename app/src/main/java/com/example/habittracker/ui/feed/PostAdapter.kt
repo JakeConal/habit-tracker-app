@@ -11,9 +11,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
+import com.example.habittracker.data.model.Post
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PostAdapter(
+    private val currentUserId: String,
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
     private val onMoreOptionsClick: (Post, View) -> Unit
@@ -26,7 +31,7 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(getItem(position), onLikeClick, onCommentClick, onMoreOptionsClick)
+        holder.bind(getItem(position), currentUserId, onLikeClick, onCommentClick, onMoreOptionsClick)
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -44,20 +49,24 @@ class PostAdapter(
 
         fun bind(
             post: Post,
+            currentUserId: String,
             onLikeClick: (Post) -> Unit,
             onCommentClick: (Post) -> Unit,
             onMoreOptionsClick: (Post, View) -> Unit
         ) {
             tvAuthorName.text = post.authorName
-            tvTimestamp.text = post.timestamp
+
+            val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            tvTimestamp.text = sdf.format(Date(post.timestamp))
+
             tvContent.text = post.content
-            tvLikeCount.text = post.likesCount.toString()
-            tvCommentCount.text = post.commentsCount.toString()
+            tvLikeCount.text = post.likeCount.toString()
+            tvCommentCount.text = post.commentCount.toString()
 
             // Avatar
-            if (post.authorAvatar.isNotEmpty()) {
+            if (!post.authorAvatarUrl.isNullOrEmpty()) {
                 Glide.with(itemView.context)
-                    .load(post.authorAvatar)
+                    .load(post.authorAvatarUrl)
                     .placeholder(R.drawable.ic_person)
                     .error(R.drawable.ic_person)
                     .into(ivAuthorAvatar)
@@ -76,7 +85,8 @@ class PostAdapter(
             }
 
             // Like status
-            if (post.isLiked) {
+            val isLiked = post.likedBy.contains(currentUserId)
+            if (isLiked) {
                 ivLike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.accent_pink))
                 ivLike.setImageResource(R.drawable.ic_heart)
             } else {

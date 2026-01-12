@@ -1,10 +1,15 @@
 package com.example.habittracker.ui.settings
 
-import androidx.lifecycle.ViewModel
-import com.example.habittracker.ui.feed.Post
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.repository.PostRepository
+import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * Friend data model
@@ -50,19 +55,19 @@ sealed class FriendListItem {
 /**
  * ProfileViewModel - Manages profile screen data and state
  */
-class ProfileViewModel : ViewModel() {
+class ProfileViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = PostRepository.getInstance()
 
     // Current user data
-    private val _userName = MutableStateFlow("Tanzir Fahad")
+    private val _userName = MutableStateFlow(UserPreferences.getUserName(application))
     val userName: StateFlow<String> = _userName.asStateFlow()
 
-    private val _userEmail = MutableStateFlow("fahaduxlab@gmail.com")
+    private val _userEmail = MutableStateFlow("user@example.com")
     val userEmail: StateFlow<String> = _userEmail.asStateFlow()
 
-    private val _userAvatarUrl = MutableStateFlow("") // Empty for local placeholder
+    private val _userAvatarUrl = MutableStateFlow(UserPreferences.getUserAvatar(application))
     val userAvatarUrl: StateFlow<String> = _userAvatarUrl.asStateFlow()
-
-    private val currentUserId = "user_001" // Mock current user ID
 
     // Tab selection state
     enum class ProfileTab {
@@ -73,45 +78,8 @@ class ProfileViewModel : ViewModel() {
     private val _selectedTab = MutableStateFlow(ProfileTab.MY_POST)
     val selectedTab: StateFlow<ProfileTab> = _selectedTab.asStateFlow()
 
-    // All posts
-    private val allPosts = listOf(
-        Post(
-            id = "post_001",
-            userId = "user_001",
-            authorName = "Tanzir Fahad",
-            authorAvatar = "",
-            timestamp = "6 hours ago",
-            content = "Healthy meal prep for the week done! Consistency is key to success 🥗💪",
-            imageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800",
-            likesCount = 35,
-            commentsCount = 8,
-            isLiked = false
-        ),
-        Post(
-            id = "post_002",
-            userId = "user_001",
-            authorName = "Tanzir Fahad",
-            authorAvatar = "",
-            timestamp = "1 day ago",
-            content = "Morning meditation complete ✨ Starting the day with a clear mind helps me stay focused on my habits!",
-            imageUrl = null,
-            likesCount = 42,
-            commentsCount = 12,
-            isLiked = true
-        ),
-        Post(
-            id = "post_003",
-            userId = "user_001",
-            authorName = "Tanzir Fahad",
-            authorAvatar = "",
-            timestamp = "2 days ago",
-            content = "Just completed my 30-day challenge! 🎉 Feeling accomplished and ready for the next one!",
-            imageUrl = "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
-            likesCount = 128,
-            commentsCount = 24,
-            isLiked = true
-        )
-    )
+    // Store fetched posts here instead of mock data
+    private var cachedUserPosts: List<Post> = emptyList()
 
     // Filtered posts based on selected tab
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
@@ -182,8 +150,32 @@ class ProfileViewModel : ViewModel() {
     private val _filteredFriendListItems = MutableStateFlow<List<FriendListItem>>(emptyList())
     val filteredFriendListItems: StateFlow<List<FriendListItem>> = _filteredFriendListItems.asStateFlow()
 
+    // Loading and error states
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error
+
+    private val currentUserId: String
+        get() {
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+            return auth.currentUser?.uid ?: UserPreferences.getUserId(getApplication())
+        }
+
     init {
-        updatePostsForTab()
+        // Fetch real data on init
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+        val userId = auth.currentUser?.uid ?: UserPreferences.getUserId(application)
+
+        // Update user info from auth if available
+         auth.currentUser?.let { user ->
+            _userName.value = user.displayName ?: _userName.value
+            _userEmail.value = user.email ?: _userEmail.value
+            _userAvatarUrl.value = user.photoUrl?.toString() ?: _userAvatarUrl.value
+        }
+
+        fetchUserPosts(userId)
     }
 
     fun selectTab(tab: ProfileTab) {
@@ -196,7 +188,7 @@ class ProfileViewModel : ViewModel() {
 
     private fun updatePostsForTab() {
         _posts.value = when (_selectedTab.value) {
-            ProfileTab.MY_POST -> allPosts.filter { it.userId == currentUserId }
+            ProfileTab.MY_POST -> cachedUserPosts // Use cached real data
             ProfileTab.MY_FRIENDS -> emptyList()
         }
     }
@@ -265,12 +257,69 @@ class ProfileViewModel : ViewModel() {
         
         if (postIndex != -1) {
             val post = currentPosts[postIndex]
+            val isLiked = post.likedBy.contains(currentUserId)
+
+            // Local update logic
+            val newLikedBy = if (isLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
+            val newLikeCount = if (isLiked) kotlin.math.max(0, post.likeCount - 1) else post.likeCount + 1
+
             val updatedPost = post.copy(
-                isLiked = !post.isLiked,
-                likesCount = if (post.isLiked) post.likesCount - 1 else post.likesCount + 1
+                likeCount = newLikeCount,
+                likedBy = newLikedBy
             )
             currentPosts[postIndex] = updatedPost
             _posts.value = currentPosts
+            cachedUserPosts = currentPosts
+
+            // Server update
+            viewModelScope.launch {
+                // Pass !isLiked because if it WAS liked, we want to dislike (false), and vice-versa
+                repository.toggleLikePost(postId, !isLiked)
+            }
+        }
+    }
+
+    fun updatePost(postId: String, commentCount: Int, likeCount: Int, isLiked: Boolean) {
+        val currentPosts = _posts.value.toMutableList()
+        val postIndex = currentPosts.indexOfFirst { it.id == postId }
+
+        if (postIndex != -1) {
+            val post = currentPosts[postIndex]
+
+            // Calculate new likedBy based on isLiked status
+            val newLikedBy = if (isLiked) {
+                 if (!post.likedBy.contains(currentUserId)) post.likedBy + currentUserId else post.likedBy
+            } else {
+                 post.likedBy - currentUserId
+            }
+
+            val updatedPost = post.copy(
+                commentCount = commentCount,
+                likeCount = likeCount,
+                likedBy = newLikedBy
+            )
+            currentPosts[postIndex] = updatedPost
+            _posts.value = currentPosts
+            cachedUserPosts = currentPosts
+        }
+    }
+
+    fun fetchUserPosts(userId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            // Call repository for real data
+            val result = repository.getPostsByUser(userId)
+
+            result.onSuccess { userPosts ->
+                cachedUserPosts = userPosts
+                updatePostsForTab()
+            }.onFailure { e ->
+                _error.value = e.message
+            }
+
+            _isLoading.value = false
         }
     }
 }

@@ -17,6 +17,8 @@ import com.example.habittracker.databinding.FragmentLoginBinding
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import kotlinx.coroutines.launch
 
+import com.example.habittracker.utils.UserPreferences
+
 class LoginFragment : Fragment() {
 
     private var _binding: FragmentLoginBinding? = null
@@ -47,6 +49,11 @@ class LoginFragment : Fragment() {
         viewModel.loginState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is LoginState.Success -> {
+                    // Save user data to preferences
+                    UserPreferences.saveUserId(requireContext(), state.user.id)
+                    UserPreferences.saveUserName(requireContext(), state.user.name)
+                    UserPreferences.saveUserAvatar(requireContext(), state.user.avatarUrl ?: "")
+
                     Toast.makeText(requireContext(), "Welcome ${state.user.name}!", Toast.LENGTH_SHORT).show()
                     // Clear back stack to prevent going back to login
                     val navOptions = NavOptions.Builder()

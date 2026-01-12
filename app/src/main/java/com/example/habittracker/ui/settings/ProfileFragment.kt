@@ -15,8 +15,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentProfileBinding
-import com.example.habittracker.ui.feed.Post
+import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
+import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
 /**
@@ -30,6 +31,23 @@ class ProfileFragment : Fragment() {
     private val viewModel: ProfileViewModel by viewModels()
     private lateinit var postAdapter: PostAdapter
     private lateinit var friendListAdapter: FriendListAdapter
+
+    private val commentsLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
+            result.data?.let { data ->
+                val postId = data.getStringExtra(com.example.habittracker.ui.feed.CommentsActivity.RESULT_POST_ID)
+                val newCommentCount = data.getIntExtra(com.example.habittracker.ui.feed.CommentsActivity.RESULT_COMMENT_COUNT, 0)
+                val newLikeCount = data.getIntExtra(com.example.habittracker.ui.feed.CommentsActivity.RESULT_LIKE_COUNT, 0)
+                val isLiked = data.getBooleanExtra(com.example.habittracker.ui.feed.CommentsActivity.RESULT_IS_LIKED, false)
+
+                if (postId != null) {
+                    viewModel.updatePost(postId, newCommentCount, newLikeCount, isLiked)
+                }
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,13 +102,31 @@ class ProfileFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        val currentUserId = UserPreferences.getUserId(requireContext())
         // Post adapter
         postAdapter = PostAdapter(
+            currentUserId = currentUserId,
             onLikeClick = { post ->
                 viewModel.toggleLike(post.id)
             },
-            onCommentClick = { _ ->
-                // TODO: Navigate to comments screen
+            onCommentClick = { post ->
+                val currentUserId = UserPreferences.getUserId(requireContext())
+                val isLiked = post.likedBy.contains(currentUserId)
+
+                val intent = Intent(requireContext(), com.example.habittracker.ui.feed.CommentsActivity::class.java).apply {
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_POST_ID, post.id)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_POST_USER_ID, post.userId)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_AUTHOR_NAME, post.authorName)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_AUTHOR_AVATAR, post.authorAvatarUrl)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_TIMESTAMP, post.timestamp)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_CONTENT, post.content)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_IMAGE_URL, post.imageUrl)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
+                    putExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_IS_LIKED, isLiked)
+                    putParcelableArrayListExtra(com.example.habittracker.ui.feed.CommentsActivity.EXTRA_COMMENTS, java.util.ArrayList<com.example.habittracker.data.model.Comment>())
+                }
+                commentsLauncher.launch(intent)
             },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 // Basic implementation for Profile - can be customized
@@ -262,4 +298,3 @@ class ProfileFragment : Fragment() {
         fun newInstance() = ProfileFragment()
     }
 }
-

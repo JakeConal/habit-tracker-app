@@ -14,8 +14,9 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentFriendProfileBinding
-import com.example.habittracker.ui.feed.Post
+import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
+import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
 /**
@@ -54,7 +55,9 @@ class FriendProfileFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
+            currentUserId = currentUserId,
             onLikeClick = { _ ->
                 Toast.makeText(
                     requireContext(),

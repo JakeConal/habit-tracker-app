@@ -9,11 +9,17 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
+import com.example.habittracker.data.model.Comment
+import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.utils.UserPreferences
 import com.google.android.material.card.MaterialCardView
+import kotlinx.coroutines.launch
+// Imports removed
 
 class FeedFragment : Fragment() {
 
@@ -25,12 +31,8 @@ class FeedFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            result.data?.let { data ->
-                val newPost = data.getParcelableExtra<Post>(CreatePostActivity.EXTRA_NEW_POST)
-                newPost?.let { post ->
-                    addNewPostToFeed(post)
-                }
-            }
+            // Refresh feed when returning from CreatePostActivity
+            refreshPosts()
         }
     }
 
@@ -43,10 +45,9 @@ class FeedFragment : Fragment() {
                 val newCommentCount = data.getIntExtra(CommentsActivity.RESULT_COMMENT_COUNT, 0)
                 val newLikeCount = data.getIntExtra(CommentsActivity.RESULT_LIKE_COUNT, 0)
                 val isLiked = data.getBooleanExtra(CommentsActivity.RESULT_IS_LIKED, false)
-                val updatedComments = data.getParcelableArrayListExtra<Comment>(CommentsActivity.RESULT_COMMENTS) ?: arrayListOf()
 
                 // Update the post in the list
-                updatePostInList(postId, newCommentCount, newLikeCount, isLiked, updatedComments)
+                updatePostInList(postId, newCommentCount, newLikeCount, isLiked)
             }
         }
     }
@@ -66,7 +67,7 @@ class FeedFragment : Fragment() {
 
         setupViews(view)
         setupRecyclerView(view)
-        loadSampleData()
+        refreshPosts()
     }
 
     private fun initializeUserIfNeeded() {
@@ -101,21 +102,16 @@ class FeedFragment : Fragment() {
         createPostLauncher.launch(intent)
     }
 
-    private fun addNewPostToFeed(newPost: Post) {
-        val currentList = postAdapter.currentList.toMutableList()
-        // Add new post at the beginning
-        currentList.add(0, newPost)
-        postAdapter.submitList(currentList)
-
-        // Scroll to top to show the new post
-        rvFeed.scrollToPosition(0)
-    }
-
-    private val currentUserId = "user_current" // Placeholder for current user ID
+    private val currentUserId: String
+        get() {
+            val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+            return auth.currentUser?.uid ?: UserPreferences.getUserId(requireContext())
+        }
 
     private fun setupRecyclerView(view: View) {
         rvFeed = view.findViewById(R.id.rvFeed)
         postAdapter = PostAdapter(
+            currentUserId = currentUserId,
             onLikeClick = { post ->
                 // Toggle like status
                 toggleLike(post)
@@ -157,6 +153,11 @@ class FeedFragment : Fragment() {
                     true
                 }
                 "Share" -> {
+                    // Update share count in backend
+                    lifecycleScope.launch {
+                        PostRepository.getInstance().sharePost(post.id)
+                    }
+
                     val shareIntent = Intent(Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
@@ -172,30 +173,49 @@ class FeedFragment : Fragment() {
     }
 
     private fun hidePost(post: Post) {
-        val currentList = postAdapter.currentList.toMutableList()
-        val index = currentList.indexOfFirst { it.id == post.id }
-        if (index != -1) {
-            currentList.removeAt(index)
-            postAdapter.submitList(currentList)
-            Toast.makeText(context, "Post hidden", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val result = PostRepository.getInstance().hidePost(post.id, currentUserId)
+            if (result.isSuccess) {
+                val currentList = postAdapter.currentList.toMutableList()
+                val index = currentList.indexOfFirst { it.id == post.id }
+                if (index != -1) {
+                    currentList.removeAt(index)
+                    postAdapter.submitList(currentList)
+                    Toast.makeText(context, "Post hidden", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                 Toast.makeText(context, "Failed to hide post", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     private fun deletePost(post: Post) {
-        val currentList = postAdapter.currentList.toMutableList()
-        val index = currentList.indexOfFirst { it.id == post.id }
-        if (index != -1) {
-            currentList.removeAt(index)
-            postAdapter.submitList(currentList)
-            Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+             val result = PostRepository.getInstance().deletePost(post.id)
+             if (result.isSuccess) {
+                 val currentList = postAdapter.currentList.toMutableList()
+                 val index = currentList.indexOfFirst { it.id == post.id }
+                 if (index != -1) {
+                     currentList.removeAt(index)
+                     postAdapter.submitList(currentList)
+                     Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
+                 }
+             } else {
+                 Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
+             }
         }
     }
 
     private fun toggleLike(post: Post) {
-        // Toggle like status
+        val isLiked = post.likedBy.contains(currentUserId)
+
+        // Toggle like status locally for UI responsiveness
+        val newLikedBy = if (isLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
+        val newLikeCount = if (isLiked) maxOf(0, post.likeCount - 1) else post.likeCount + 1
+
         val updatedPost = post.copy(
-            isLiked = !post.isLiked,
-            likesCount = if (post.isLiked) post.likesCount - 1 else post.likesCount + 1
+            likedBy = newLikedBy,
+            likeCount = newLikeCount
         )
 
         // Update the list
@@ -206,229 +226,80 @@ class FeedFragment : Fragment() {
             postAdapter.submitList(currentList)
         }
 
-        // TODO: Send like status to server
+        // Send like status to server
+        lifecycleScope.launch {
+            val result = PostRepository.getInstance().toggleLikePost(post.id, !isLiked)
+            if (result.isFailure) {
+                 // Revert if failed
+                 val revertedList = postAdapter.currentList.toMutableList()
+                 val revertedIndex = revertedList.indexOfFirst { it.id == post.id }
+                 if (revertedIndex != -1) {
+                     revertedList[revertedIndex] = post
+                     postAdapter.submitList(revertedList)
+                     Toast.makeText(context, "Failed to update like", Toast.LENGTH_SHORT).show()
+                 }
+            }
+        }
     }
 
     private fun openCommentsActivity(post: Post) {
+        val isLiked = post.likedBy.contains(currentUserId)
+
         val intent = Intent(requireContext(), CommentsActivity::class.java).apply {
             putExtra(CommentsActivity.EXTRA_POST_ID, post.id)
+            putExtra(CommentsActivity.EXTRA_POST_USER_ID, post.userId)
             putExtra(CommentsActivity.EXTRA_AUTHOR_NAME, post.authorName)
-            putExtra(CommentsActivity.EXTRA_AUTHOR_AVATAR, post.authorAvatar)
+            putExtra(CommentsActivity.EXTRA_AUTHOR_AVATAR, post.authorAvatarUrl)
             putExtra(CommentsActivity.EXTRA_TIMESTAMP, post.timestamp)
             putExtra(CommentsActivity.EXTRA_CONTENT, post.content)
             putExtra(CommentsActivity.EXTRA_IMAGE_URL, post.imageUrl)
-            putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likesCount)
-            putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentsCount)
-            putExtra(CommentsActivity.EXTRA_IS_LIKED, post.isLiked)
-            putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, ArrayList(post.comments))
+            putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
+            putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
+            putExtra(CommentsActivity.EXTRA_IS_LIKED, isLiked)
+            // Post doesn't store comments list locally usually, so passing empty or fetching in Activity
+            putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, ArrayList<Comment>())
         }
         commentsLauncher.launch(intent)
     }
 
-    private fun updatePostInList(postId: String?, newCommentCount: Int, newLikeCount: Int, isLiked: Boolean, updatedComments: List<Comment>) {
+    private fun updatePostInList(postId: String?, newCommentCount: Int, newLikeCount: Int, isLiked: Boolean) {
         if (postId == null) return
 
         val currentList = postAdapter.currentList.toMutableList()
         val index = currentList.indexOfFirst { it.id == postId }
 
         if (index != -1) {
+            val currentPost = currentList[index]
+
+            // Update likedBy list based on isLiked boolean
+             val newLikedBy = if (isLiked) {
+                if (!currentPost.likedBy.contains(currentUserId)) currentPost.likedBy + currentUserId else currentPost.likedBy
+            } else {
+                currentPost.likedBy - currentUserId
+            }
+
             val updatedPost = currentList[index].copy(
-                commentsCount = newCommentCount,
-                likesCount = newLikeCount,
-                isLiked = isLiked,
-                comments = updatedComments
+                commentCount = newCommentCount,
+                likeCount = newLikeCount,
+                likedBy = newLikedBy
+                // comments field doesn't exist in Post
             )
             currentList[index] = updatedPost
             postAdapter.submitList(currentList)
         }
     }
 
-    private fun loadSampleData() {
-        // Get current user name for consistency
-        val currentUserName = UserPreferences.getUserName(requireContext())
+    private fun refreshPosts() {
+        lifecycleScope.launch {
+            val result = PostRepository.getInstance().getAllPosts()
 
-        val samplePosts = listOf(
-            Post(
-                id = "1",
-                userId = "user_002",
-                authorName = "John Doe",
-                authorAvatar = "",
-                timestamp = "2 hours ago",
-                content = "Just completed my 30-day meditation challenge! Feeling amazing! 🧘‍♂️",
-                imageUrl = null,
-                likesCount = 24,
-                commentsCount = 3,
-                isLiked = true,
-                comments = listOf(
-                    Comment(
-                        id = "c1_1",
-                        authorName = "Alice Johnson",
-                        authorAvatar = "",
-                        timestamp = "1h ago",
-                        content = "Great job! Keep it up! 👏",
-                        likesCount = 5,
-                        isLiked = false,
-                        replies = listOf(
-                            CommentReply(
-                                id = "r1",
-                                authorName = "John Doe", // Post author replies
-                                authorAvatar = "",
-                                timestamp = "30m ago",
-                                content = "Thank you so much! 🙏",
-                                likesCount = 2,
-                                isLiked = false,
-                                replies = emptyList()
-                            )
-                        )
-                    ),
-                    Comment(
-                        id = "c1_2",
-                        authorName = "Bob Smith",
-                        authorAvatar = "",
-                        timestamp = "3h ago",
-                        content = "Inspiring! I should try this challenge too.",
-                        likesCount = 3,
-                        isLiked = true,
-                        replies = listOf(
-                            CommentReply(
-                                id = "r2",
-                                authorName = "John Doe", // Post author encourages
-                                authorAvatar = "",
-                                timestamp = "2h ago",
-                                content = "You definitely should! It changed my life. Let me know if you need any tips! 💪",
-                                likesCount = 1,
-                                isLiked = false,
-                                replies = listOf(
-                                    CommentReply(
-                                        id = "r2_1",
-                                        authorName = "Bob Smith",
-                                        authorAvatar = "",
-                                        timestamp = "1h ago",
-                                        content = "Thanks! I'll start tomorrow!",
-                                        likesCount = 0,
-                                        isLiked = false,
-                                        replies = emptyList()
-                                    )
-                                )
-                            )
-                        )
-                    ),
-                    Comment(
-                        id = "c1_3",
-                        authorName = "Carol White",
-                        authorAvatar = "",
-                        timestamp = "5h ago",
-                        content = "Amazing progress! How did you stay motivated?",
-                        likesCount = 2,
-                        isLiked = false,
-                        replies = listOf(
-                            CommentReply(
-                                id = "r3",
-                                authorName = "John Doe", // Post author answers question
-                                authorAvatar = "",
-                                timestamp = "4h ago",
-                                content = "I set small daily goals and tracked them! Also having an accountability partner helped a lot.",
-                                likesCount = 4,
-                                isLiked = false,
-                                replies = listOf(
-                                    CommentReply(
-                                        id = "r3_1",
-                                        authorName = "Carol White",
-                                        authorAvatar = "",
-                                        timestamp = "3h ago",
-                                        content = "That's a great tip! Thanks for sharing!",
-                                        likesCount = 1,
-                                        isLiked = false,
-                                        replies = emptyList()
-                                    )
-                                )
-                            )
-                        )
-                    )
-                )
-            ),
-            Post(
-                id = "2",
-                userId = "user_003",
-                authorName = "Jane Smith",
-                authorAvatar = "",
-                timestamp = "5 hours ago",
-                content = "Morning run done! Starting the day with positive energy ☀️🏃‍♀️",
-                imageUrl = "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8",
-                likesCount = 18,
-                commentsCount = 2,
-                isLiked = false,
-                comments = listOf(
-                    Comment(
-                        id = "c2_1",
-                        authorName = currentUserName,
-                        authorAvatar = "",
-                        timestamp = "4h ago",
-                        content = "Great start to the day! 🌅",
-                        likesCount = 1,
-                        isLiked = true,
-                        replies = listOf(
-                            CommentReply(
-                                id = "r4",
-                                authorName = "Jane Smith", // Post author replies to current user
-                                authorAvatar = "",
-                                timestamp = "3h ago",
-                                content = "Thanks! Hope you have a great day too! 😊",
-                                likesCount = 0,
-                                isLiked = false,
-                                replies = emptyList()
-                            )
-                        )
-                    ),
-                    Comment(
-                        id = "c2_2",
-                        authorName = "Mike Wilson",
-                        authorAvatar = "",
-                        timestamp = "3h ago",
-                        content = "Keep up the good work!",
-                        likesCount = 2,
-                        isLiked = false,
-                        replies = emptyList()
-                    )
-                )
-            ),
-            Post(
-                id = "3",
-                userId = "user_004",
-                authorName = "Mike Johnson",
-                authorAvatar = "",
-                timestamp = "1 day ago",
-                content = "Week 3 of my fitness journey. Progress is slow but steady. Keep pushing! 💪",
-                imageUrl = null,
-                likesCount = 42,
-                commentsCount = 1,
-                isLiked = true,
-                comments = listOf(
-                    Comment(
-                        id = "c3_1",
-                        authorName = currentUserName,
-                        authorAvatar = "",
-                        timestamp = "20h ago",
-                        content = "You got this! Consistency is key! 🔥",
-                        likesCount = 3,
-                        isLiked = false,
-                        replies = listOf(
-                            CommentReply(
-                                id = "r5",
-                                authorName = "Mike Johnson", // Post author thanks current user
-                                authorAvatar = "",
-                                timestamp = "18h ago",
-                                content = "Thank you for the encouragement! Really appreciate it! 💯",
-                                likesCount = 1,
-                                isLiked = false,
-                                replies = emptyList()
-                            )
-                        )
-                    )
-                )
-            )
-        )
-
-        postAdapter.submitList(samplePosts)
+            result.onSuccess { dataPosts ->
+                val filteredPosts = dataPosts.filter { !it.hiddenBy.contains(currentUserId) }
+                postAdapter.submitList(filteredPosts)
+            }.onFailure { e ->
+                // Handle error
+                e.printStackTrace()
+            }
+        }
     }
 }

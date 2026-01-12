@@ -49,6 +49,12 @@
     <string name="sign_in_with_google">Sign in with Google</string>
     <string name="default_web_client_id" translatable="false">791039352776-ca724m7tspfokl41dkjvka0doj267msh.apps.googleusercontent.com</string>
 
+    <!-- Feed -->
+    <string name="replies_count_format">%1$d replies</string>
+    <string name="replying_to_format">Replying to %1$s</string>
+    <string name="action_post">Post</string>
+    <string name="action_posting">Posting...</string>
+
     <!-- Friend Profile Screen -->
     <string name="friend_profile_posts_tab">Posts</string>
     <string name="friend_profile_friends_tab">Friends</string>

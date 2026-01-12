@@ -179,20 +179,32 @@ class AuthRepository private constructor() {
     }
 
     private suspend fun seedDefaultCategoriesForUser(userId: String) {
-        val categoryRepository = CategoryRepository.getInstance()
-        val existingCategories = categoryRepository.getCategoriesForUser(userId)
-        if (existingCategories.isEmpty()) {
-            val defaultCategories = listOf(
-                Category(userId = userId, title = "Physical Health", icon = CategoryIcon.HEART, color = CategoryColor.RED),
-                Category(userId = userId, title = "Study", icon = CategoryIcon.BOOK, color = CategoryColor.BLUE),
-                Category(userId = userId, title = "Finance", icon = CategoryIcon.MONEY, color = CategoryColor.YELLOW),
-                Category(userId = userId, title = "Mental Health", icon = CategoryIcon.HEART, color = CategoryColor.PINK_LIGHT),
-                Category(userId = userId, title = "Career", icon = CategoryIcon.BRIEFCASE, color = CategoryColor.PURPLE),
-                Category(userId = userId, title = "Nutrition", icon = CategoryIcon.FOOD, color = CategoryColor.ORANGE_LIGHT),
-                Category(userId = userId, title = "Personal Growth", icon = CategoryIcon.GROWTH, color = CategoryColor.GREEN),
-                Category(userId = userId, title = "Sleep", icon = CategoryIcon.MOON, color = CategoryColor.INDIGO)
-            )
-            defaultCategories.forEach { categoryRepository.addCategory(it) }
+        try {
+            val categoryRepository = CategoryRepository.getInstance()
+            val existingCategories = categoryRepository.getCategoriesForUser(userId)
+
+            if (existingCategories.isEmpty()) {
+                val defaultCategories = listOf(
+                    Category(userId = userId, title = "Physical Health", icon = CategoryIcon.HEART, color = CategoryColor.RED),
+                    Category(userId = userId, title = "Study", icon = CategoryIcon.BOOK, color = CategoryColor.BLUE),
+                    Category(userId = userId, title = "Finance", icon = CategoryIcon.MONEY, color = CategoryColor.YELLOW),
+                    Category(userId = userId, title = "Mental Health", icon = CategoryIcon.HEART, color = CategoryColor.PINK_LIGHT),
+                    Category(userId = userId, title = "Career", icon = CategoryIcon.BRIEFCASE, color = CategoryColor.PURPLE),
+                    Category(userId = userId, title = "Nutrition", icon = CategoryIcon.FOOD, color = CategoryColor.ORANGE_LIGHT),
+                    Category(userId = userId, title = "Personal Growth", icon = CategoryIcon.GROWTH, color = CategoryColor.GREEN),
+                    Category(userId = userId, title = "Sleep", icon = CategoryIcon.MOON, color = CategoryColor.INDIGO)
+                )
+
+                defaultCategories.forEach { category ->
+                    try {
+                        categoryRepository.addCategory(category)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 }

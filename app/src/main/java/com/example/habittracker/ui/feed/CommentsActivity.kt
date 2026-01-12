@@ -1,17 +1,27 @@
 package com.example.habittracker.ui.feed
 
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.model.Comment
 import com.example.habittracker.databinding.ActivityCommentsBinding
+import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.utils.UserPreferences
-
+import kotlinx.coroutines.launch
 
 class CommentsActivity : AppCompatActivity() {
 
@@ -21,12 +31,19 @@ class CommentsActivity : AppCompatActivity() {
     private var isLiked = false
     private var likeCount = 0
     private var commentCount = 0
+    private var replyingToComment: Comment? = null
     private val comments = mutableListOf<Comment>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCommentsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
 
         getPostFromIntent()
         setupViews()
@@ -46,26 +63,36 @@ class CommentsActivity : AppCompatActivity() {
         val postId = intent.getStringExtra(EXTRA_POST_ID) ?: ""
         val authorName = intent.getStringExtra(EXTRA_AUTHOR_NAME) ?: ""
         val authorAvatar = intent.getStringExtra(EXTRA_AUTHOR_AVATAR) ?: ""
-        val timestamp = intent.getStringExtra(EXTRA_TIMESTAMP) ?: ""
+        // Timestamp is passed as Long from updated FeedFragment, but handling String fallback just in case
+        val timestamp = intent.getLongExtra(EXTRA_TIMESTAMP, System.currentTimeMillis())
         val content = intent.getStringExtra(EXTRA_CONTENT) ?: ""
         val imageUrl = intent.getStringExtra(EXTRA_IMAGE_URL)
         val likesCount = intent.getIntExtra(EXTRA_LIKES_COUNT, 0)
         val commentsCount = intent.getIntExtra(EXTRA_COMMENTS_COUNT, 0)
         val isLikedExtra = intent.getBooleanExtra(EXTRA_IS_LIKED, false)
-        val existingComments = intent.getParcelableArrayListExtra<Comment>(EXTRA_COMMENTS) ?: arrayListOf()
+        val existingComments = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra(EXTRA_COMMENTS, Comment::class.java) ?: arrayListOf()
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayListExtra(EXTRA_COMMENTS) ?: arrayListOf()
+        }
+
+        val currentUserId = UserPreferences.getUserId(this)
 
         post = Post(
             id = postId,
-            userId = "user_current", // Default user ID for comments activity
+            userId = intent.getStringExtra(EXTRA_POST_USER_ID) ?: "", // Pass post owner ID
             authorName = authorName,
-            authorAvatar = authorAvatar,
+            authorAvatarUrl = authorAvatar,
             timestamp = timestamp,
             content = content,
             imageUrl = imageUrl,
-            likesCount = likesCount,
-            commentsCount = commentsCount,
-            isLiked = isLikedExtra,
-            comments = existingComments
+            likeCount = likesCount,
+            commentCount = commentsCount,
+            // isLiked logic needs to be consistent. Constructing Post here is mainly for reference.
+            // data.model.Post doesn't have isLiked, it has likedBy.
+            // We can fake it or just use local isLiked variable.
+            likedBy = if(isLikedExtra) listOf(currentUserId) else emptyList()
         )
 
         isLiked = isLikedExtra
@@ -85,14 +112,17 @@ class CommentsActivity : AppCompatActivity() {
         // Display post data
         post?.let { post ->
             binding.tvAuthorName.text = post.authorName
-            binding.tvTimestamp.text = post.timestamp
+
+            val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            binding.tvTimestamp.text = sdf.format(Date(post.timestamp))
+
             binding.tvContent.text = post.content
-            binding.tvLikeCount.text = post.likesCount.toString()
+            binding.tvLikeCount.text = likeCount.toString()
 
             // Avatar
-            if (post.authorAvatar.isNotEmpty()) {
+            if (!post.authorAvatarUrl.isNullOrEmpty()) {
                 Glide.with(this)
-                    .load(post.authorAvatar)
+                    .load(post.authorAvatarUrl)
                     .placeholder(R.drawable.ic_person)
                     .error(R.drawable.ic_person)
                     .into(binding.ivAuthorAvatar)
@@ -123,6 +153,17 @@ class CommentsActivity : AppCompatActivity() {
         binding.btnSendComment.setOnClickListener {
             sendComment()
         }
+
+        binding.btnCancelReply.setOnClickListener {
+            cancelReplyMode()
+        }
+    }
+
+    private fun cancelReplyMode() {
+        replyingToComment = null
+        binding.replyIndicatorLayout.visibility = View.GONE
+        binding.etComment.hint = "Write a comment..."
+        binding.tvReplyingTo.text = ""
     }
 
     private fun updateCommentCountUI() {
@@ -131,11 +172,23 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun toggleLike() {
+        val currentPost = post ?: return
+
         isLiked = !isLiked
-        likeCount = if (isLiked) likeCount + 1 else likeCount - 1
+        likeCount = if (isLiked) likeCount + 1 else if (likeCount > 0) likeCount - 1 else 0
         updateLikeUI()
 
-        // TODO: Send like status to server
+        // val userId = UserPreferences.getUserId(this) (Unused)
+        lifecycleScope.launch {
+            val result = PostRepository.getInstance().toggleLikePost(currentPost.id, isLiked)
+            if (result.isFailure) {
+                // Revert
+                isLiked = !isLiked
+                likeCount = if (isLiked) likeCount + 1 else if (likeCount > 0) likeCount - 1 else 0
+                updateLikeUI()
+                Toast.makeText(this@CommentsActivity, "Failed to update like", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun updateLikeUI() {
@@ -152,19 +205,20 @@ class CommentsActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerView() {
+        val currentUserId = UserPreferences.getUserId(this)
+        // Ensure post is non-null before setting up adapter or handle null post appropriately
+        val postOwnerId = post?.userId ?: ""
+
         commentAdapter = CommentAdapter(
-            onLikeClick = { comment ->
-                toggleCommentLike(comment)
-            },
-            onReplyClick = { comment ->
-                showReplyDialog(comment)
-            },
-            onReplyLikeClick = { comment, reply ->
-                toggleReplyLike(comment, reply)
-            },
-            onReplyToReply = { comment, reply ->
-                showReplyToReplyDialog(comment, reply)
-            }
+            currentUserId = currentUserId,
+            postOwnerId = postOwnerId,
+            onLikeClick = { comment -> handleLikeComment(comment) },
+            onDislikeClick = { comment -> handleDislikeComment(comment) },
+            onReplyClick = { comment -> handleReplyComment(comment) },
+            onDeleteCommentClick = { comment -> handleDeleteComment(comment) },
+            onDeleteReplyClick = { parentComment, reply -> handleDeleteReply(parentComment, reply) },
+            onLikeReplyClick = { parentComment, reply -> handleLikeReply(parentComment, reply) },
+            onDislikeReplyClick = { parentComment, reply -> handleDislikeReply(parentComment, reply) }
         )
         binding.rvComments.apply {
             layoutManager = LinearLayoutManager(this@CommentsActivity)
@@ -172,13 +226,285 @@ class CommentsActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadComments() {
-        // Comments are already loaded from getPostFromIntent()
-        // If no comments exist (shouldn't happen with our sample data), do nothing
-        // The user can add new comments using the input field
+    private fun handleDeleteComment(comment: Comment) {
+        val postId = post?.id ?: return
 
+        // Confirm dialog or just delete
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Delete Comment")
+            .setMessage("Are you sure you want to delete this comment?")
+            .setPositiveButton("Delete") { _, _ ->
+                 lifecycleScope.launch {
+                     val result = PostRepository.getInstance().deleteComment(postId, comment.id)
+                     if (result.isSuccess) {
+                         comments.remove(comment)
+                         commentAdapter.submitList(comments.toList())
+                         updateCommentCountUI()
+                         Toast.makeText(this@CommentsActivity, "Comment deleted", Toast.LENGTH_SHORT).show()
+                     } else {
+                         Toast.makeText(this@CommentsActivity, "Failed to delete comment", Toast.LENGTH_SHORT).show()
+                     }
+                 }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun handleDeleteReply(parentComment: Comment, reply: Comment) {
+        val postId = post?.id ?: return
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle("Delete Reply")
+            .setMessage("Are you sure you want to delete this reply?")
+            .setPositiveButton("Delete") { _, _ ->
+                lifecycleScope.launch {
+                    val result = PostRepository.getInstance().deleteReply(postId, parentComment.id, reply)
+                    if (result.isSuccess) {
+                         // Find parent and update locally
+                         val parentIndex = comments.indexOfFirst { it.id == parentComment.id }
+                         if (parentIndex != -1) {
+                             val parent = comments[parentIndex]
+                             val updatedReplies = parent.replies.filter { it.id != reply.id }
+                             comments[parentIndex] = parent.copy(replies = updatedReplies)
+                             commentAdapter.submitList(comments.toList())
+                             commentAdapter.notifyItemChanged(parentIndex)
+                         }
+                         Toast.makeText(this@CommentsActivity, "Reply deleted", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@CommentsActivity, "Failed to delete reply", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun handleLikeComment(comment: Comment) {
+        val currentUserId = UserPreferences.getUserId(this)
+        val postId = post?.id ?: return
+
+        // Optimistic update
+        val index = comments.indexOfFirst { it.id == comment.id }
+        if (index != -1) {
+            val isLiked = comment.likedBy.contains(currentUserId)
+            val isDisliked = comment.dislikedBy.contains(currentUserId)
+
+            val newLikedBy = if (isLiked) comment.likedBy - currentUserId else comment.likedBy + currentUserId
+            val newLikesCount = if (isLiked) kotlin.math.max(0, comment.likesCount - 1) else comment.likesCount + 1
+
+            // If liking, remove dislike
+            val newDislikedBy = if (!isLiked && isDisliked) comment.dislikedBy - currentUserId else comment.dislikedBy
+            val newDislikesCount = if (!isLiked && isDisliked) kotlin.math.max(0, comment.dislikesCount - 1) else comment.dislikesCount
+
+            val updatedComment = comment.copy(
+                likedBy = newLikedBy,
+                likesCount = newLikesCount,
+                dislikedBy = newDislikedBy,
+                dislikesCount = newDislikesCount
+            )
+
+            comments[index] = updatedComment
+            commentAdapter.submitList(comments.toList())
+
+            // Call Repo
+            lifecycleScope.launch {
+                val result = PostRepository.getInstance().toggleLikeComment(postId, comment.id, currentUserId)
+                if (result.isFailure) {
+                    // Revert
+                    if (index < comments.size) {
+                        comments[index] = comment
+                        commentAdapter.submitList(comments.toList())
+                    }
+                    Toast.makeText(this@CommentsActivity, "Failed to like", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun handleDislikeComment(comment: Comment) {
+        val currentUserId = UserPreferences.getUserId(this)
+        val postId = post?.id ?: return
+
+        // Optimistic update
+        val index = comments.indexOfFirst { it.id == comment.id }
+        if (index != -1) {
+            val isDisliked = comment.dislikedBy.contains(currentUserId)
+            val isLiked = comment.likedBy.contains(currentUserId)
+
+            val newDislikedBy = if (isDisliked) comment.dislikedBy - currentUserId else comment.dislikedBy + currentUserId
+            val newDislikesCount = if (isDisliked) kotlin.math.max(0, comment.dislikesCount - 1) else comment.dislikesCount + 1
+
+            // If disliking, remove like
+            val newLikedBy = if (!isDisliked && isLiked) comment.likedBy - currentUserId else comment.likedBy
+            val newLikesCount = if (!isDisliked && isLiked) kotlin.math.max(0, comment.likesCount - 1) else comment.likesCount
+
+            val updatedComment = comment.copy(
+                likedBy = newLikedBy,
+                likesCount = newLikesCount,
+                dislikedBy = newDislikedBy,
+                dislikesCount = newDislikesCount
+            )
+
+            comments[index] = updatedComment
+            commentAdapter.submitList(comments.toList())
+
+            // Call Repo
+            lifecycleScope.launch {
+                val result = PostRepository.getInstance().toggleDislikeComment(postId, comment.id, currentUserId)
+                if (result.isFailure) {
+                    // Revert
+                    if (index < comments.size) {
+                        comments[index] = comment
+                        commentAdapter.submitList(comments.toList())
+                    }
+                    Toast.makeText(this@CommentsActivity, "Failed to dislike", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private fun handleLikeReply(parentComment: Comment, reply: Comment) {
+        val currentUserId = UserPreferences.getUserId(this)
+        val postId = post?.id ?: return
+
+        val parentIndex = comments.indexOfFirst { it.id == parentComment.id }
+        if (parentIndex != -1) {
+            val parent = comments[parentIndex]
+            val replyIndex = parent.replies.indexOfFirst { it.id == reply.id }
+
+            if (replyIndex != -1) {
+                val replyToUpdate = parent.replies[replyIndex]
+                val isLiked = replyToUpdate.likedBy.contains(currentUserId)
+                val isDisliked = replyToUpdate.dislikedBy.contains(currentUserId)
+
+                val newLikedBy = if (isLiked) replyToUpdate.likedBy - currentUserId else replyToUpdate.likedBy + currentUserId
+                val newLikesCount = if (isLiked) kotlin.math.max(0, replyToUpdate.likesCount - 1) else replyToUpdate.likesCount + 1
+
+                // If liking, remove dislike
+                val newDislikedBy = if (!isLiked && isDisliked) replyToUpdate.dislikedBy - currentUserId else replyToUpdate.dislikedBy
+                val newDislikesCount = if (!isLiked && isDisliked) kotlin.math.max(0, replyToUpdate.dislikesCount - 1) else replyToUpdate.dislikesCount
+
+                val updatedReply = replyToUpdate.copy(
+                    likedBy = newLikedBy,
+                    likesCount = newLikesCount,
+                    dislikedBy = newDislikedBy,
+                    dislikesCount = newDislikesCount
+                )
+
+                val updatedReplies = parent.replies.toMutableList()
+                updatedReplies[replyIndex] = updatedReply
+
+                val updatedParent = parent.copy(replies = updatedReplies)
+                comments[parentIndex] = updatedParent
+                commentAdapter.submitList(comments.toList())
+                commentAdapter.notifyItemChanged(parentIndex) // Force update for nested RV usually needs more work but ListAdapter should handle diff if object changed
+
+                lifecycleScope.launch {
+                    val result = PostRepository.getInstance().toggleLikeReply(postId, parentComment.id, reply.id, currentUserId)
+                    if (result.isFailure) {
+                        // Revert
+                        if (parentIndex < comments.size) {
+                            comments[parentIndex] = parent
+                            commentAdapter.submitList(comments.toList())
+                            commentAdapter.notifyItemChanged(parentIndex)
+                        }
+                        Toast.makeText(this@CommentsActivity, "Failed to like reply", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleDislikeReply(parentComment: Comment, reply: Comment) {
+        val currentUserId = UserPreferences.getUserId(this)
+        val postId = post?.id ?: return
+
+        val parentIndex = comments.indexOfFirst { it.id == parentComment.id }
+        if (parentIndex != -1) {
+            val parent = comments[parentIndex]
+            val replyIndex = parent.replies.indexOfFirst { it.id == reply.id }
+
+            if (replyIndex != -1) {
+                val replyToUpdate = parent.replies[replyIndex]
+                val isLiked = replyToUpdate.likedBy.contains(currentUserId)
+                val isDisliked = replyToUpdate.dislikedBy.contains(currentUserId)
+
+                val newDislikedBy = if (isDisliked) replyToUpdate.dislikedBy - currentUserId else replyToUpdate.dislikedBy + currentUserId
+                val newDislikesCount = if (isDisliked) kotlin.math.max(0, replyToUpdate.dislikesCount - 1) else replyToUpdate.dislikesCount + 1
+
+                // If disliking, remove like
+                val newLikedBy = if (!isDisliked && isLiked) replyToUpdate.likedBy - currentUserId else replyToUpdate.likedBy
+                val newLikesCount = if (!isDisliked && isLiked) kotlin.math.max(0, replyToUpdate.likesCount - 1) else replyToUpdate.likesCount
+
+                val updatedReply = replyToUpdate.copy(
+                    likedBy = newLikedBy,
+                    likesCount = newLikesCount,
+                    dislikedBy = newDislikedBy,
+                    dislikesCount = newDislikesCount
+                )
+
+                val updatedReplies = parent.replies.toMutableList()
+                updatedReplies[replyIndex] = updatedReply
+
+                val updatedParent = parent.copy(replies = updatedReplies)
+                comments[parentIndex] = updatedParent
+                commentAdapter.submitList(comments.toList())
+                commentAdapter.notifyItemChanged(parentIndex)
+
+                lifecycleScope.launch {
+                    val result = PostRepository.getInstance().toggleDislikeReply(postId, parentComment.id, reply.id, currentUserId)
+                    if (result.isFailure) {
+                         // Revert
+                        if (parentIndex < comments.size) {
+                            comments[parentIndex] = parent
+                            commentAdapter.submitList(comments.toList())
+                            commentAdapter.notifyItemChanged(parentIndex)
+                        }
+                        Toast.makeText(this@CommentsActivity, "Failed to dislike reply", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun handleReplyComment(comment: Comment) {
+        replyingToComment = comment
+        binding.replyIndicatorLayout.visibility = View.VISIBLE
+        binding.tvReplyingTo.text = getString(R.string.replying_to_format, comment.authorName)
+
+        // Add @mention to the edit text
+        val mentionText = "@${comment.authorName} "
+        binding.etComment.setText(mentionText)
+        binding.etComment.setSelection(mentionText.length)
+
+        binding.etComment.requestFocus()
+        // Show keyboard
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+        imm.showSoftInput(binding.etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+    }
+
+    private fun loadComments() {
+        val currentPost = post ?: return
+
+        // Show loading or existing comments while fetching
         commentAdapter.submitList(comments.toList())
         updateCommentCountUI()
+
+        // Fetch fresh comments from backend
+        lifecycleScope.launch {
+            val result = PostRepository.getInstance().getComments(currentPost.id)
+            result.onSuccess { fetchedComments ->
+                comments.clear()
+                comments.addAll(fetchedComments)
+                commentAdapter.submitList(comments.toList())
+                updateCommentCountUI()
+            }.onFailure { e ->
+                if (comments.isEmpty()) {
+                    Toast.makeText(this@CommentsActivity, "Failed to load comments: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun sendComment() {
@@ -189,198 +515,97 @@ class CommentsActivity : AppCompatActivity() {
             return
         }
 
-        // Get user info from preferences
-        val userName = UserPreferences.getUserName(this)
-        val userAvatar = UserPreferences.getUserAvatar(this)
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
 
-        // Create new comment
-        val newComment = Comment(
-            id = System.currentTimeMillis().toString(),
-            authorName = userName,
-            authorAvatar = userAvatar,
-            timestamp = "Just now",
-            content = commentText
-        )
+        var userName = UserPreferences.getUserName(this)
+        var userAvatar = UserPreferences.getUserAvatar(this)
+        var userId = UserPreferences.getUserId(this)
 
-        // Add to the beginning of the list
-        comments.add(0, newComment)
-
-        // Update adapter with new list
-        commentAdapter.submitList(comments.toList())
-
-        // Update comment count UI
-        updateCommentCountUI()
-
-        // Clear input
-        binding.etComment.text?.clear()
-
-        // Show success message
-        Toast.makeText(this, "Comment sent!", Toast.LENGTH_SHORT).show()
-
-        // Scroll to top to show new comment
-        binding.scrollView.post {
-            binding.rvComments.scrollToPosition(0)
+        // Fallback to FirebaseAuth if local prefs are missing or default
+        if (currentUser != null) {
+            if (userId == "user_default" || userId.isEmpty()) {
+                userId = currentUser.uid
+            }
+            if (userName == "You" || userName.isEmpty()) {
+                userName = currentUser.displayName ?: "User"
+            }
+            if (userAvatar.isEmpty()) {
+                userAvatar = currentUser.photoUrl?.toString() ?: ""
+            }
         }
 
-        // TODO: Send comment to server and update the post's comment count in database
-    }
+        val postId = post?.id ?: return
 
-    private fun toggleCommentLike(comment: Comment) {
-        val index = comments.indexOfFirst { it.id == comment.id }
-        if (index != -1) {
-            val updatedComment = comment.copy(
-                isLiked = !comment.isLiked,
-                likesCount = if (comment.isLiked) comment.likesCount - 1 else comment.likesCount + 1
-            )
-            comments[index] = updatedComment
-            commentAdapter.submitList(comments.toList())
+        // Disable button to prevent double-click
+        binding.btnSendComment.isEnabled = false
 
-            // TODO: Send like status to server
-        }
-    }
+        lifecycleScope.launch {
+            try {
+                if (replyingToComment != null) {
+                    // Handle reply
+                    val parentId = replyingToComment!!.id
+                    val newReply = Comment(
+                        postId = postId,
+                        userId = userId,
+                        authorName = userName,
+                        authorAvatarUrl = userAvatar.ifEmpty { null },
+                        content = commentText,
+                        timestamp = System.currentTimeMillis()
+                    )
 
-    private fun showReplyDialog(comment: Comment) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_reply_comment, null)
-        val etReply = dialogView.findViewById<android.widget.EditText>(R.id.etReply)
+                    val result = PostRepository.getInstance().replyToComment(postId, parentId, newReply)
+                    if (result.isSuccess) {
+                        val addedReply = result.getOrNull() ?: newReply
+                        val parentIndex = comments.indexOfFirst { it.id == parentId }
+                        if (parentIndex != -1) {
+                            val parent = comments[parentIndex]
+                            val updatedReplies = parent.replies + addedReply
+                            comments[parentIndex] = parent.copy(replies = updatedReplies)
+                            commentAdapter.submitList(comments.toList())
+                            commentAdapter.notifyItemChanged(parentIndex)
+                        }
+                        cancelReplyMode()
+                        binding.etComment.text?.clear()
+                        Toast.makeText(this@CommentsActivity, "Reply sent!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this@CommentsActivity, "Failed to send reply: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    // Handle new top level comment
+                    val newComment = Comment(
+                        postId = postId,
+                        userId = userId,
+                        authorName = userName,
+                        authorAvatarUrl = userAvatar.ifEmpty { null },
+                        content = commentText,
+                        timestamp = System.currentTimeMillis()
+                    )
 
-        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Reply to ${comment.authorName}")
-            .setView(dialogView)
-            .setPositiveButton("Send") { _, _ ->
-                val replyText = etReply.text.toString().trim()
-                if (replyText.isNotEmpty()) {
-                    addReplyToComment(comment, replyText)
+                    val result = PostRepository.getInstance().commentPost(postId, newComment)
+                    if (result.isSuccess) {
+                        val addedComment = result.getOrNull() ?: newComment
+                        comments.add(0, addedComment)
+                        commentAdapter.submitList(comments.toList())
+                        updateCommentCountUI()
+                        binding.etComment.text?.clear()
+                        Toast.makeText(this@CommentsActivity, "Comment sent!", Toast.LENGTH_SHORT).show()
+                        binding.scrollView.post {
+                            if (comments.isNotEmpty()) binding.rvComments.scrollToPosition(0)
+                        }
+                    } else {
+                        Toast.makeText(this@CommentsActivity, "Failed to send comment: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialog.show()
-
-        // Show keyboard
-        etReply.requestFocus()
-        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(etReply, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    private fun addReplyToComment(comment: Comment, replyText: String) {
-        // Get user info from preferences
-        val userName = UserPreferences.getUserName(this)
-        val userAvatar = UserPreferences.getUserAvatar(this)
-
-        val newReply = CommentReply(
-            id = System.currentTimeMillis().toString(),
-            authorName = userName,
-            authorAvatar = userAvatar,
-            timestamp = "Just now",
-            content = replyText
-        )
-
-        val index = comments.indexOfFirst { it.id == comment.id }
-        if (index != -1) {
-            val updatedReplies = comment.replies.toMutableList()
-            updatedReplies.add(newReply)
-
-            val updatedComment = comment.copy(replies = updatedReplies)
-            comments[index] = updatedComment
-            commentAdapter.submitList(comments.toList())
-
-            Toast.makeText(this, "Reply sent!", Toast.LENGTH_SHORT).show()
-
-            // TODO: Send reply to server
-        }
-    }
-
-    private fun toggleReplyLike(comment: Comment, reply: CommentReply) {
-        val commentIndex = comments.indexOfFirst { it.id == comment.id }
-        if (commentIndex != -1) {
-            val updatedReplies = toggleReplyLikeRecursive(comment.replies, reply)
-            val updatedComment = comment.copy(replies = updatedReplies)
-            comments[commentIndex] = updatedComment
-            commentAdapter.submitList(comments.toList())
-
-            // TODO: Send like status to server
-        }
-    }
-
-    private fun toggleReplyLikeRecursive(replies: List<CommentReply>, targetReply: CommentReply): List<CommentReply> {
-        return replies.map { reply ->
-            if (reply.id == targetReply.id) {
-                reply.copy(
-                    isLiked = !reply.isLiked,
-                    likesCount = if (reply.isLiked) reply.likesCount - 1 else reply.likesCount + 1
-                )
-            } else if (reply.replies.isNotEmpty()) {
-                reply.copy(replies = toggleReplyLikeRecursive(reply.replies, targetReply))
-            } else {
-                reply
+            } catch (e: Exception) {
+                Toast.makeText(this@CommentsActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            } finally {
+                binding.btnSendComment.isEnabled = true
             }
         }
     }
 
-    private fun showReplyToReplyDialog(comment: Comment, parentReply: CommentReply) {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_reply_comment, null)
-        val etReply = dialogView.findViewById<android.widget.EditText>(R.id.etReply)
-
-        val dialog = androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Reply to ${parentReply.authorName}")
-            .setView(dialogView)
-            .setPositiveButton("Send") { _, _ ->
-                val replyText = etReply.text.toString().trim()
-                if (replyText.isNotEmpty()) {
-                    addNestedReply(comment, parentReply, replyText)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .create()
-
-        dialog.show()
-
-        // Show keyboard
-        etReply.requestFocus()
-        val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(etReply, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
-    }
-
-    private fun addNestedReply(comment: Comment, parentReply: CommentReply, replyText: String) {
-        // Get user info from preferences
-        val userName = UserPreferences.getUserName(this)
-        val userAvatar = UserPreferences.getUserAvatar(this)
-
-        val newReply = CommentReply(
-            id = System.currentTimeMillis().toString(),
-            authorName = userName,
-            authorAvatar = userAvatar,
-            timestamp = "Just now",
-            content = replyText
-        )
-
-        val commentIndex = comments.indexOfFirst { it.id == comment.id }
-        if (commentIndex != -1) {
-            val updatedReplies = addNestedReplyRecursive(comment.replies, parentReply, newReply)
-            val updatedComment = comment.copy(replies = updatedReplies)
-            comments[commentIndex] = updatedComment
-            commentAdapter.submitList(comments.toList())
-
-            Toast.makeText(this, "Reply sent!", Toast.LENGTH_SHORT).show()
-
-            // TODO: Send reply to server
-        }
-    }
-
-    private fun addNestedReplyRecursive(replies: List<CommentReply>, targetReply: CommentReply, newReply: CommentReply): List<CommentReply> {
-        return replies.map { reply ->
-            if (reply.id == targetReply.id) {
-                val updatedNestedReplies = reply.replies.toMutableList()
-                updatedNestedReplies.add(newReply)
-                reply.copy(replies = updatedNestedReplies)
-            } else if (reply.replies.isNotEmpty()) {
-                reply.copy(replies = addNestedReplyRecursive(reply.replies, targetReply, newReply))
-            } else {
-                reply
-            }
-        }
-    }
 
     private fun returnResult() {
         val resultIntent = android.content.Intent().apply {
@@ -397,6 +622,7 @@ class CommentsActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_POST_ID = "extra_post_id"
+        const val EXTRA_POST_USER_ID = "extra_post_user_id"
         const val EXTRA_AUTHOR_NAME = "extra_author_name"
         const val EXTRA_AUTHOR_AVATAR = "extra_author_avatar"
         const val EXTRA_TIMESTAMP = "extra_timestamp"
@@ -414,4 +640,3 @@ class CommentsActivity : AppCompatActivity() {
         const val RESULT_COMMENTS = "result_comments"
     }
 }
-

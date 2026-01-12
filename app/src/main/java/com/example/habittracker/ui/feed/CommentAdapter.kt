@@ -7,18 +7,26 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
+import com.example.habittracker.data.model.Comment
 import com.google.android.material.imageview.ShapeableImageView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CommentAdapter(
+    private val currentUserId: String,
+    private val postOwnerId: String,
     private val onLikeClick: (Comment) -> Unit,
+    private val onDislikeClick: (Comment) -> Unit,
     private val onReplyClick: (Comment) -> Unit,
-    private val onReplyLikeClick: (Comment, CommentReply) -> Unit,
-    private val onReplyToReply: (Comment, CommentReply) -> Unit
+    private val onDeleteCommentClick: (Comment) -> Unit,
+    private val onDeleteReplyClick: (Comment, Comment) -> Unit, // parentComment, reply
+    private val onLikeReplyClick: (Comment, Comment) -> Unit, // parentComment, reply
+    private val onDislikeReplyClick: (Comment, Comment) -> Unit // parentComment, reply
 ) : ListAdapter<Comment, CommentAdapter.CommentViewHolder>(CommentDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CommentViewHolder {
@@ -28,7 +36,18 @@ class CommentAdapter(
     }
 
     override fun onBindViewHolder(holder: CommentViewHolder, position: Int) {
-        holder.bind(getItem(position), onLikeClick, onReplyClick, onReplyLikeClick, onReplyToReply)
+        holder.bind(
+            getItem(position),
+            currentUserId,
+            postOwnerId,
+            onLikeClick,
+            onDislikeClick,
+            onReplyClick,
+            onDeleteCommentClick,
+            onDeleteReplyClick,
+            onLikeReplyClick,
+            onDislikeReplyClick
+        )
     }
 
     class CommentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -36,63 +55,51 @@ class CommentAdapter(
         private val tvCommentAuthorName: TextView = itemView.findViewById(R.id.tvCommentAuthorName)
         private val tvCommentTimestamp: TextView = itemView.findViewById(R.id.tvCommentTimestamp)
         private val tvCommentContent: TextView = itemView.findViewById(R.id.tvCommentContent)
+
         private val containerCommentLike: View = itemView.findViewById(R.id.containerCommentLike)
         private val ivCommentLike: ImageView = itemView.findViewById(R.id.ivCommentLike)
         private val tvCommentLikeCount: TextView = itemView.findViewById(R.id.tvCommentLikeCount)
+
+        private val containerCommentDislike: View = itemView.findViewById(R.id.containerCommentDislike)
+        private val ivCommentDislike: ImageView = itemView.findViewById(R.id.ivCommentDislike)
+        private val tvCommentDislikeCount: TextView = itemView.findViewById(R.id.tvCommentDislikeCount)
+
         private val btnReply: TextView = itemView.findViewById(R.id.btnReply)
         private val tvReplyCount: TextView = itemView.findViewById(R.id.tvReplyCount)
         private val rvReplies: RecyclerView = itemView.findViewById(R.id.rvReplies)
 
-        private val replyAdapter = CommentReplyAdapter(
-            onLikeClick = { /* will be set in bind */ },
-            onReplyClick = { /* will be set in bind */ },
-            nestingLevel = 0,
-            maxNestingLevel = 3
-        )
-
-        private var currentComment: Comment? = null
-        private var currentOnReplyLikeClick: ((Comment, CommentReply) -> Unit)? = null
-        private var currentOnReplyToReply: ((Comment, CommentReply) -> Unit)? = null
-
-        init {
-            rvReplies.apply {
-                layoutManager = LinearLayoutManager(itemView.context)
-                adapter = replyAdapter
-                isNestedScrollingEnabled = false
-                // Use a shared RecycledViewPool for better performance
-                setRecycledViewPool(RecyclerView.RecycledViewPool())
-            }
-        }
+        private val btnDeleteComment: TextView = itemView.findViewById(R.id.btnDeleteComment)
 
         fun bind(
             comment: Comment,
+            currentUserId: String,
+            postOwnerId: String,
             onLikeClick: (Comment) -> Unit,
+            onDislikeClick: (Comment) -> Unit,
             onReplyClick: (Comment) -> Unit,
-            onReplyLikeClick: (Comment, CommentReply) -> Unit,
-            onReplyToReply: (Comment, CommentReply) -> Unit
+            onDeleteCommentClick: (Comment) -> Unit,
+            onDeleteReplyClick: (Comment, Comment) -> Unit,
+            onLikeReplyClick: (Comment, Comment) -> Unit,
+            onDislikeReplyClick: (Comment, Comment) -> Unit
         ) {
-            currentComment = comment
-            currentOnReplyLikeClick = onReplyLikeClick
-            currentOnReplyToReply = onReplyToReply
-
             tvCommentAuthorName.text = comment.authorName
-            tvCommentTimestamp.text = comment.timestamp
+
+            // Format timestamp
+            val date = Date(comment.timestamp)
+            val format = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+            tvCommentTimestamp.text = format.format(date)
+
             tvCommentContent.text = comment.content
-            tvCommentLikeCount.text = comment.likesCount.toString()
 
-            // Avatar
-            if (comment.authorAvatar.isNotEmpty()) {
-                Glide.with(itemView.context)
-                    .load(comment.authorAvatar)
-                    .placeholder(R.drawable.ic_person)
-                    .error(R.drawable.ic_person)
-                    .into(ivCommentAuthorAvatar)
-            } else {
-                ivCommentAuthorAvatar.setImageResource(R.drawable.ic_person)
-            }
+            // Show features
+            containerCommentLike.visibility = View.VISIBLE
+            containerCommentDislike.visibility = View.VISIBLE
+            btnReply.visibility = View.VISIBLE
 
-            // Like status
-            if (comment.isLiked) {
+            // Likes
+            tvCommentLikeCount.text = if (comment.likesCount > 0) comment.likesCount.toString() else "0"
+            val isLiked = comment.likedBy.contains(currentUserId)
+            if (isLiked) {
                 ivCommentLike.setImageResource(R.drawable.ic_heart)
                 ivCommentLike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.accent_pink))
                 tvCommentLikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.accent_pink))
@@ -102,33 +109,175 @@ class CommentAdapter(
                 tvCommentLikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
             }
 
-            // Reply count
-            if (comment.replies.isNotEmpty()) {
-                tvReplyCount.visibility = View.VISIBLE
-                tvReplyCount.text = "(${comment.replies.size})"
-                rvReplies.visibility = View.VISIBLE
+            containerCommentLike.setOnClickListener { onLikeClick(comment) }
 
-                // Create new adapter with callbacks for this comment
-                val newReplyAdapter = CommentReplyAdapter(
-                    onLikeClick = { reply ->
-                        currentComment?.let { onReplyLikeClick(it, reply) }
-                    },
-                    onReplyClick = { reply ->
-                        currentComment?.let { onReplyToReply(it, reply) }
-                    },
-                    nestingLevel = 0,
-                    maxNestingLevel = 3
-                )
-                rvReplies.adapter = newReplyAdapter
-                newReplyAdapter.submitList(comment.replies.toList())
+            // Dislikes
+            tvCommentDislikeCount.text = if (comment.dislikesCount > 0) comment.dislikesCount.toString() else "0"
+            val isDisliked = comment.dislikedBy.contains(currentUserId)
+            if (isDisliked) {
+                ivCommentDislike.setImageResource(R.drawable.ic_thumb_down)
+                ivCommentDislike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.primary_blue)) // Or another color
+                tvCommentDislikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.primary_blue))
             } else {
-                tvReplyCount.visibility = View.GONE
-                rvReplies.visibility = View.GONE
+                ivCommentDislike.setImageResource(R.drawable.ic_thumb_down_outline)
+                ivCommentDislike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
+                tvCommentDislikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
             }
 
-            // Click listeners
-            containerCommentLike.setOnClickListener { onLikeClick(comment) }
+            containerCommentDislike.setOnClickListener { onDislikeClick(comment) }
+
+            // Reply
             btnReply.setOnClickListener { onReplyClick(comment) }
+
+            // Delete permission: Comment author OR Post owner
+            if (currentUserId == comment.userId || currentUserId == postOwnerId) {
+                btnDeleteComment.visibility = View.VISIBLE
+                btnDeleteComment.setOnClickListener { onDeleteCommentClick(comment) }
+            } else {
+                btnDeleteComment.visibility = View.GONE
+            }
+
+            // Replies
+            if (comment.replies.isNotEmpty()) {
+                rvReplies.visibility = View.VISIBLE
+                tvReplyCount.visibility = View.VISIBLE
+                tvReplyCount.text = itemView.context.getString(R.string.replies_count_format, comment.replies.size)
+
+                val replyAdapter = ReplyAdapter(
+                    comment.replies,
+                    currentUserId,
+                    postOwnerId,
+                    onDeleteReplyClick = { reply -> onDeleteReplyClick(comment, reply) },
+                    onLikeReplyClick = { reply -> onLikeReplyClick(comment, reply) },
+                    onDislikeReplyClick = { reply -> onDislikeReplyClick(comment, reply) },
+                    onReplyToReplyClick = { _ -> onReplyClick(comment) } // Re-use main reply click to reply to parent
+                )
+                rvReplies.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(itemView.context)
+                rvReplies.adapter = replyAdapter
+            } else {
+                rvReplies.visibility = View.GONE
+                tvReplyCount.visibility = View.GONE
+            }
+
+            // Avatar
+            if (!comment.authorAvatarUrl.isNullOrEmpty()) {
+                Glide.with(itemView.context)
+                    .load(comment.authorAvatarUrl)
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(ivCommentAuthorAvatar)
+            } else {
+                ivCommentAuthorAvatar.setImageResource(R.drawable.ic_person)
+            }
+        }
+    }
+
+    class ReplyAdapter(
+        private val replies: List<Comment>,
+        private val currentUserId: String,
+        private val postOwnerId: String,
+        private val onDeleteReplyClick: (Comment) -> Unit,
+        private val onLikeReplyClick: (Comment) -> Unit,
+        private val onDislikeReplyClick: (Comment) -> Unit,
+        private val onReplyToReplyClick: (Comment) -> Unit
+    ) : RecyclerView.Adapter<ReplyAdapter.ReplyViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReplyViewHolder {
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_comment_reply, parent, false)
+            return ReplyViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
+            holder.bind(replies[position], currentUserId, postOwnerId, onDeleteReplyClick, onLikeReplyClick, onDislikeReplyClick, onReplyToReplyClick)
+        }
+
+        override fun getItemCount() = replies.size
+
+        class ReplyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            private val tvReplyAuthorName: TextView = itemView.findViewById(R.id.tvReplyAuthorName)
+            private val ivReplyAuthorAvatar: ImageView = itemView.findViewById(R.id.ivReplyAuthorAvatar) // Added reference
+            private val tvReplyTimestamp: TextView = itemView.findViewById(R.id.tvReplyTimestamp)
+            private val tvReplyContent: TextView = itemView.findViewById(R.id.tvReplyContent)
+            private val btnDeleteReply: TextView? = itemView.findViewById(R.id.btnDeleteReply)
+
+            private val containerReplyLike: View = itemView.findViewById(R.id.containerReplyLike)
+            private val ivReplyLike: ImageView = itemView.findViewById(R.id.ivReplyLike)
+            private val tvReplyLikeCount: TextView = itemView.findViewById(R.id.tvReplyLikeCount)
+
+            private val containerReplyDislike: View = itemView.findViewById(R.id.containerReplyDislike)
+            private val ivReplyDislike: ImageView = itemView.findViewById(R.id.ivReplyDislike)
+            private val tvReplyDislikeCount: TextView = itemView.findViewById(R.id.tvReplyDislikeCount)
+
+            private val btnReplyToReply: TextView = itemView.findViewById(R.id.btnReplyToReply)
+
+            fun bind(
+                reply: Comment,
+                currentUserId: String,
+                postOwnerId: String,
+                onDeleteReplyClick: (Comment) -> Unit,
+                onLikeReplyClick: (Comment) -> Unit,
+                onDislikeReplyClick: (Comment) -> Unit,
+                onReplyToReplyClick: (Comment) -> Unit
+            ) {
+                // Avatar binding
+                if (!reply.authorAvatarUrl.isNullOrEmpty()) {
+                    Glide.with(itemView.context)
+                        .load(reply.authorAvatarUrl)
+                        .placeholder(R.drawable.ic_person)
+                        .error(R.drawable.ic_person)
+                        .into(ivReplyAuthorAvatar)
+                } else {
+                    ivReplyAuthorAvatar.setImageResource(R.drawable.ic_person)
+                }
+
+                tvReplyAuthorName.text = reply.authorName
+                val date = Date(reply.timestamp)
+                val format = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
+                tvReplyTimestamp.text = format.format(date)
+                tvReplyContent.text = reply.content
+
+                // Like Logic
+                val isLiked = reply.likedBy.contains(currentUserId)
+                tvReplyLikeCount.text = reply.likesCount.toString()
+
+                if (isLiked) {
+                    ivReplyLike.setImageResource(R.drawable.ic_heart)
+                    ivReplyLike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.accent_pink))
+                    tvReplyLikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.accent_pink))
+                } else {
+                    ivReplyLike.setImageResource(R.drawable.ic_heart_outline)
+                    ivReplyLike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
+                    tvReplyLikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
+                }
+
+                containerReplyLike.setOnClickListener { onLikeReplyClick(reply) }
+
+                // Dislike Logic
+                val isDisliked = reply.dislikedBy.contains(currentUserId)
+                tvReplyDislikeCount.text = reply.dislikesCount.toString()
+
+                if (isDisliked) {
+                    ivReplyDislike.setImageResource(R.drawable.ic_thumb_down)
+                    ivReplyDislike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.primary_blue))
+                    tvReplyDislikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.primary_blue))
+                } else {
+                    ivReplyDislike.setImageResource(R.drawable.ic_thumb_down_outline)
+                    ivReplyDislike.setColorFilter(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
+                    tvReplyDislikeCount.setTextColor(ContextCompat.getColor(itemView.context, R.color.secondary_gray))
+                }
+
+                containerReplyDislike.setOnClickListener { onDislikeReplyClick(reply) }
+
+                // Reply to Reply
+                btnReplyToReply.setOnClickListener { onReplyToReplyClick(reply) }
+
+                // Delete
+                if (currentUserId == reply.userId || currentUserId == postOwnerId) {
+                    btnDeleteReply?.visibility = View.VISIBLE
+                    btnDeleteReply?.setOnClickListener { onDeleteReplyClick(reply) }
+                } else {
+                    btnDeleteReply?.visibility = View.GONE
+                }
+            }
         }
     }
 
@@ -142,4 +291,3 @@ class CommentAdapter(
         }
     }
 }
-

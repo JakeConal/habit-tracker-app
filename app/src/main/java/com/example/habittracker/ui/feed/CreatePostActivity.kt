@@ -11,17 +11,22 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.habittracker.databinding.ActivityCreatePostBinding
 import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.R
+import kotlinx.coroutines.launch
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class CreatePostActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityCreatePostBinding
+    private lateinit var viewModel: CreatePostViewModel
     private var selectedImageUri: Uri? = null
     private var photoUri: Uri? = null
 
@@ -69,8 +74,32 @@ class CreatePostActivity : AppCompatActivity() {
         binding = ActivityCreatePostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this)[CreatePostViewModel::class.java]
+
         setupViews()
         setupClickListeners()
+        setupObservers()
+    }
+
+    private fun setupObservers() {
+        viewModel.isLoading.observe(this) { isLoading ->
+            binding.btnPost.isEnabled = !isLoading
+            binding.btnPost.text = if (isLoading) getString(R.string.action_posting) else getString(R.string.action_post)
+        }
+        lifecycleScope.launch {
+            viewModel.postCreatedEvent.collect {
+                Toast.makeText(this@CreatePostActivity, "Post created successfully!", Toast.LENGTH_SHORT).show()
+                setResult(RESULT_OK)
+                finish()
+            }
+        }
+        lifecycleScope.launch {
+            viewModel.errorMessage.collect { message ->
+                Toast.makeText(this@CreatePostActivity, message, Toast.LENGTH_SHORT).show()
+                binding.btnPost.isEnabled = true
+                binding.btnPost.text = getString(R.string.action_post)
+            }
+        }
     }
 
     private fun setupViews() {
@@ -84,11 +113,11 @@ class CreatePostActivity : AppCompatActivity() {
         if (userAvatar.isNotEmpty()) {
             Glide.with(this)
                 .load(userAvatar)
-                .placeholder(com.example.habittracker.R.drawable.ic_person)
-                .error(com.example.habittracker.R.drawable.ic_person)
+                .placeholder(R.drawable.ic_person)
+                .error(R.drawable.ic_person)
                 .into(binding.ivUserAvatar)
         } else {
-            binding.ivUserAvatar.setImageResource(com.example.habittracker.R.drawable.ic_person)
+            binding.ivUserAvatar.setImageResource(R.drawable.ic_person)
         }
     }
 
@@ -178,63 +207,10 @@ class CreatePostActivity : AppCompatActivity() {
             return
         }
 
-        // Get user info from preferences
-        val userName = UserPreferences.getUserName(this)
-        val userAvatar = UserPreferences.getUserAvatar(this)
-
-        // Save image to internal storage to ensure it persists and we have permission
-        val finalImageUrl = selectedImageUri?.let { uri ->
-            saveImageToInternalStorage(uri)
-        }
-
-        // Create new post
-        val newPost = Post(
-            id = System.currentTimeMillis().toString(),
-            userId = "user_current", // Default user ID for current user
-            authorName = userName,
-            authorAvatar = userAvatar,
-            timestamp = "Just now",
-            content = content,
-            imageUrl = finalImageUrl, // Use the local file path
-            likesCount = 0,
-            commentsCount = 0,
-            isLiked = false,
-            comments = emptyList()
-        )
-
-        // TODO: Upload image if exists and create post in database
-
-        Toast.makeText(this, "Post created successfully!", Toast.LENGTH_SHORT).show()
-
-        // Return the new post to FeedFragment
-        val resultIntent = Intent().apply {
-            putExtra(EXTRA_NEW_POST, newPost)
-        }
-        setResult(RESULT_OK, resultIntent)
-        finish()
-    }
-
-    private fun saveImageToInternalStorage(uri: Uri): String? {
-        return try {
-            val inputStream = contentResolver.openInputStream(uri) ?: return null
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-            val fileName = "POST_${timeStamp}.jpg"
-            // Save to app's internal files directory
-            val file = File(filesDir, fileName)
-            val outputStream = FileOutputStream(file)
-            inputStream.copyTo(outputStream)
-            inputStream.close()
-            outputStream.close()
-            // Return uri string for the file
-            Uri.fromFile(file).toString()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            // Fallback to original uri if copy fails
-            uri.toString()
-        }
+        viewModel.createPost(content, selectedImageUri)
     }
 
     companion object {
-        const val EXTRA_NEW_POST = "extra_new_post"
+        // const val EXTRA_NEW_POST = "extra_new_post"
     }
 }

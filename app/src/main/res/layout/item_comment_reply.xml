@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:orientation="horizontal"
-                android:gravity="start">
+                android:gravity="start|center_vertical">
 
                 <LinearLayout
                     android:id="@+id/containerReplyLike"
@@ -92,17 +92,59 @@
                         android:fontFamily="sans-serif-medium"/>
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/containerReplyDislike"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="4dp">
+
+                    <ImageView
+                        android:id="@+id/ivReplyDislike"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:src="@drawable/ic_thumb_down_outline"
+                        android:contentDescription="Dislike reply"
+                        app:tint="@color/secondary_gray" />
+
+                    <TextView
+                        android:id="@+id/tvReplyDislikeCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:text="0"
+                        android:textColor="@color/secondary_gray"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium"/>
+                </LinearLayout>
+
                 <TextView
                     android:id="@+id/btnReplyToReply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="8dp"
                     android:text="Reply"
                     android:textColor="@color/secondary_gray"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:background="?attr/selectableItemBackground"
                     android:padding="4dp" />
+
+                <TextView
+                    android:id="@+id/btnDeleteReply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="Delete"
+                    android:textColor="@color/accent_pink"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:padding="4dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:visibility="gone" />
 
                 <TextView
                     android:id="@+id/tvNestedReplyCount"
