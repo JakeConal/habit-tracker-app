@@ -25,38 +25,33 @@ class SettingsViewModel : ViewModel() {
         _settingsMenuItems.value = listOf(
             SettingMenuItem(
                 id = 1,
-                titleRes = R.string.settings_general,
+                titleRes = R.string.settings_edit_profile,
                 iconRes = R.drawable.ic_settings_general
             ),
             SettingMenuItem(
                 id = 2,
+                titleRes = R.string.settings_reset_password,
+                iconRes = R.drawable.ic_settings_general
+            ),
+            SettingMenuItem(
+                id = 3,
                 titleRes = R.string.settings_notification,
                 iconRes = R.drawable.ic_notification_menu
             ),
             SettingMenuItem(
-                id = 3,
-                titleRes = R.string.settings_subscription,
-                iconRes = R.drawable.ic_subscription
-            ),
-            SettingMenuItem(
                 id = 4,
-                titleRes = R.string.settings_language,
-                iconRes = R.drawable.ic_language
-            ),
-            SettingMenuItem(
-                id = 5,
-                titleRes = R.string.settings_report,
-                iconRes = R.drawable.ic_report
-            ),
-            SettingMenuItem(
-                id = 6,
                 titleRes = R.string.settings_terms,
                 iconRes = R.drawable.ic_terms
             ),
             SettingMenuItem(
-                id = 7,
-                titleRes = R.string.settings_support,
-                iconRes = R.drawable.ic_support
+                id = 5,
+                titleRes = R.string.settings_review_challenge,
+                iconRes = R.drawable.ic_settings_general
+            ),
+            SettingMenuItem(
+                id = 6,
+                titleRes = R.string.settings_logout,
+                iconRes = R.drawable.ic_settings_general
             )
         )
     }

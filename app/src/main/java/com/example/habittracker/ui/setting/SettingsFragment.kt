@@ -73,42 +73,43 @@ class SettingsFragment : Fragment() {
     
     private fun handleMenuItemClick(menuItem: SettingMenuItem) {
         when (menuItem.id) {
-            1 -> navigateToGeneralSettings()
-            2 -> navigateToNotificationSettings()
-            3 -> navigateToSubscription()
-            4 -> navigateToLanguageSettings()
-            5 -> navigateToReport()
-            6 -> navigateToTermsOfUse()
-            7 -> navigateToSupport()
+            1 -> navigateToEditProfile()
+            2 -> navigateToResetPassword()
+            3 -> navigateToNotificationSettings()
+            4 -> navigateToTerms()
+            5 -> navigateToReviewChallenge()
+            6 -> handleLogout()
         }
     }
     
-    private fun navigateToGeneralSettings() {
-        findNavController().navigate(R.id.action_settingsFragment_to_generalSettingsFragment)
+    private fun navigateToEditProfile() {
+        // TODO: Navigate to edit profile screen
+        // findNavController().navigate(R.id.action_settingsFragment_to_editProfileFragment)
+    }
+    
+    private fun navigateToResetPassword() {
+        // TODO: Navigate to reset password screen
+        // findNavController().navigate(R.id.action_settingsFragment_to_resetPasswordFragment)
     }
     
     private fun navigateToNotificationSettings() {
-        findNavController().navigate(R.id.action_settingsFragment_to_notificationSettingsFragment)
+        // TODO: Navigate to notification settings screen
+        // findNavController().navigate(R.id.action_settingsFragment_to_notificationSettingsFragment)
     }
     
-    private fun navigateToSubscription() {
-        findNavController().navigate(R.id.action_settingsFragment_to_subscriptionFragment)
+    private fun navigateToTerms() {
+        // TODO: Navigate to terms screen
+        // findNavController().navigate(R.id.action_settingsFragment_to_termsFragment)
     }
     
-    private fun navigateToLanguageSettings() {
-        findNavController().navigate(R.id.action_settingsFragment_to_languageSettingsFragment)
+    private fun navigateToReviewChallenge() {
+        // TODO: Navigate to review challenge screen
+        // findNavController().navigate(R.id.action_settingsFragment_to_reviewChallengeFragment)
     }
     
-    private fun navigateToReport() {
-        findNavController().navigate(R.id.action_settingsFragment_to_reportFragment)
-    }
-    
-    private fun navigateToTermsOfUse() {
-        findNavController().navigate(R.id.action_settingsFragment_to_termsFragment)
-    }
-    
-    private fun navigateToSupport() {
-        findNavController().navigate(R.id.action_settingsFragment_to_supportFragment)
+    private fun handleLogout() {
+        // TODO: Implement logout functionality
+        // Show confirmation dialog and handle logout
     }
 
     override fun onDestroyView() {
