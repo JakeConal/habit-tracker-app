@@ -67,6 +67,10 @@
         tools:layout="@layout/fragment_settings">
         
         <action
+            android:id="@+id/action_settingsFragment_to_editProfileFragment"
+            app:destination="@id/nav_edit_profile" />
+
+        <action
             android:id="@+id/action_settingsFragment_to_generalSettingsFragment"
             app:destination="@id/nav_general_settings" />
         
@@ -96,6 +100,12 @@
     </fragment>
 
     <!-- Sub-Settings Fragments -->
+    <fragment
+        android:id="@+id/nav_edit_profile"
+        android:name="com.example.habittracker.ui.setting.subsettings.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
+
     <fragment
         android:id="@+id/nav_general_settings"
         android:name="com.example.habittracker.ui.setting.subsettings.GeneralSettingsFragment"

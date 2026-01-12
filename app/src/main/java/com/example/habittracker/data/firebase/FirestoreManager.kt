@@ -2,6 +2,8 @@ package com.example.habittracker.data.firebase
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.firestore.Source
 import kotlinx.coroutines.tasks.await
 
 object FirestoreManager {
@@ -73,19 +75,32 @@ object FirestoreManager {
         collectionName: String,
         docId: String
     ): DocumentSnapshot? {
+        // ... (existing implementation)
         return try {
             val snapshot = db.collection(collectionName)
                 .document(docId)
                 .get()
                 .await()
-            // Check if document actually exists, not just if we got a snapshot
-            if (snapshot.exists()) {
-                snapshot
-            } else {
-                null
-            }
+            if (snapshot.exists()) snapshot else null
         } catch (e: Exception) {
             println("Error getting document '$docId': ${e.message}")
+            null
+        }
+    }
+
+    // Generic: Get single document from SERVER
+    suspend fun getDocumentFromServer(
+        collectionName: String,
+        docId: String
+    ): DocumentSnapshot? {
+        return try {
+            val snapshot = db.collection(collectionName)
+                .document(docId)
+                .get(Source.SERVER)
+                .await()
+            if (snapshot.exists()) snapshot else null
+        } catch (e: Exception) {
+            println("Error getting document from server '$docId': ${e.message}")
             null
         }
     }
@@ -155,6 +170,27 @@ object FirestoreManager {
             true
         } catch (e: Exception) {
             println("Error deleting document: ${e.message}")
+            false
+        }
+    }
+
+    // Generic: Set document with merge option
+    suspend fun setDocument(
+        collectionName: String,
+        docId: String,
+        data: Map<String, Any?>,
+        merge: Boolean = false
+    ): Boolean {
+        return try {
+            val docRef = db.collection(collectionName).document(docId)
+            if (merge) {
+                docRef.set(data, SetOptions.merge()).await()
+            } else {
+                docRef.set(data).await()
+            }
+            true
+        } catch (e: Exception) {
+            println("Error setting document: ${e.message}")
             false
         }
     }

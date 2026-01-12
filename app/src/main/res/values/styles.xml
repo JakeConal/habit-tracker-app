@@ -31,4 +31,8 @@
         <item name="android:textColor">@color/primary_blue</item>
         <item name="android:fontFamily">sans-serif</item>
     </style>
+    <style name="ShapeAppearance.App.Circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

@@ -113,17 +113,27 @@ class AuthRepository private constructor() {
             val result = auth.signInWithCredential(credential).await()
             val firebaseUser = result.user
             if (firebaseUser != null) {
-                val user = User(
-                    id = firebaseUser.uid,
-                    name = firebaseUser.displayName ?: "Google User",
-                    avatarUrl = firebaseUser.photoUrl?.toString(),
-                    email = firebaseUser.email,
-                    lastLoginAt = System.currentTimeMillis()
-                )
-                // Create or update user profile in Firestore
-                userRepository.createOrUpdateUser(user)
-                seedDefaultCategoriesForUser(user.id)
-                Result.success(user)
+                // Check if user already exists
+                val existingUser = userRepository.getUserById(firebaseUser.uid)
+
+                if (existingUser != null) {
+                    // User exists, only update last login time
+                    userRepository.updateLastLogin(firebaseUser.uid)
+                    Result.success(existingUser.copy(lastLoginAt = System.currentTimeMillis()))
+                } else {
+                    // New user, create new profile
+                    val user = User(
+                        id = firebaseUser.uid,
+                        name = firebaseUser.displayName ?: "Google User",
+                        avatarUrl = firebaseUser.photoUrl?.toString(),
+                        email = firebaseUser.email,
+                        lastLoginAt = System.currentTimeMillis()
+                    )
+                    // Create user profile in Firestore
+                    userRepository.createOrUpdateUser(user)
+                    seedDefaultCategoriesForUser(user.id)
+                    Result.success(user)
+                }
             } else {
                 Result.failure(Exception("Google sign in failed: User is null"))
             }

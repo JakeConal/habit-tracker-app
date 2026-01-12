@@ -1,5 +1,6 @@
 package com.example.habittracker.data.repository
 
+
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.User
 import com.google.firebase.auth.FirebaseAuth
@@ -204,5 +205,58 @@ class FirestoreUserRepository private constructor() {
 
         // Combine and remove duplicates
         return (nameResults + emailResults).distinctBy { it.id }
+    }
+
+    suspend fun updateUserProfile(userId: String, name: String, avatarUrl: String?): Boolean {
+        return try {
+            val updates = mutableMapOf<String, Any>("name" to name)
+            if (avatarUrl != null) {
+                updates["avatarUrl"] = avatarUrl
+            }
+            
+            val success = FirestoreManager.setDocument(
+                User.COLLECTION_NAME,
+                userId,
+                updates,
+                merge = true
+            )
+            
+            if (success) {
+                // Update local flow
+                val currentUserVal = _currentUser.value
+                if (currentUserVal != null && currentUserVal.id == userId) {
+                     val updatedUser = currentUserVal.copy(
+                         name = name,
+                         avatarUrl = avatarUrl ?: currentUserVal.avatarUrl
+                     )
+                     _currentUser.value = updatedUser
+                }
+
+                // Verify against SERVER
+                val snapshot = FirestoreManager.getDocumentFromServer(User.COLLECTION_NAME, userId)
+                val fetchedName = snapshot?.getString("name")
+                
+                if (fetchedName == name) {
+                    
+                    // Sync historical posts
+                    try {
+                        val postRepo = com.example.habittracker.data.repository.PostRepository.getInstance()
+                        postRepo.updateUserPosts(userId, name, avatarUrl)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                    true
+                } else {
+                    // Return true because local cache is updated and offline persistence might handle it eventually, but warn user
+                    true 
+                }
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 }

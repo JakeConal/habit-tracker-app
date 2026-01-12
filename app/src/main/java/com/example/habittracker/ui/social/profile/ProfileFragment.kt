@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
@@ -53,21 +54,23 @@ class ProfileFragment : Fragment() {
 
     private fun setupViews() {
         // Set user info
-        lifecycleScope.launch {
-            viewModel.userName.collect { name ->
-                binding.tvUserName.text = name
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.userEmail.collect { email ->
-                binding.tvUserEmail.text = email
-            }
-        }
-
-        lifecycleScope.launch {
-            viewModel.userAvatarUrl.collect { avatarUrl ->
-                loadAvatar(avatarUrl)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.userName.collect { name ->
+                        binding.tvUserName.text = name
+                    }
+                }
+                launch {
+                    viewModel.userEmail.collect { email ->
+                        binding.tvUserEmail.text = email
+                    }
+                }
+                launch {
+                    viewModel.userAvatarUrl.collect { avatarUrl ->
+                        loadAvatar(avatarUrl)
+                    }
+                }
             }
         }
     }
@@ -96,12 +99,14 @@ class ProfileFragment : Fragment() {
 
     private fun observeViewModel() {
         // Observe selected tab
-        lifecycleScope.launch {
-            viewModel.selectedTab.collect { tab ->
-                updateTabUI(tab)
-                val currentItem = if (tab == ProfileViewModel.ProfileTab.MY_POST) 0 else 1
-                if (binding.viewPager.currentItem != currentItem) {
-                    binding.viewPager.setCurrentItem(currentItem, false)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(androidx.lifecycle.Lifecycle.State.STARTED) {
+                viewModel.selectedTab.collect { tab ->
+                    updateTabUI(tab)
+                    val currentItem = if (tab == ProfileViewModel.ProfileTab.MY_POST) 0 else 1
+                    if (binding.viewPager.currentItem != currentItem) {
+                        binding.viewPager.setCurrentItem(currentItem, false)
+                    }
                 }
             }
         }

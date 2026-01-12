@@ -83,8 +83,7 @@ class SettingsFragment : Fragment() {
     }
     
     private fun navigateToEditProfile() {
-        // TODO: Navigate to edit profile screen
-        // findNavController().navigate(R.id.action_settingsFragment_to_editProfileFragment)
+        findNavController().navigate(R.id.action_settingsFragment_to_editProfileFragment)
     }
     
     private fun navigateToResetPassword() {

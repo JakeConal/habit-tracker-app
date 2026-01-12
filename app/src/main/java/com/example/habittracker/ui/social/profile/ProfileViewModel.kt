@@ -100,6 +100,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     init {
         // Fetch real data on init
+        viewModelScope.launch {
+            userRepository.getCurrentUser()
+        }
         val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid ?: UserPreferences.getUserId(application)
 
@@ -112,6 +115,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
         fetchUserPosts(userId)
         fetchFriendsAndRequests()
+
+        // Observe user updates from Repository
+        viewModelScope.launch {
+            userRepository.currentUser.collect { user ->
+                user?.let {
+                    _userName.value = it.name
+                    _userEmail.value = it.email ?: _userEmail.value
+                    _userAvatarUrl.value = it.avatarUrl ?: _userAvatarUrl.value
+                }
+            }
+        }
     }
 
     fun selectTab(tab: ProfileTab) {

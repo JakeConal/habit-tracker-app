@@ -92,6 +92,32 @@ class PostRepository private constructor() {
         }
     }
 
+    // New function to update author info in all posts by user
+    suspend fun updateUserPosts(userId: String, newName: String, newAvatarUrl: String?): Result<Boolean> {
+        return try {
+            val snapshot = db.collection("posts")
+                .whereEqualTo("userId", userId)
+                .get()
+                .await()
+
+            val batch = db.batch()
+            for (document in snapshot.documents) {
+                val postRef = db.collection("posts").document(document.id)
+                batch.update(postRef, "authorName", newName)
+                if (newAvatarUrl != null) {
+                    batch.update(postRef, "authorAvatarUrl", newAvatarUrl)
+                }
+            }
+            batch.commit().await()
+            Result.success(true)
+        } catch (e: Exception) {
+             e.printStackTrace()
+            Result.failure(e)
+        }
+    }
+
+
+
     // --- Comment Functions ---
 
     @Suppress("UNCHECKED_CAST")

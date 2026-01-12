@@ -32,6 +32,7 @@ class SettingsMenuAdapter(
         private val menuIcon: ImageView = itemView.findViewById(R.id.menuIcon)
         private val menuTitle: TextView = itemView.findViewById(R.id.menuTitle)
         private val divider: View = itemView.findViewById(R.id.divider)
+        private val container: View = itemView.findViewById(R.id.menuItemContainer)
 
         fun bind(item: SettingMenuItem, isLastItem: Boolean) {
             menuIcon.setImageResource(item.iconRes)
@@ -40,7 +41,7 @@ class SettingsMenuAdapter(
             // Hide divider for last item
             divider.visibility = if (isLastItem) View.GONE else View.VISIBLE
 
-            itemView.setOnClickListener {
+            container.setOnClickListener {
                 onItemClick(item)
             }
         }
