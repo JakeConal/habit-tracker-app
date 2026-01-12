@@ -107,13 +107,14 @@ class FriendRepository {
     }
 
     /**
-     * Get my friends (returns detailed User objects)
+     * Get friends (returns detailed User objects)
+     * If userId is provided, get friends of that user. Otherwise get friends of current user.
      */
-    suspend fun getFriends(): List<User> {
-         val currentUserId = auth.currentUser?.uid ?: return emptyList()
+    suspend fun getFriends(userId: String? = null): List<User> {
+         val targetUserId = userId ?: auth.currentUser?.uid ?: return emptyList()
          
          val friendsList = try {
-             firestore.collection("users").document(currentUserId)
+             firestore.collection("users").document(targetUserId)
                  .collection("friends")
                  .get()
                  .await()
@@ -126,10 +127,6 @@ class FriendRepository {
          if (friendsList.isEmpty()) return emptyList()
 
          // Fetch details for each friend
-         // Note: In a production app, we might store basic info in the friend doc to avoid N+1 reads,
-         // or use `whereIn` queries if list is small (< 10).
-         // Here detailed info is needed, let's fetch individually for now
-         
          return friendsList.mapNotNull { friend ->
              userRepository.getUserById(friend.userId)
          }

@@ -24,6 +24,8 @@ import com.example.habittracker.ui.social.profile.FriendListItem
  * FriendListAdapter - Adapter for displaying friend list with multiple view types
  */
 class FriendListAdapter(
+    private val currentUserId: String,
+    private val showUnfriendAction: Boolean,
     private val onSearchQueryChanged: (String) -> Unit,
     private val onAcceptRequest: (FriendRequest) -> Unit,
     private val onRejectRequest: (FriendRequest) -> Unit,
@@ -69,7 +71,7 @@ class FriendListAdapter(
             }
             VIEW_TYPE_FRIEND -> {
                 val binding = ItemFriendBinding.inflate(inflater, parent, false)
-                FriendViewHolder(binding, onViewProfile, onUnfriend)
+                FriendViewHolder(binding, onViewProfile, onUnfriend, currentUserId, showUnfriendAction)
             }
             VIEW_TYPE_GLOBAL_USER -> {
                 val binding = ItemGlobalUserBinding.inflate(inflater, parent, false)
@@ -151,8 +153,6 @@ class FriendListAdapter(
         fun bind(request: FriendRequest) {
             binding.tvName.text = request.senderName
             // Use mutual friends or default text
-            // Here request object might not have mutual friend count populated unless backend supports it
-            // For now hardcode or hide
              binding.tvMutualFriends.text = "Sent you a request"
 
             // Load avatar
@@ -181,13 +181,13 @@ class FriendListAdapter(
     class FriendViewHolder(
         private val binding: ItemFriendBinding,
         private val onViewProfile: (User) -> Unit,
-        private val onUnfriend: (User) -> Unit
+        private val onUnfriend: (User) -> Unit,
+        private val currentUserId: String,
+        private val showUnfriendAction: Boolean
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(friend: User) {
             binding.tvName.text = friend.name
-            // Show streak or other info. User model has rank/points but not daily streak in this simple model
-            // We can show points
             binding.tvStreak.text = "${friend.points} Points"
 
             // Load avatar
@@ -199,6 +199,21 @@ class FriendListAdapter(
                     .placeholder(R.drawable.ic_person)
                     .error(R.drawable.ic_person)
                     .into(binding.ivAvatar)
+            }
+
+            // Unfriend Button Validation
+            if (showUnfriendAction && friend.id != currentUserId) {
+                 binding.btnUnfriend.visibility = View.VISIBLE
+            } else {
+                 binding.btnUnfriend.visibility = View.GONE
+            }
+
+            // View Profile Button Validation
+            // Hide if it's the current user
+            if (friend.id == currentUserId) {
+                binding.btnViewProfile.visibility = View.GONE
+            } else {
+                binding.btnViewProfile.visibility = View.VISIBLE
             }
 
             // Button clicks

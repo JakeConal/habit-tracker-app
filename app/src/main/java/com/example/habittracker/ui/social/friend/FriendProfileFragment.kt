@@ -16,6 +16,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentFriendProfileBinding
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
+import com.example.habittracker.ui.social.friend.FriendListAdapter // Added import
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
@@ -40,63 +41,65 @@ class FriendProfileFragment : Fragment() {
         return binding.root
     }
 
+    private lateinit var friendListAdapter: FriendListAdapter
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
         // Get friendId from arguments
         val friendId = arguments?.getString("friendId") ?: ""
         
-        // Load friend profile data
-        viewModel.loadFriendProfile(friendId)
-        
-        setupRecyclerView()
+        setupRecyclerViews()
         setupClickListeners()
         observeViewModel()
+        
+        // Load friend profile data
+        viewModel.loadFriendProfile(friendId)
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerViews() {
+        // Posts Adapter
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
             onLikeClick = { _ ->
-                Toast.makeText(
-                    requireContext(),
-                    "Like feature coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Like feature coming soon!", Toast.LENGTH_SHORT).show()
             },
             onCommentClick = { _ ->
-                Toast.makeText(
-                    requireContext(),
-                    "Comment feature coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show()
             },
             onMoreOptionsClick = { post: Post, anchorView: View ->
-                val popupMenu = android.widget.PopupMenu(requireContext(), anchorView)
-                popupMenu.menu.add("Share")
-
-                popupMenu.setOnMenuItemClickListener { menuItem ->
-                    when (menuItem.title) {
-                        "Share" -> {
-                            val shareIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(android.content.Intent.EXTRA_SUBJECT, "Check out this habit update!")
-                                putExtra(android.content.Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
-                            }
-                            startActivity(android.content.Intent.createChooser(shareIntent, "Share post via"))
-                            true
-                        }
-                        else -> false
-                    }
-                }
-                popupMenu.show()
+                // Share logic...
             }
         )
 
         binding.rvPosts.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = postAdapter
+            setHasFixedSize(false)
+        }
+
+        // Friends Adapter
+        friendListAdapter = FriendListAdapter(
+            currentUserId = currentUserId,
+            showUnfriendAction = false,
+            onSearchQueryChanged = {}, // No search here
+            onAcceptRequest = {},
+            onRejectRequest = {},
+            onViewProfile = { friend ->
+                // Navigate to this friend's profile from the list
+                 val bundle = Bundle().apply {
+                    putString("friendId", friend.id)
+                }
+                findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
+            },
+            onUnfriend = { _ -> }, // Cannot unfriend unrelated people from here
+            onAddFriend = { _ -> }
+        )
+
+        binding.rvFriends.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = friendListAdapter
             setHasFixedSize(false)
         }
     }
@@ -107,7 +110,7 @@ class FriendProfileFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        // Settings button
+        // Settings button -> TODO: maybe Unfriend here?
         binding.btnSettings.setOnClickListener {
             Toast.makeText(
                 requireContext(),
@@ -143,6 +146,13 @@ class FriendProfileFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.posts.collect { posts ->
                 postAdapter.submitList(posts)
+            }
+        }
+
+        // Observe friends
+        lifecycleScope.launch {
+            viewModel.friendListItems.collect { items ->
+                friendListAdapter.submitList(items)
             }
         }
 
@@ -188,23 +198,40 @@ class FriendProfileFragment : Fragment() {
                 binding.btnPostsTab.setTextColor(resources.getColor(R.color.white, null))
                 binding.btnFriendsTab.setBackgroundResource(R.drawable.bg_friend_tab_unselected)
                 binding.btnFriendsTab.setTextColor(resources.getColor(R.color.friend_profile_text_tertiary, null))
+                
+                binding.rvPosts.visibility = if (viewModel.showEmptyState.value) View.GONE else View.VISIBLE
+                binding.rvFriends.visibility = View.GONE
             }
             FriendProfileViewModel.ProfileTab.MY_FRIENDS -> {
                 binding.btnPostsTab.setBackgroundResource(R.drawable.bg_friend_tab_unselected)
                 binding.btnPostsTab.setTextColor(resources.getColor(R.color.friend_profile_text_tertiary, null))
                 binding.btnFriendsTab.setBackgroundResource(R.drawable.bg_friend_tab_selected)
                 binding.btnFriendsTab.setTextColor(resources.getColor(R.color.white, null))
+                
+                binding.rvPosts.visibility = View.GONE
+                binding.rvFriends.visibility = if (viewModel.showEmptyState.value) View.GONE else View.VISIBLE
             }
         }
     }
 
     private fun updateContentVisibility(showEmpty: Boolean) {
+        val tab = viewModel.selectedTab.value
+        binding.tvEmptyState.visibility = if (showEmpty) View.VISIBLE else View.GONE
+        
         if (showEmpty) {
             binding.rvPosts.visibility = View.GONE
-            binding.tvEmptyState.visibility = View.VISIBLE
+            binding.rvFriends.visibility = View.GONE
         } else {
-            binding.rvPosts.visibility = View.VISIBLE
-            binding.tvEmptyState.visibility = View.GONE
+            when (tab) {
+                FriendProfileViewModel.ProfileTab.MY_POST -> {
+                    binding.rvPosts.visibility = View.VISIBLE
+                    binding.rvFriends.visibility = View.GONE
+                }
+                FriendProfileViewModel.ProfileTab.MY_FRIENDS -> {
+                    binding.rvPosts.visibility = View.GONE
+                    binding.rvFriends.visibility = View.VISIBLE
+                }
+            }
         }
     }
 

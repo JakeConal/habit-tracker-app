@@ -41,7 +41,10 @@ class MyFriendFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
+        val currentUserId = com.example.habittracker.utils.UserPreferences.getUserId(requireContext())
         friendListAdapter = FriendListAdapter(
+            currentUserId = currentUserId,
+            showUnfriendAction = true,
             onSearchQueryChanged = { query ->
                 viewModel.updateSearchQuery(query)
             },

@@ -1,16 +1,26 @@
 package com.example.habittracker.ui.social.friend
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.FriendProfile
 import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.repository.FirestoreUserRepository
+import com.example.habittracker.data.repository.FriendRepository
+import com.example.habittracker.data.repository.PostRepository
+import com.example.habittracker.ui.social.profile.FriendListItem
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * FriendProfileViewModel - Manages friend profile screen data and state
  */
 class FriendProfileViewModel : ViewModel() {
+
+    private val userRepository = FirestoreUserRepository.getInstance()
+    private val postRepository = PostRepository.getInstance()
+    private val friendRepository = FriendRepository.getInstance()
 
     // Tab selection state
     enum class ProfileTab {
@@ -21,13 +31,17 @@ class FriendProfileViewModel : ViewModel() {
     private val _selectedTab = MutableStateFlow(ProfileTab.MY_POST)
     val selectedTab: StateFlow<ProfileTab> = _selectedTab.asStateFlow()
 
-    // Friend profile data
+    // Friend data
     private val _friendProfile = MutableStateFlow<FriendProfile?>(null)
     val friendProfile: StateFlow<FriendProfile?> = _friendProfile.asStateFlow()
 
     // Posts data
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts.asStateFlow()
+
+    // Friends list data
+    private val _friendListItems = MutableStateFlow<List<FriendListItem>>(emptyList())
+    val friendListItems: StateFlow<List<FriendListItem>> = _friendListItems.asStateFlow()
 
     // Empty state
     private val _showEmptyState = MutableStateFlow(false)
@@ -36,61 +50,43 @@ class FriendProfileViewModel : ViewModel() {
     private val _emptyStateMessage = MutableStateFlow("")
     val emptyStateMessage: StateFlow<String> = _emptyStateMessage.asStateFlow()
 
+    private var currentFriendId: String = ""
+
     /**
      * Load friend profile data by ID
      */
     fun loadFriendProfile(friendId: String) {
-        // Mock data - In real implementation, this would fetch from repository
-        _friendProfile.value = FriendProfile(
-            id = "friend_001",
-            userId = friendId,
-            name = "Emma Thompson",
-            email = "fahaduxlab@gmail.com",
-            avatarUrl = "https://i.pravatar.cc/150?u=$friendId"
-        )
+        currentFriendId = friendId
+        
+        viewModelScope.launch {
+            // 1. Fetch User Info
+            val user = userRepository.getUserById(friendId)
+            if (user != null) {
+                _friendProfile.value = FriendProfile(
+                    id = user.id,
+                    userId = user.id,
+                    name = user.name,
+                    email = user.email ?: "",
+                    avatarUrl = user.avatarUrl ?: ""
+                )
+            }
 
-        // Mock posts data
-        val mockPosts = listOf(
-            Post(
-                id = "post_001",
-                userId = friendId,
-                authorName = "Emma Thompson",
-                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = System.currentTimeMillis() - 6 * 3600 * 1000,
-                content = "Hit my reading goal for the month! 📚 Knowledge is power, keep learning every day.",
-                imageUrl = null,
-                likeCount = 28,
-                commentCount = 5,
-                likedBy = emptyList()
-            ),
-            Post(
-                id = "post_002",
-                userId = friendId,
-                authorName = "Emma Thompson",
-                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = System.currentTimeMillis() - 24 * 3600 * 1000,
-                content = "Morning run completed! 🏃‍♀️ Feeling energized and ready for the day ahead.",
-                imageUrl = "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800",
-                likeCount = 45,
-                commentCount = 8,
-                likedBy = emptyList()
-            ),
-            Post(
-                id = "post_003",
-                userId = friendId,
-                authorName = "Emma Thompson",
-                authorAvatarUrl = "https://i.pravatar.cc/150?u=$friendId",
-                timestamp = System.currentTimeMillis() - 3 * 24 * 3600 * 1000,
-                content = "Trying out a new healthy recipe today! 🥗 Eating well is such an important habit.",
-                imageUrl = "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800",
-                likeCount = 52,
-                commentCount = 12,
-                likedBy = listOf("current_user_id") // Simulate liked
-            )
-        )
+            // 2. Fetch Posts
+            postRepository.getPostsByUser(friendId).onSuccess { userPosts ->
+                _posts.value = userPosts
+                updateEmptyState()
+            }
 
-        _posts.value = mockPosts
-        updateEmptyState()
+            // 3. Fetch Friends
+            val friends = friendRepository.getFriends(friendId)
+            val items = friends.map { FriendListItem.FriendItem(it) }
+            _friendListItems.value = if (items.isNotEmpty()) {
+                items
+            } else {
+                emptyList() // Empty state handled in updateEmptyState or via specialized item
+            }
+            updateEmptyState()
+        }
     }
 
     /**
@@ -111,8 +107,8 @@ class FriendProfileViewModel : ViewModel() {
                 _emptyStateMessage.value = "No posts yet"
             }
             ProfileTab.MY_FRIENDS -> {
-                _showEmptyState.value = true
-                _emptyStateMessage.value = "Friend list view coming soon"
+                _showEmptyState.value = _friendListItems.value.isEmpty()
+                _emptyStateMessage.value = "No friends yet"
             }
         }
     }

@@ -212,6 +212,17 @@
                 tools:itemCount="3"
                 tools:listitem="@layout/item_post" />
 
+            <!-- Friends RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvFriends"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="@dimen/spacing_lg"
+                android:visibility="gone"
+                tools:itemCount="3"
+                tools:listitem="@layout/item_friend" />
+
             <!-- Empty State -->
             <TextView
                 android:id="@+id/tvEmptyState"
