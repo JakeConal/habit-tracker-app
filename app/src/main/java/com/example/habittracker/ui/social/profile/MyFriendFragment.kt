@@ -46,19 +46,22 @@ class MyFriendFragment : Fragment() {
                 viewModel.updateSearchQuery(query)
             },
             onAcceptRequest = { request ->
-                Toast.makeText(requireContext(), "Accept request from ${request.name}", Toast.LENGTH_SHORT).show()
+                viewModel.acceptFriendRequest(request)
             },
             onRejectRequest = { request ->
-                Toast.makeText(requireContext(), "Reject request from ${request.name}", Toast.LENGTH_SHORT).show()
+                viewModel.rejectFriendRequest(request)
             },
             onViewProfile = { friend ->
                 val bundle = Bundle().apply {
-                    putString("friendId", friend.userId)
+                    putString("friendId", friend.id)
                 }
                 findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
             },
             onUnfriend = { friend ->
-                Toast.makeText(requireContext(), "Unfriend ${friend.name}", Toast.LENGTH_SHORT).show()
+                viewModel.unfriend(friend)
+            },
+            onAddFriend = { user ->
+                viewModel.sendFriendRequest(user)
             }
         )
 
@@ -72,13 +75,37 @@ class MyFriendFragment : Fragment() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             viewModel.filteredFriendListItems.collect { items ->
-                if (items.isEmpty()) {
-                     binding.rvFriendsList.visibility = View.GONE
-                     binding.emptyFriendsState.visibility = View.VISIBLE
-                } else {
-                     binding.rvFriendsList.visibility = View.VISIBLE
-                     binding.emptyFriendsState.visibility = View.GONE
-                     friendListAdapter.submitList(items)
+                val isEmpty = items.isEmpty() || (items.size == 1 && items[0] is FriendListItem.SearchHeader && viewModel.searchQuery.value.isEmpty())
+                // Actually adapter handles empty state item, so list is rarely empty unless initial load?
+                // The ViewModel adds EmptyState item if filtered list is empty.
+                // So we can just submit list.
+                // But we should toggle 'emptyFriendsState' visibility based on initial state or total emptiness?
+                // ViewModel logic: Adds EmptyState item if no results.
+                // But if "No friends yet", it also adds EmptyState.
+                // So RecyclerView is always visible?
+                // Let's rely on ViewModel items.
+                
+                binding.rvFriendsList.visibility = View.VISIBLE
+                binding.emptyFriendsState.visibility = View.GONE
+                friendListAdapter.submitList(items)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.message.collect { msg ->
+                msg?.let {
+                    Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                    viewModel.clearMessage()
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.error.collect { error ->
+                error?.let {
+                    Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
+                    // Create a clearError in VM or just leave it
+                    // viewModel.clearError() 
                 }
             }
         }

@@ -181,4 +181,28 @@ class FirestoreUserRepository private constructor() {
             false
         }
     }
+
+    /**
+     * Search users by name
+     */
+    suspend fun searchUsers(query: String): List<User> {
+        if (query.isBlank()) return emptyList()
+        
+        // Search by name (prefix)
+        val nameResults = FirestoreManager.searchCollection(
+            User.COLLECTION_NAME,
+            "name",
+            query
+        ) { User.fromDocument(it) }
+
+        // Search by email (prefix)
+        val emailResults = FirestoreManager.searchCollection(
+             User.COLLECTION_NAME,
+             "email",
+             query
+        ) { User.fromDocument(it) }
+
+        // Combine and remove duplicates
+        return (nameResults + emailResults).distinctBy { it.id }
+    }
 }

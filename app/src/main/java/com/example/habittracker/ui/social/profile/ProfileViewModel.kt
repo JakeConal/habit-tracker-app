@@ -3,35 +3,17 @@ package com.example.habittracker.ui.social.profile
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.habittracker.data.model.FriendRequest
 import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.model.User
+import com.example.habittracker.data.repository.FriendRepository
 import com.example.habittracker.data.repository.PostRepository
+import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-
-/**
- * Friend data model
- */
-data class Friend(
-    val id: String,
-    val userId: String,
-    val name: String,
-    val avatarUrl: String,
-    val currentStreak: Int
-)
-
-/**
- * Friend Request data model
- */
-data class FriendRequest(
-    val id: String,
-    val userId: String,
-    val name: String,
-    val avatarUrl: String,
-    val mutualFriendsCount: Int
-)
 
 /**
  * Sealed class for RecyclerView items with multiple view types
@@ -47,7 +29,9 @@ sealed class FriendListItem {
     
     data class RequestItem(val request: FriendRequest) : FriendListItem()
     
-    data class FriendItem(val friend: Friend) : FriendListItem()
+    data class FriendItem(val friend: User) : FriendListItem()
+
+    data class GlobalUserItem(val user: User) : FriendListItem()
     
     data class EmptyState(val message: String) : FriendListItem()
 }
@@ -57,7 +41,9 @@ sealed class FriendListItem {
  */
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val repository = PostRepository.getInstance()
+    private val postRepository = PostRepository.getInstance()
+    private val friendRepository = FriendRepository.getInstance()
+    private val userRepository = FirestoreUserRepository.getInstance()
 
     // Current user data
     private val _userName = MutableStateFlow(UserPreferences.getUserName(application))
@@ -78,69 +64,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val _selectedTab = MutableStateFlow(ProfileTab.MY_POST)
     val selectedTab: StateFlow<ProfileTab> = _selectedTab.asStateFlow()
 
-    // Store fetched posts here instead of mock data
+    // Cached data
     private var cachedUserPosts: List<Post> = emptyList()
+    private var cachedFriends: List<User> = emptyList()
+    private var cachedRequests: List<FriendRequest> = emptyList()
 
     // Filtered posts based on selected tab
     private val _posts = MutableStateFlow<List<Post>>(emptyList())
     val posts: StateFlow<List<Post>> = _posts.asStateFlow()
-
-    // Friend requests
-    private val allFriendRequests = listOf(
-        FriendRequest(
-            id = "req_001",
-            userId = "user_101",
-            name = "Emma Thompson",
-            avatarUrl = "",
-            mutualFriendsCount = 12
-        ),
-        FriendRequest(
-            id = "req_002",
-            userId = "user_102",
-            name = "Michael Chen",
-            avatarUrl = "",
-            mutualFriendsCount = 8
-        )
-    )
-
-    // Friends list
-    private val allFriends = listOf(
-        Friend(
-            id = "friend_001",
-            userId = "user_201",
-            name = "Emma Thompson",
-            avatarUrl = "",
-            currentStreak = 45
-        ),
-        Friend(
-            id = "friend_002",
-            userId = "user_202",
-            name = "Michael Chen",
-            avatarUrl = "",
-            currentStreak = 32
-        ),
-        Friend(
-            id = "friend_003",
-            userId = "user_203",
-            name = "Olivia Martinez",
-            avatarUrl = "",
-            currentStreak = 28
-        ),
-        Friend(
-            id = "friend_004",
-            userId = "user_204",
-            name = "David Park",
-            avatarUrl = "",
-            currentStreak = 21
-        ),
-        Friend(
-            id = "friend_005",
-            userId = "user_205",
-            name = "Sophia Anderson",
-            avatarUrl = "",
-            currentStreak = 15
-        )
-    )
 
     // Search query
     private val _searchQuery = MutableStateFlow("")
@@ -156,6 +87,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+
+    // Toast message for one-off events
+    private val _message = MutableStateFlow<String?>(null)
+    val message: StateFlow<String?> = _message
 
     private val currentUserId: String
         get() {
@@ -176,79 +111,157 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
 
         fetchUserPosts(userId)
+        fetchFriendsAndRequests()
     }
 
     fun selectTab(tab: ProfileTab) {
         _selectedTab.value = tab
         updatePostsForTab()
         if (tab == ProfileTab.MY_FRIENDS) {
-            filterFriendList()
+            updateFriendListUI()
         }
     }
 
     private fun updatePostsForTab() {
         _posts.value = when (_selectedTab.value) {
-            ProfileTab.MY_POST -> cachedUserPosts // Use cached real data
+            ProfileTab.MY_POST -> cachedUserPosts
             ProfileTab.MY_FRIENDS -> emptyList()
         }
     }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
-        filterFriendList()
+        // Debounce could be added here, for now direct call
+        searchAndFilter(query)
     }
 
-    private fun filterFriendList() {
-        val query = _searchQuery.value.lowercase().trim()
-        val items = mutableListOf<FriendListItem>()
+    private fun searchAndFilter(query: String) {
+        viewModelScope.launch {
+            val q = query.lowercase().trim()
+            val items = mutableListOf<FriendListItem>()
+            items.add(FriendListItem.SearchHeader)
 
-        // Add search header
-        items.add(FriendListItem.SearchHeader)
+            // 1. Filter local friends and requests
+            val filteredRequests = cachedRequests.filter { it.senderName.lowercase().contains(q) }
+            val filteredFriends = cachedFriends.filter { it.name.lowercase().contains(q) }
 
-        // Filter requests
-        val filteredRequests = if (query.isEmpty()) {
-            allFriendRequests
-        } else {
-            allFriendRequests.filter { it.name.lowercase().contains(query) }
+            // Add Requests Section
+            if (filteredRequests.isNotEmpty()) {
+                items.add(FriendListItem.SectionHeader("Requests", filteredRequests.size, true))
+                filteredRequests.forEach { items.add(FriendListItem.RequestItem(it)) }
+            }
+
+            // Add Friends Section
+            if (filteredFriends.isNotEmpty()) {
+                items.add(FriendListItem.SectionHeader("My Friends (${filteredFriends.size})", filteredFriends.size))
+                filteredFriends.forEach { items.add(FriendListItem.FriendItem(it)) }
+            }
+
+            // 2. Global Search (only if query is not empty)
+            if (q.isNotEmpty()) {
+                _isLoading.value = true
+                val globalResults = userRepository.searchUsers(query)
+                _isLoading.value = false
+                
+                // Exclude self, existing friends, and people who sent requests
+                val friendIds = cachedFriends.map { it.id }.toSet()
+                val requesterIds = cachedRequests.map { it.senderId }.toSet()
+                
+                val nonFriendResults: List<User> = globalResults.filter { user ->
+                    user.id != currentUserId &&
+                    !friendIds.contains(user.id) &&
+                    !requesterIds.contains(user.id)
+                }
+
+                if (nonFriendResults.isNotEmpty()) {
+                    items.add(FriendListItem.SectionHeader("Global Search Results", nonFriendResults.size))
+                    nonFriendResults.forEach { user -> items.add(FriendListItem.GlobalUserItem(user)) }
+                } else if (filteredRequests.isEmpty() && filteredFriends.isEmpty()) {
+                     items.add(FriendListItem.EmptyState("No results found for \"$query\""))
+                }
+            } else {
+                if (filteredRequests.isEmpty() && filteredFriends.isEmpty()) {
+                    items.add(FriendListItem.EmptyState("No friends yet. Search to add new friends!"))
+                }
+            }
+
+            _filteredFriendListItems.value = items
         }
+    }
+    
+    // For simple UI refresh without network call (when just clearing search)
+    private fun updateFriendListUI() {
+        searchAndFilter(_searchQuery.value)
+    }
 
-        // Filter friends
-        val filteredFriends = if (query.isEmpty()) {
-            allFriends
-        } else {
-            allFriends.filter { it.name.lowercase().contains(query) }
+    fun fetchFriendsAndRequests() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                cachedRequests = friendRepository.getFriendRequests()
+                cachedFriends = friendRepository.getFriends()
+                updateFriendListUI()
+            } catch (e: Exception) {
+                _error.value = "Failed to load friends"
+            } finally {
+                _isLoading.value = false
+            }
         }
+    }
 
-        // Add requests section
-        if (filteredRequests.isNotEmpty()) {
-            items.add(
-                FriendListItem.SectionHeader(
-                    title = "Requests",
-                    count = filteredRequests.size,
-                    showBadge = true
-                )
-            )
-            filteredRequests.forEach { items.add(FriendListItem.RequestItem(it)) }
+    fun sendFriendRequest(user: User) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val success = friendRepository.sendFriendRequest(user.id)
+            _isLoading.value = false
+            if (success) {
+                _message.value = "Friend request sent to ${user.name}"
+                // Optimistic UI update or refresh? Refresh is safer to ensure state consistency
+                fetchFriendsAndRequests() // Refresh to exclude them from global search if needed, though they go to "sent" state which we don't display yet.
+                // Or just show toast.
+            } else {
+                _error.value = "Failed to send request"
+            }
         }
+    }
 
-        // Add friends section
-        if (filteredFriends.isNotEmpty()) {
-            items.add(
-                FriendListItem.SectionHeader(
-                    title = "My Friends (${filteredFriends.size})",
-                    count = filteredFriends.size,
-                    showBadge = false
-                )
-            )
-            filteredFriends.forEach { items.add(FriendListItem.FriendItem(it)) }
+    fun acceptFriendRequest(request: FriendRequest) {
+        viewModelScope.launch {
+             val success = friendRepository.acceptFriendRequest(request.id)
+             if (success) {
+                 _message.value = "Friend request accepted"
+                 fetchFriendsAndRequests()
+             } else {
+                 _error.value = "Failed to accept request"
+             }
         }
+    }
 
-        // Add empty state if no results
-        if (filteredRequests.isEmpty() && filteredFriends.isEmpty() && query.isNotEmpty()) {
-            items.add(FriendListItem.EmptyState("No friends found"))
+    fun rejectFriendRequest(request: FriendRequest) {
+        viewModelScope.launch {
+            val success = friendRepository.rejectFriendRequest(request.id)
+            if (success) {
+                fetchFriendsAndRequests()
+            } else {
+                 _message.value = "Failed to reject request"
+            }
         }
+    }
 
-        _filteredFriendListItems.value = items
+    fun unfriend(user: User) {
+        viewModelScope.launch {
+            val success = friendRepository.unfriend(user.id)
+            if (success) {
+                _message.value = "Unfriended ${user.name}"
+                fetchFriendsAndRequests()
+            } else {
+                _error.value = "Failed to unfriend"
+            }
+        }
+    }
+    
+    fun clearMessage() {
+        _message.value = null
     }
 
     fun toggleLike(postId: String) {
@@ -273,8 +286,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             // Server update
             viewModelScope.launch {
-                // Pass !isLiked because if it WAS liked, we want to dislike (false), and vice-versa
-                repository.toggleLikePost(postId, !isLiked)
+                postRepository.toggleLikePost(postId, !isLiked)
             }
         }
     }
@@ -313,17 +325,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             _isLoading.value = true
             _error.value = null
             
-            android.util.Log.d("ProfileViewModel", "Fetching posts for userId: $userId")
-
-            // Call repository for real data
-            val result = repository.getPostsByUser(userId)
+            val result = postRepository.getPostsByUser(userId)
 
             result.onSuccess { userPosts ->
-                android.util.Log.d("ProfileViewModel", "Fetched ${userPosts.size} posts")
                 cachedUserPosts = userPosts
                 updatePostsForTab()
             }.onFailure { e ->
-                android.util.Log.e("ProfileViewModel", "Error fetching posts", e)
                 _error.value = e.message
             }
 

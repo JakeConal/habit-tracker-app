@@ -26,13 +26,19 @@ package com.example.habittracker.di
  *         return CategoryRepository(categoryDao)
  *     }
  *
+ *     // @Provides
+ *     // @Singleton
+ *     // fun provideUserRepository(
+ *     //     authService: AuthService,
+ *     //     userPreferences: UserPreferences
+ *     // ): UserRepository {
+ *     //     return UserRepository(authService, userPreferences)
+ *     // }
+ *
  *     @Provides
  *     @Singleton
- *     fun provideUserRepository(
- *         authService: AuthService,
- *         userPreferences: UserPreferences
- *     ): UserRepository {
- *         return UserRepository(authService, userPreferences)
+ *     fun provideUserRepository(): FirestoreUserRepository {
+ *         return FirestoreUserRepository.getInstance()
  *     }
  * }
  */

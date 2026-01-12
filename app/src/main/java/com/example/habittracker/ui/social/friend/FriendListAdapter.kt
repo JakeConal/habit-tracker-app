@@ -10,13 +10,14 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
+import com.example.habittracker.data.model.FriendRequest
+import com.example.habittracker.data.model.User
 import com.example.habittracker.databinding.ItemEmptyStateBinding
 import com.example.habittracker.databinding.ItemFriendBinding
 import com.example.habittracker.databinding.ItemFriendRequestBinding
+import com.example.habittracker.databinding.ItemGlobalUserBinding
 import com.example.habittracker.databinding.ItemSearchHeaderBinding
 import com.example.habittracker.databinding.ItemSectionHeaderBinding
-import com.example.habittracker.ui.social.profile.Friend
-import com.example.habittracker.ui.social.profile.FriendRequest
 import com.example.habittracker.ui.social.profile.FriendListItem
 
 /**
@@ -26,8 +27,9 @@ class FriendListAdapter(
     private val onSearchQueryChanged: (String) -> Unit,
     private val onAcceptRequest: (FriendRequest) -> Unit,
     private val onRejectRequest: (FriendRequest) -> Unit,
-    private val onViewProfile: (Friend) -> Unit,
-    private val onUnfriend: (Friend) -> Unit
+    private val onViewProfile: (User) -> Unit,
+    private val onUnfriend: (User) -> Unit,
+    private val onAddFriend: (User) -> Unit
 ) : ListAdapter<FriendListItem, RecyclerView.ViewHolder>(FriendListDiffCallback()) {
 
     companion object {
@@ -35,7 +37,8 @@ class FriendListAdapter(
         private const val VIEW_TYPE_SECTION_HEADER = 1
         private const val VIEW_TYPE_REQUEST = 2
         private const val VIEW_TYPE_FRIEND = 3
-        private const val VIEW_TYPE_EMPTY = 4
+        private const val VIEW_TYPE_GLOBAL_USER = 4
+        private const val VIEW_TYPE_EMPTY = 5
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -44,6 +47,7 @@ class FriendListAdapter(
             is FriendListItem.SectionHeader -> VIEW_TYPE_SECTION_HEADER
             is FriendListItem.RequestItem -> VIEW_TYPE_REQUEST
             is FriendListItem.FriendItem -> VIEW_TYPE_FRIEND
+            is FriendListItem.GlobalUserItem -> VIEW_TYPE_GLOBAL_USER
             is FriendListItem.EmptyState -> VIEW_TYPE_EMPTY
         }
     }
@@ -67,6 +71,10 @@ class FriendListAdapter(
                 val binding = ItemFriendBinding.inflate(inflater, parent, false)
                 FriendViewHolder(binding, onViewProfile, onUnfriend)
             }
+            VIEW_TYPE_GLOBAL_USER -> {
+                val binding = ItemGlobalUserBinding.inflate(inflater, parent, false)
+                GlobalUserViewHolder(binding, onAddFriend)
+            }
             VIEW_TYPE_EMPTY -> {
                 val binding = ItemEmptyStateBinding.inflate(inflater, parent, false)
                 EmptyStateViewHolder(binding)
@@ -88,6 +96,9 @@ class FriendListAdapter(
             }
             is FriendListItem.FriendItem -> {
                 (holder as FriendViewHolder).bind(item.friend)
+            }
+            is FriendListItem.GlobalUserItem -> {
+                (holder as GlobalUserViewHolder).bind(item.user)
             }
             is FriendListItem.EmptyState -> {
                 (holder as EmptyStateViewHolder).bind(item)
@@ -138,16 +149,18 @@ class FriendListAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(request: FriendRequest) {
-            binding.tvName.text = request.name
-            binding.tvMutualFriends.text = 
-                itemView.context.getString(R.string.mutual_friends_format, request.mutualFriendsCount)
+            binding.tvName.text = request.senderName
+            // Use mutual friends or default text
+            // Here request object might not have mutual friend count populated unless backend supports it
+            // For now hardcode or hide
+             binding.tvMutualFriends.text = "Sent you a request"
 
             // Load avatar
-            if (request.avatarUrl.isEmpty()) {
+            if (request.senderAvatarUrl.isEmpty()) {
                 binding.ivAvatar.setImageResource(R.drawable.ic_person)
             } else {
                 Glide.with(itemView.context)
-                    .load(request.avatarUrl)
+                    .load(request.senderAvatarUrl)
                     .placeholder(R.drawable.ic_person)
                     .error(R.drawable.ic_person)
                     .into(binding.ivAvatar)
@@ -167,17 +180,18 @@ class FriendListAdapter(
     // Friend ViewHolder
     class FriendViewHolder(
         private val binding: ItemFriendBinding,
-        private val onViewProfile: (Friend) -> Unit,
-        private val onUnfriend: (Friend) -> Unit
+        private val onViewProfile: (User) -> Unit,
+        private val onUnfriend: (User) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(friend: Friend) {
+        fun bind(friend: User) {
             binding.tvName.text = friend.name
-            binding.tvStreak.text = 
-                itemView.context.getString(R.string.day_streak_format, friend.currentStreak)
+            // Show streak or other info. User model has rank/points but not daily streak in this simple model
+            // We can show points
+            binding.tvStreak.text = "${friend.points} Points"
 
             // Load avatar
-            if (friend.avatarUrl.isEmpty()) {
+            if (friend.avatarUrl.isNullOrEmpty()) {
                 binding.ivAvatar.setImageResource(R.drawable.ic_person)
             } else {
                 Glide.with(itemView.context)
@@ -194,6 +208,33 @@ class FriendListAdapter(
 
             binding.btnUnfriend.setOnClickListener {
                 onUnfriend(friend)
+            }
+        }
+    }
+    
+    // Global User ViewHolder
+    class GlobalUserViewHolder(
+        private val binding: ItemGlobalUserBinding,
+        private val onAddFriend: (User) -> Unit
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(user: User) {
+            binding.tvName.text = user.name
+            
+            // Load avatar
+            if (user.avatarUrl.isNullOrEmpty()) {
+                binding.ivAvatar.setImageResource(R.drawable.ic_person)
+            } else {
+                Glide.with(itemView.context)
+                    .load(user.avatarUrl)
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(binding.ivAvatar)
+            }
+
+            // Button clicks
+            binding.btnAddFriend.setOnClickListener {
+                onAddFriend(user)
             }
         }
     }
@@ -222,6 +263,8 @@ class FriendListDiffCallback : DiffUtil.ItemCallback<FriendListItem>() {
                 oldItem.request.id == newItem.request.id
             oldItem is FriendListItem.FriendItem && newItem is FriendListItem.FriendItem ->
                 oldItem.friend.id == newItem.friend.id
+            oldItem is FriendListItem.GlobalUserItem && newItem is FriendListItem.GlobalUserItem ->
+                oldItem.user.id == newItem.user.id
             oldItem is FriendListItem.EmptyState && newItem is FriendListItem.EmptyState -> true
             else -> false
         }

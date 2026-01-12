@@ -46,6 +46,28 @@ object FirestoreManager {
         }
     }
 
+    // Generic: Search collection (prefix search)
+    suspend fun <T> searchCollection(
+        collectionName: String,
+        field: String,
+        query: String,
+        mapper: (DocumentSnapshot) -> T?
+    ): List<T> {
+        return try {
+            // Prefix search: field >= query AND field <= query + \uf8ff
+             db.collection(collectionName)
+                .whereGreaterThanOrEqualTo(field, query)
+                .whereLessThanOrEqualTo(field, query + "\uf8ff")
+                .get()
+                .await()
+                .documents
+                .mapNotNull { mapper(it) }
+        } catch (e: Exception) {
+            println("Error searching collection '$collectionName' for '$query': ${e.message}")
+            emptyList()
+        }
+    }
+
     // Generic: Get single document
     suspend fun getDocument(
         collectionName: String,
