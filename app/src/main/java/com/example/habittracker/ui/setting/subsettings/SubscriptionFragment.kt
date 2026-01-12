@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.settings.subsettings
+package com.example.habittracker.ui.setting.subsettings
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.habittracker.databinding.FragmentPlaceholderSettingBinding
 
-class TermsFragment : Fragment() {
+class SubscriptionFragment : Fragment() {
     private var _binding: FragmentPlaceholderSettingBinding? = null
     private val binding get() = _binding!!
 
@@ -19,8 +19,8 @@ class TermsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.tvTitle.text = "Terms of Use"
-        binding.tvDescription.text = "Terms and conditions will be displayed here"
+        binding.tvTitle.text = "Subscription"
+        binding.tvDescription.text = "Subscription details will be available here"
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
     }
 

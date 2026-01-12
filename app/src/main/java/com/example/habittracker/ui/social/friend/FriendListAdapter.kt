@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.settings
+package com.example.habittracker.ui.social.friend
 
 import android.text.Editable
 import android.text.TextWatcher

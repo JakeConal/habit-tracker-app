@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.settings
+package com.example.habittracker.ui.setting
 
 import android.view.LayoutInflater
 import android.view.View

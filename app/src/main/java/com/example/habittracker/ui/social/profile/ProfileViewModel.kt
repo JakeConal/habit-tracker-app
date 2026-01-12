@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.settings
+package com.example.habittracker.ui.social.profile
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel

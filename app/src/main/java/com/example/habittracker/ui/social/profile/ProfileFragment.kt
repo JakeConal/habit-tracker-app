@@ -1,4 +1,4 @@
-package com.example.habittracker.ui.settings
+package com.example.habittracker.ui.social.profile
 
 import android.content.Intent
 import android.os.Bundle
@@ -17,6 +17,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentProfileBinding
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
+import com.example.habittracker.ui.social.friend.FriendListAdapter
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
