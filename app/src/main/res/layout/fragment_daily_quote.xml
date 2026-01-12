@@ -147,7 +147,7 @@
                         android:scaleType="fitCenter"
                         android:padding="6dp"
                         android:enabled="false"
-                        android:tint="@color/primary_blue"
+                        app:tint="@color/primary_blue"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
 

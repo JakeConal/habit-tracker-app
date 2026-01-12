@@ -2,6 +2,7 @@ package com.example.habittracker.ui.habit.detail
 
 import android.app.AlertDialog
 import android.app.TimePickerDialog
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.NumberPicker
@@ -162,7 +163,7 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
             }
         }
 
-        // Listen for category selection result from CategoryFragment
+        // Listen for category selection result from CategoryActivity
         parentFragmentManager.setFragmentResultListener(
             "category_request_key",
             viewLifecycleOwner
@@ -243,8 +244,9 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
     }
 
     private fun showCategorySelector() {
-        // Navigate to CategoryFragment to select a category
-        findNavController().navigate(R.id.action_view_habit_to_category)
+        // Launch CategoryActivity to select a category
+        val intent = Intent(requireContext(), com.example.habittracker.ui.category.CategoryActivity::class.java)
+        startActivity(intent)
     }
 
     private fun showQuantitySelector() {

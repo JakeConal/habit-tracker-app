@@ -82,7 +82,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_login, 
                 R.id.nav_register,
                 R.id.nav_create_habit,
-                R.id.nav_category,
                 R.id.nav_create_category,
                 R.id.nav_view_habit,
                 R.id.nav_focus_timer -> {

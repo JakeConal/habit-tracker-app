@@ -2,6 +2,7 @@ package com.example.habittracker.ui.category
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -29,6 +30,7 @@ class CategoryActivity : AppCompatActivity() {
     private lateinit var categoryAdapter: CategoryAdapter
 
     companion object {
+        private const val TAG = "CategoryActivity"
         private const val REQUEST_CODE_CREATE_CATEGORY = 1002
     }
 
@@ -73,6 +75,7 @@ class CategoryActivity : AppCompatActivity() {
         categoryAdapter = CategoryAdapter(
             categories = mutableListOf(),
             onCategoryClick = { category ->
+                Log.d(TAG, "onCategoryClick called for: ${category.title}")
                 // Send selected category back to calling activity
                 val resultIntent = Intent().apply {
                     putExtra(CreateHabitActivity.EXTRA_CATEGORY_ID, category.id)
@@ -81,10 +84,18 @@ class CategoryActivity : AppCompatActivity() {
                 finish()
             },
             onEditClick = { category ->
+                Log.d(TAG, "onEditClick called for: ${category.title}")
                 // Handle edit category
-                viewModel.updateCategory(category)
+                val intent = Intent(this@CategoryActivity, EditCategoryActivity::class.java).apply {
+                    putExtra("category_id", category.id)
+                    putExtra("category_name", category.title)
+                    putExtra("category_icon", category.icon.resId)
+                    putExtra("category_background", category.color.resId)
+                }
+                startActivity(intent)
             },
             onDeleteClick = { category ->
+                Log.d(TAG, "onDeleteClick called for: ${category.title}")
                 // Handle delete category
                 viewModel.deleteCategory(category.id)
             }
@@ -136,8 +147,6 @@ class CategoryActivity : AppCompatActivity() {
                 if (category != null) {
                     showSuccess("Category added successfully")
                     binding.rvCategories.scrollToPosition(0)
-                    // Automatically send the new category back
-                    sendCategoryResult(category)
                 }
             }
         }
@@ -147,8 +156,6 @@ class CategoryActivity : AppCompatActivity() {
             viewModel.categoryUpdated.collect { category ->
                 if (category != null) {
                     showSuccess("Category updated successfully")
-                    // Automatically send the updated category back
-                    sendCategoryResult(category)
                 }
             }
         }
@@ -164,31 +171,18 @@ class CategoryActivity : AppCompatActivity() {
     }
 
     private fun navigateToCreateCategory() {
-        // TODO: Start CreateCategoryActivity when it's created
-        // For now, just show a placeholder message
-        showError("Create Category screen not implemented yet")
+        val intent = Intent(this, CreateCategoryActivity::class.java)
+        startActivity(intent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadCategories()
+    }
+
+    // Deprecated approach - removed logic as CreateCategoryActivity handles saving now
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_CREATE_CATEGORY && resultCode == RESULT_OK) {
-            val categoryName = data?.getStringExtra("category_name")
-            val categoryIcon = data?.getIntExtra("category_icon", 0) ?: 0
-            val categoryBackground = data?.getIntExtra("category_background", 0) ?: 0
-            
-            if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
-                val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return
-                val iconEnum = CategoryIcon.entries.firstOrNull { it.resId == categoryIcon } ?: CategoryIcon.HEART
-                val colorEnum = CategoryColor.entries.firstOrNull { it.resId == categoryBackground } ?: CategoryColor.RED
-                val categoryModel = Category(
-                    userId = userId,
-                    title = categoryName,
-                    icon = iconEnum,
-                    color = colorEnum
-                )
-                viewModel.addCategory(categoryModel)
-            }
-        }
     }
 
     private fun sendCategoryResult(category: Category) {
