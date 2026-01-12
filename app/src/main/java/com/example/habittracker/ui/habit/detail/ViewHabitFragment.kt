@@ -168,18 +168,9 @@ class ViewHabitFragment : BaseFragment<FragmentViewHabitBinding>() {
             viewLifecycleOwner
         ) { _, bundle ->
             val categoryId = bundle.getString("selected_category_id")
-            val categoryName = bundle.getString("selected_category_name")
-            val categoryIcon = bundle.getInt("selected_category_icon")
-            val categoryBackground = bundle.getInt("selected_category_icon_background")
 
-            // Update UI immediately with received data
-            if (categoryName != null && categoryIcon != 0 && categoryBackground != 0) {
-                binding.tvCategoryName.text = categoryName
-                binding.ivCategoryIcon.setImageResource(categoryIcon)
-                updateCategoryIconBackground(categoryBackground)
-            }
-
-            // Also update ViewModel if categoryId is available
+            // Update ViewModel only - UI will be updated by observer (single source of truth)
+            // This prevents conflict between direct UI update and observer-based update
             if (categoryId != null) {
                 viewModel.updateCategoryId(categoryId)
                 viewModel.loadCategory(categoryId)

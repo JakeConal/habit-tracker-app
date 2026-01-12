@@ -2,9 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_gradient">
+    android:background="@drawable/background_gradient"
+    android:clipToPadding="false">
 
     <!-- Header Container -->
     <LinearLayout
@@ -39,6 +41,7 @@
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
+            style="@style/HeaderTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -48,30 +51,34 @@
             android:textColor="@color/primary_blue"
             android:textSize="@dimen/text_lg" />
 
-        <!-- Spacer for symmetry -->
-        <View
+        <!-- Optional Action Button (right) -->
+        <FrameLayout
+            android:id="@+id/btnOptionalAction"
             android:layout_width="40dp"
-            android:layout_height="40dp" />
+            android:layout_height="40dp"
+            android:background="@drawable/bg_action_button"
+            android:visibility="invisible" />
     </LinearLayout>
 
-    <!-- Scrollable Form Content -->
-    <ScrollView
+    <!-- Form Content with ScrollView -->
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="true"
-        android:paddingHorizontal="@dimen/spacing_xl"
-        android:paddingTop="@dimen/spacing_lg"
-        android:paddingBottom="@dimen/spacing_xl"
         app:layout_constraintBottom_toTopOf="@id/btnCreate"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/headerContainer">
 
         <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingHorizontal="@dimen/spacing_xl"
+            android:paddingTop="@dimen/spacing_lg"
+            android:paddingBottom="@dimen/spacing_lg"
             android:orientation="vertical">
 
             <!-- Habit Title Input -->
@@ -358,7 +365,7 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <!-- Create Button -->
     <com.google.android.material.button.MaterialButton

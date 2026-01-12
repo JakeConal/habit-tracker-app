@@ -3,8 +3,10 @@ package com.example.habittracker.ui.habit.add
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.data.model.Category
 import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -21,13 +23,15 @@ class CreateHabitViewModel : ViewModel() {
 
     private val repository = HabitRepository.getInstance()
     private val authRepository = AuthRepository.getInstance()
+    private val categoryRepository = CategoryRepository.getInstance()
 
     // UI State
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
-    private val _category = MutableStateFlow("Reading")
-    val category: StateFlow<String> = _category.asStateFlow()
+    // Current category (single source of truth)
+    private val _category = MutableStateFlow<Category?>(null)
+    val category: StateFlow<Category?> = _category.asStateFlow()
 
     private val _categoryId = MutableStateFlow("")
     val categoryId: StateFlow<String> = _categoryId.asStateFlow()
@@ -56,17 +60,26 @@ class CreateHabitViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     /**
+     * Load category by ID from repository
+     * This is the single source of truth for category data
+     */
+    fun loadCategory(categoryId: String) {
+        viewModelScope.launch {
+            try {
+                val category = categoryRepository.getCategoryById(categoryId)
+                _category.value = category
+                _categoryId.value = categoryId
+            } catch (e: Exception) {
+                _error.emit(e.message ?: "Failed to load category")
+            }
+        }
+    }
+
+    /**
      * Update habit title
      */
     fun updateTitle(title: String) {
         _title.value = title
-    }
-
-    /**
-     * Update habit category
-     */
-    fun updateCategory(category: String) {
-        _category.value = category
     }
 
     /**
@@ -161,10 +174,12 @@ class CreateHabitViewModel : ViewModel() {
 
     /**
      * Build a descriptive text from selected options
+     * Uses Category object from repository as single source of truth
      */
     private fun buildHabitDescription(): String {
+        val categoryName = _category.value?.title ?: "Uncategorized"
         return buildString {
-            append("Category: ${_category.value}")
+            append("Category: $categoryName")
             append(" • ")
             append("Goal: ${_quantity.value} ${_measurement.value}")
             append(" • ")
@@ -179,7 +194,7 @@ class CreateHabitViewModel : ViewModel() {
      */
     fun resetForm() {
         _title.value = ""
-        _category.value = "Reading"
+        _category.value = null
         _quantity.value = 30
         _measurement.value = "Mins"
         _frequency.value = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")

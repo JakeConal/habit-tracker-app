@@ -35,11 +35,11 @@ class CategoryViewModel : ViewModel() {
     val error: SharedFlow<String?> = _error.asSharedFlow()
 
     // Success events
-    private val _categoryAdded = MutableSharedFlow<Boolean>()
-    val categoryAdded: SharedFlow<Boolean> = _categoryAdded.asSharedFlow()
+    private val _categoryAdded = MutableSharedFlow<Category?>()
+    val categoryAdded: SharedFlow<Category?> = _categoryAdded.asSharedFlow()
 
-    private val _categoryUpdated = MutableSharedFlow<Boolean>()
-    val categoryUpdated: SharedFlow<Boolean> = _categoryUpdated.asSharedFlow()
+    private val _categoryUpdated = MutableSharedFlow<Category?>()
+    val categoryUpdated: SharedFlow<Category?> = _categoryUpdated.asSharedFlow()
 
     private val _categoryDeleted = MutableSharedFlow<Boolean>()
     val categoryDeleted: SharedFlow<Boolean> = _categoryDeleted.asSharedFlow()
@@ -85,13 +85,16 @@ class CategoryViewModel : ViewModel() {
                 _isLoading.value = true
                 val categoryId = repository.addCategory(category)
                 if (categoryId != null) {
-                    _categoryAdded.emit(true)
+                    val addedCategory = category.copy(id = categoryId)
+                    _categoryAdded.emit(addedCategory)
                     loadCategories() // Reload to get updated list
                 } else {
                     _error.emit("Failed to add category")
+                    _categoryAdded.emit(null)
                 }
             } catch (e: Exception) {
                 _error.emit("Error adding category: ${e.message}")
+                _categoryAdded.emit(null)
             } finally {
                 _isLoading.value = false
             }
@@ -107,13 +110,15 @@ class CategoryViewModel : ViewModel() {
                 _isLoading.value = true
                 val success = repository.updateCategory(category)
                 if (success) {
-                    _categoryUpdated.emit(true)
+                    _categoryUpdated.emit(category)
                     loadCategories() // Reload to get updated list
                 } else {
                     _error.emit("Failed to update category")
+                    _categoryUpdated.emit(null)
                 }
             } catch (e: Exception) {
                 _error.emit("Error updating category: ${e.message}")
+                _categoryUpdated.emit(null)
             } finally {
                 _isLoading.value = false
             }
