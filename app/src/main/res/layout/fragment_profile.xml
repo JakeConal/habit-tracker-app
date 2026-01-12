@@ -218,69 +218,16 @@
                 </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
 
-    <!-- Scrollable Content Container -->
-    <FrameLayout
-        android:layout_width="0dp"
+    <!-- ViewPager2 Container -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         app:layout_constraintTop_toBottomOf="@id/tabSwitcher"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Posts RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvPosts"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="16dp"
-            android:clipToPadding="false"
-            android:overScrollMode="never"
-            tools:itemCount="3"
-            tools:listitem="@layout/item_post" />
-
-        <!-- Friends List RecyclerView -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvFriendsList"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="16dp"
-            android:clipToPadding="false"
-            android:overScrollMode="never"
-            android:visibility="gone"
-            tools:visibility="gone" />
-
-        <!-- Empty State for My Friends (fallback) -->
-        <LinearLayout
-            android:id="@+id/emptyFriendsState"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:padding="48dp"
-            android:visibility="gone"
-            tools:visibility="gone">
-
-            <ImageView
-                android:layout_width="80dp"
-                android:layout_height="80dp"
-                android:src="@drawable/ic_community"
-                android:alpha="0.3"
-                app:tint="@color/accent_blue"
-                android:contentDescription="@string/friends_icon" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/friends_coming_soon"
-                android:textSize="16sp"
-                android:textColor="@color/secondary_gray"
-                android:gravity="center" />
-
-        </LinearLayout>
-
-    </FrameLayout>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -81,10 +81,11 @@ class PostRepository private constructor() {
         return try {
             val snapshot = db.collection("posts")
                 .whereEqualTo("userId", userId)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
+                // .orderBy("timestamp", Query.Direction.DESCENDING) // Removed to avoid needing composite index
                 .get()
                 .await()
             val posts = snapshot.documents.mapNotNull { Post.fromDocument(it) }
+                .sortedByDescending { it.timestamp } // Sort client-side
             Result.success(posts)
         } catch (e: Exception) {
             Result.failure(e)

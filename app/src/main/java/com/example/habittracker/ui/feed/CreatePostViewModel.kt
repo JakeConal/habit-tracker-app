@@ -38,9 +38,13 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                 // Get user info with fallback
                 var userName = UserPreferences.getUserName(context)
                 var userAvatar = UserPreferences.getUserAvatar(context)
-                val currentUserId = auth.currentUser?.uid ?: run {
+                
+                // Use Auth ID or fall back to local preferences ID
+                val currentUserId = auth.currentUser?.uid ?: UserPreferences.getUserId(context)
+                
+                if (currentUserId.isEmpty()) {
                     _isLoading.value = false
-                    _errorMessage.emit("User not logged in")
+                    _errorMessage.emit("User ID not found")
                     return@launch
                 }
 

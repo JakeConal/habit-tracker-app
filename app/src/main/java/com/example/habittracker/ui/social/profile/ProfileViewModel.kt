@@ -304,18 +304,26 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
+    fun refreshPosts() {
+        fetchUserPosts(currentUserId)
+    }
+
     fun fetchUserPosts(userId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
+            
+            android.util.Log.d("ProfileViewModel", "Fetching posts for userId: $userId")
 
             // Call repository for real data
             val result = repository.getPostsByUser(userId)
 
             result.onSuccess { userPosts ->
+                android.util.Log.d("ProfileViewModel", "Fetched ${userPosts.size} posts")
                 cachedUserPosts = userPosts
                 updatePostsForTab()
             }.onFailure { e ->
+                android.util.Log.e("ProfileViewModel", "Error fetching posts", e)
                 _error.value = e.message
             }
 
