@@ -98,6 +98,28 @@ class HabitRepository private constructor() {
     }
 
     /**
+     * Delete all habits for a user
+     */
+    suspend fun deleteHabitsForUser(userId: String): Boolean {
+        return try {
+            val habits = getHabitsForUser(userId)
+            var allSuccess = true
+            for (habit in habits) {
+                if (!deleteHabit(habit.id)) {
+                    allSuccess = false
+                }
+            }
+            if (allSuccess) {
+                _habits.value = emptyList()
+            }
+            allSuccess
+        } catch (e: Exception) {
+            println("Error deleting habits for user: ${e.message}")
+            false
+        }
+    }
+
+    /**
      * Get a habit by ID
      */
     suspend fun getHabitById(habitId: String): Habit? {

@@ -52,6 +52,11 @@ class SettingsViewModel : ViewModel() {
                 id = 6,
                 titleRes = R.string.settings_logout,
                 iconRes = R.drawable.ic_settings_general
+            ),
+            SettingMenuItem(
+                id = 7,
+                titleRes = R.string.settings_delete_account,
+                iconRes = R.drawable.ic_trash
             )
         )
     }

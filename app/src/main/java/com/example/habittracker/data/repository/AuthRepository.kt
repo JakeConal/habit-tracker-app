@@ -208,6 +208,19 @@ class AuthRepository private constructor() {
     }
 
     /**
+     * Delete current user account from Firebase Auth
+     */
+    suspend fun deleteAccount(): Result<Unit> {
+        return try {
+            val user = auth.currentUser ?: return Result.failure(Exception("No user logged in"))
+            user.delete().await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
      * Sign out current user
      */
     fun signOut() {

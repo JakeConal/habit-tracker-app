@@ -98,6 +98,28 @@ class CategoryRepository private constructor() {
     }
 
     /**
+     * Delete all categories for a user
+     */
+    suspend fun deleteCategoriesForUser(userId: String): Boolean {
+        return try {
+            val categories = getCategoriesForUser(userId)
+            var allSuccess = true
+            for (category in categories) {
+                if (!deleteCategory(category.id)) {
+                    allSuccess = false
+                }
+            }
+            if (allSuccess) {
+                _categories.value = emptyList()
+            }
+            allSuccess
+        } catch (e: Exception) {
+            println("Error deleting categories for user: ${e.message}")
+            false
+        }
+    }
+
+    /**
      * Get a category by ID
      */
     suspend fun getCategoryById(categoryId: String): Category? {

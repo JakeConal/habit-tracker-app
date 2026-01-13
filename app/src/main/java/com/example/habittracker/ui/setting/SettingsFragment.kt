@@ -75,6 +75,7 @@ class SettingsFragment : Fragment() {
             4 -> navigateToTerms()
             5 -> navigateToReviewChallenge()
             6 -> handleLogout()
+            7 -> handleDeleteAccount()
         }
     }
     
@@ -124,6 +125,40 @@ class SettingsFragment : Fragment() {
             .setPopUpTo(R.id.nav_graph_main, true)
             .build()
         findNavController().navigate(R.id.nav_login, null, navOptions)
+    }
+
+    private fun handleDeleteAccount() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.delete_account_confirm_title)
+            .setMessage(R.string.delete_account_confirm_message)
+            .setPositiveButton(R.string.delete_account_button) { _, _ ->
+                performDeleteAccount()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun performDeleteAccount() {
+        lifecycleScope.launch {
+            // Show loading or disable UI if needed
+            val result = com.example.habittracker.data.service.AccountDeletionService.getInstance()
+                .deleteCurrentUserAccount()
+            
+            if (result.isSuccess) {
+                android.widget.Toast.makeText(requireContext(), R.string.delete_account_success, android.widget.Toast.LENGTH_SHORT).show()
+                
+                // Clear local preferences
+                com.example.habittracker.utils.UserPreferences.clearUserData(requireContext())
+                
+                // Navigate to login and clear backstack
+                val navOptions = androidx.navigation.NavOptions.Builder()
+                    .setPopUpTo(R.id.nav_graph_main, true)
+                    .build()
+                findNavController().navigate(R.id.nav_login, null, navOptions)
+            } else {
+                android.widget.Toast.makeText(requireContext(), R.string.delete_account_error, android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

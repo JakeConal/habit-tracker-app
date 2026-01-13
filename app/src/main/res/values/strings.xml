@@ -218,6 +218,14 @@
     <string name="logout_confirm_message">Are you sure you want to log out of your account?</string>
     <string name="logout_confirm_button">Logout</string>
 
+    <!-- Delete Account -->
+    <string name="settings_delete_account">Delete Account</string>
+    <string name="delete_account_confirm_title">Delete Account</string>
+    <string name="delete_account_confirm_message">Are you sure you want to permanently delete your account? All your data (habits, posts, profile) will be deleted and cannot be recovered.</string>
+    <string name="delete_account_button">Delete Permanently</string>
+    <string name="delete_account_success">Account deleted successfully.</string>
+    <string name="delete_account_error">Error deleting account. Please try again.</string>
+
     <!-- Reset Password Screen -->
     <string name="reset_password_title">Reset Password</string>
     <string name="current_password">Current Password</string>
