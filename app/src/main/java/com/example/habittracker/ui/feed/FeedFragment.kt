@@ -13,7 +13,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
-import com.example.habittracker.data.model.Comment
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.utils.UserPreferences
@@ -120,6 +119,10 @@ class FeedFragment : Fragment() {
                 // Open comments activity
                 openCommentsActivity(post)
             },
+            onShareClick = { post ->
+                // Open share to feed
+                openCreatePostForSharing(post)
+            },
             onMoreOptionsClick = { post, anchorView ->
                 showPostOptions(post, anchorView)
             }
@@ -140,7 +143,8 @@ class FeedFragment : Fragment() {
         } else {
             popupMenu.menu.add("Hide")
         }
-        popupMenu.menu.add("Share")
+        // popupMenu.menu.add("Share to Feed")
+        // popupMenu.menu.add("Share Externally")
 
         popupMenu.setOnMenuItemClickListener { menuItem ->
             when (menuItem.title) {
@@ -152,24 +156,35 @@ class FeedFragment : Fragment() {
                     hidePost(post)
                     true
                 }
-                "Share" -> {
-                    // Update share count in backend
-                    lifecycleScope.launch {
-                        PostRepository.getInstance().sharePost(post.id)
-                    }
+                // "Share to Feed" -> {
+                //     openCreatePostForSharing(post)
+                //     true
+                // }
+                // "Share Externally" -> {
+                //     // Update share count in backend
+                //     lifecycleScope.launch {
+                //         PostRepository.getInstance().sharePost(post.id)
+                //     }
 
-                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                        type = "text/plain"
-                        putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
-                        putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
-                    }
-                    startActivity(Intent.createChooser(shareIntent, "Share post via"))
-                    true
-                }
+                //     val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                //         type = "text/plain"
+                //         putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                //         putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                //     }
+                //     startActivity(Intent.createChooser(shareIntent, "Share post via"))
+                //     true
+                // }
                 else -> false
             }
         }
         popupMenu.show()
+    }
+
+    private fun openCreatePostForSharing(post: Post) {
+        val intent = Intent(requireContext(), CreatePostActivity::class.java).apply {
+            putExtra("EXTRA_SHARED_POST", post)
+        }
+        createPostLauncher.launch(intent)
     }
 
     private fun hidePost(post: Post) {
@@ -257,7 +272,7 @@ class FeedFragment : Fragment() {
             putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
             putExtra(CommentsActivity.EXTRA_IS_LIKED, isLiked)
             // Post doesn't store comments list locally usually, so passing empty or fetching in Activity
-            putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, ArrayList<Comment>())
+            // putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, ArrayList<Comment>()) // Removed to avoid potential parcelable crash with empty list
         }
         commentsLauncher.launch(intent)
     }

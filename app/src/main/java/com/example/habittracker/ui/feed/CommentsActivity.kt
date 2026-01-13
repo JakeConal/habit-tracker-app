@@ -4,10 +4,12 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import android.view.inputmethod.InputMethodManager
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +22,7 @@ import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.model.Comment
 import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.data.repository.PostRepository
+import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
@@ -36,13 +39,23 @@ class CommentsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            MainActivity.hideSystemUI(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        // Allow content to extend behind system bars and handle insets manually
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
         binding = ActivityCommentsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        // Adjust padding when keyboard appears
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, windowInsets ->
+            val imeInsets = windowInsets.getInsets(WindowInsetsCompat.Type.ime())
+            v.setPadding(0, 0, 0, imeInsets.bottom)
+            windowInsets
         }
 
         getPostFromIntent()
@@ -70,11 +83,17 @@ class CommentsActivity : AppCompatActivity() {
         val likesCount = intent.getIntExtra(EXTRA_LIKES_COUNT, 0)
         val commentsCount = intent.getIntExtra(EXTRA_COMMENTS_COUNT, 0)
         val isLikedExtra = intent.getBooleanExtra(EXTRA_IS_LIKED, false)
-        val existingComments = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra(EXTRA_COMMENTS, Comment::class.java) ?: arrayListOf()
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableArrayListExtra(EXTRA_COMMENTS) ?: arrayListOf()
+
+        val existingComments = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent.getParcelableArrayListExtra(EXTRA_COMMENTS, Comment::class.java) ?: arrayListOf()
+            } else {
+                @Suppress("DEPRECATION")
+                intent.getParcelableArrayListExtra(EXTRA_COMMENTS) ?: arrayListOf()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            arrayListOf<Comment>()
         }
 
         val currentUserId = UserPreferences.getUserId(this)
@@ -109,6 +128,17 @@ class CommentsActivity : AppCompatActivity() {
             returnResult()
         }
 
+        // Setup current user avatar in comment input
+        val currentUserAvatar = UserPreferences.getUserAvatar(this)
+        if (currentUserAvatar.isNotEmpty()) {
+            Glide.with(this)
+                .load(currentUserAvatar)
+                .placeholder(R.drawable.ic_person)
+                .into(binding.ivCurrentUserAvatar)
+        } else {
+            binding.ivCurrentUserAvatar.setImageResource(R.drawable.ic_person)
+        }
+
         // Display post data
         post?.let { post ->
             binding.tvAuthorName.text = post.authorName
@@ -118,6 +148,8 @@ class CommentsActivity : AppCompatActivity() {
 
             binding.tvContent.text = post.content
             binding.tvLikeCount.text = likeCount.toString()
+            binding.tvCommentCount.text = commentCount.toString()
+            binding.tvShareCount.text = post.shareCount.toString()
 
             // Avatar
             if (!post.authorAvatarUrl.isNullOrEmpty()) {
@@ -149,6 +181,16 @@ class CommentsActivity : AppCompatActivity() {
             toggleLike()
         }
 
+        binding.containerShare.setOnClickListener {
+            // Share logic
+             post?.let { p ->
+                val intent = android.content.Intent(this, CreatePostActivity::class.java).apply {
+                    putExtra("EXTRA_SHARED_POST", p)
+                }
+                startActivity(intent)
+             }
+        }
+
         // Send comment button
         binding.btnSendComment.setOnClickListener {
             sendComment()
@@ -157,6 +199,9 @@ class CommentsActivity : AppCompatActivity() {
         binding.btnCancelReply.setOnClickListener {
             cancelReplyMode()
         }
+
+        // Updating the title padding for the comment activity
+        binding.tvHeaderTitle.setPadding(16, 16, 16, 16) // Adjust padding values as needed
     }
 
     private fun cancelReplyMode() {
@@ -479,12 +524,17 @@ class CommentsActivity : AppCompatActivity() {
 
         binding.etComment.requestFocus()
         // Show keyboard
-        val imm = getSystemService(INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-        imm.showSoftInput(binding.etComment, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager
+        imm?.showSoftInput(binding.etComment, InputMethodManager.SHOW_IMPLICIT)
     }
 
     private fun loadComments() {
         val currentPost = post ?: return
+        if (currentPost.id.isEmpty()) {
+            Toast.makeText(this, "Error: Post ID is missing", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         // Show loading or existing comments while fetching
         commentAdapter.submitList(comments.toList())
@@ -498,11 +548,34 @@ class CommentsActivity : AppCompatActivity() {
                 comments.addAll(fetchedComments)
                 commentAdapter.submitList(comments.toList())
                 updateCommentCountUI()
+
+                // Scroll to top if just loaded and empty? content usually fills up.
             }.onFailure { e ->
                 if (comments.isEmpty()) {
                     Toast.makeText(this@CommentsActivity, "Failed to load comments: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
                 e.printStackTrace()
+            }
+
+            // Fetch fresh post data (likes, shares)
+            val postResult = PostRepository.getInstance().getPost(currentPost.id)
+            postResult.onSuccess { fetchedPost ->
+                post = fetchedPost
+                likeCount = fetchedPost.likeCount
+                val currentUserId = UserPreferences.getUserId(this@CommentsActivity)
+                isLiked = fetchedPost.likedBy.contains(currentUserId)
+
+                // Update UI
+                updateLikeUI()
+                binding.tvShareCount.text = fetchedPost.shareCount.toString()
+                binding.tvCommentCount.text = fetchedPost.commentCount.toString() // Use server count or local list size?
+                // Often list size is more accurate IF pagination is not used. If pagination is used, server count is better.
+                // Here we fetch all comments, so list size is good. But let's stick to what we have.
+
+                // If comments Fetch failed but Post fetch succeeded, we might want to update comment count from Post
+                if (comments.isEmpty() && fetchedPost.commentCount > 0) {
+                     // binding.tvCommentCount.text = fetchedPost.commentCount.toString()
+                }
             }
         }
     }

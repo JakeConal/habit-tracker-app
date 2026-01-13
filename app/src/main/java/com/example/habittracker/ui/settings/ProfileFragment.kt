@@ -128,6 +128,14 @@ class ProfileFragment : Fragment() {
                 }
                 commentsLauncher.launch(intent)
             },
+            onShareClick = { post ->
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                    putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                }
+                startActivity(Intent.createChooser(shareIntent, "Share post via"))
+            },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 // Basic implementation for Profile - can be customized
                 val popupMenu = PopupMenu(requireContext(), anchorView)

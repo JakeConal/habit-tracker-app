@@ -44,10 +44,11 @@ class SupabaseStorageRepository {
 
             // Upload to Supabase Storage
             try {
-                storage.from(bucketName).upload(finalFileName, bytes, upsert = false)
+                storage.from(bucketName).upload(finalFileName, bytes, upsert = true)
             } catch (e: Exception) {
-                if (e.message?.contains("Object does not exist") == true) {
-                    throw Exception("Bucket '$bucketName' does not exist in Supabase storage. Please create it.")
+                val msg = (e.message ?: "").lowercase()
+                if (msg.contains("object does not exist") || msg.contains("404")) {
+                    throw Exception("Storage Bucket '$bucketName' not found or file missing. Please ensure the bucket exists in Supabase.")
                 }
                 throw e
             }

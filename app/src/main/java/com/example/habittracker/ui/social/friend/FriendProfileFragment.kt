@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.social.friend
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -71,6 +72,14 @@ class FriendProfileFragment : Fragment() {
                     "Comment feature coming soon!",
                     Toast.LENGTH_SHORT
                 ).show()
+            },
+            onShareClick = { post ->
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                    putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                }
+                startActivity(Intent.createChooser(shareIntent, "Share post via"))
             },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 val popupMenu = android.widget.PopupMenu(requireContext(), anchorView)
