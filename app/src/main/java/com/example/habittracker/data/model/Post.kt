@@ -17,7 +17,14 @@ data class Post(
     val shareCount: Int = 0,
     val imageUrl: String? = null,
     val hiddenBy: List<String> = emptyList(),
-    val likedBy: List<String> = emptyList()
+    val likedBy: List<String> = emptyList(),
+    // Shared post fields
+    val originalPostId: String? = null,
+    val originalUserId: String? = null,
+    val originalAuthorName: String? = null,
+    val originalAuthorAvatarUrl: String? = null,
+    val originalContent: String? = null,
+    val originalImageUrl: String? = null
 ) : Parcelable {
     companion object {
         const val COLLECTION_NAME = "posts"
@@ -37,7 +44,13 @@ data class Post(
                     shareCount = document.getLong("shareCount")?.toInt() ?: 0,
                     imageUrl = document.getString("imageUrl"),
                     hiddenBy = (document.get("hiddenBy") as? List<String>) ?: emptyList(),
-                    likedBy = (document.get("likedBy") as? List<String>) ?: emptyList()
+                    likedBy = (document.get("likedBy") as? List<String>) ?: emptyList(),
+                    originalPostId = document.getString("originalPostId"),
+                    originalUserId = document.getString("originalUserId"),
+                    originalAuthorName = document.getString("originalAuthorName"),
+                    originalAuthorAvatarUrl = document.getString("originalAuthorAvatarUrl"),
+                    originalContent = document.getString("originalContent"),
+                    originalImageUrl = document.getString("originalImageUrl")
                 )
             } catch (e: Exception) {
                 null
@@ -58,7 +71,13 @@ data class Post(
             "shareCount" to shareCount,
             "imageUrl" to imageUrl,
             "hiddenBy" to hiddenBy,
-            "likedBy" to likedBy
+            "likedBy" to likedBy,
+            "originalPostId" to originalPostId,
+            "originalUserId" to originalUserId,
+            "originalAuthorName" to originalAuthorName,
+            "originalAuthorAvatarUrl" to originalAuthorAvatarUrl,
+            "originalContent" to originalContent,
+            "originalImageUrl" to originalImageUrl
         )
     }
 }

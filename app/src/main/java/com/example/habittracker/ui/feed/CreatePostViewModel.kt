@@ -27,7 +27,7 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
     private val _errorMessage = MutableSharedFlow<String>()
     val errorMessage = _errorMessage.asSharedFlow()
 
-    fun createPost(content: String, imageUri: Uri?) {
+    fun createPost(content: String, imageUri: Uri?, sharedPost: Post? = null) {
         if (_isLoading.value == true) return
         _isLoading.value = true
 
@@ -59,12 +59,28 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                     }
                 }
 
+                // Determine shared post details if any
+                val targetOriginalId = sharedPost?.originalPostId ?: sharedPost?.id
+                val targetOriginalUserId = sharedPost?.originalUserId ?: sharedPost?.userId
+                val targetOriginalAuthor = sharedPost?.originalAuthorName ?: sharedPost?.authorName
+                val targetOriginalAvatar = sharedPost?.originalAuthorAvatarUrl ?: sharedPost?.authorAvatarUrl
+
+                // Add logic to preserve original content and image
+                val targetOriginalContent = if (sharedPost?.originalPostId != null) sharedPost.originalContent else sharedPost?.content
+                val targetOriginalImageUrl = if (sharedPost?.originalPostId != null) sharedPost.originalImageUrl else sharedPost?.imageUrl
+
                 val newPost = Post(
                     userId = currentUserId,
                     authorName = userName,
                     authorAvatarUrl = userAvatar.ifEmpty { null },
                     content = content,
-                    timestamp = System.currentTimeMillis()
+                    timestamp = System.currentTimeMillis(),
+                    originalPostId = targetOriginalId,
+                    originalUserId = targetOriginalUserId,
+                    originalAuthorName = targetOriginalAuthor,
+                    originalAuthorAvatarUrl = targetOriginalAvatar,
+                    originalContent = targetOriginalContent,
+                    originalImageUrl = targetOriginalImageUrl
                 )
 
                 val result = postRepository.createPost(context, newPost, imageUri)

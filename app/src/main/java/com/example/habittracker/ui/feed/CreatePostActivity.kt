@@ -14,9 +14,11 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
+import com.example.habittracker.data.model.Post
 import com.example.habittracker.databinding.ActivityCreatePostBinding
 import com.example.habittracker.utils.UserPreferences
 import com.example.habittracker.R
+import com.example.habittracker.ui.main.MainActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -29,6 +31,7 @@ class CreatePostActivity : AppCompatActivity() {
     private lateinit var viewModel: CreatePostViewModel
     private var selectedImageUri: Uri? = null
     private var photoUri: Uri? = null
+    private var sharedPost: Post? = null
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -71,10 +74,57 @@ class CreatePostActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        try {
+            MainActivity.hideSystemUI(this)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         binding = ActivityCreatePostBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this)[CreatePostViewModel::class.java]
+
+        // Check for shared post
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            sharedPost = intent.getParcelableExtra("EXTRA_SHARED_POST", Post::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            sharedPost = intent.getParcelableExtra("EXTRA_SHARED_POST")
+        }
+
+        if (sharedPost != null) {
+            binding.tvHeaderTitle.text = getString(R.string.title_share_post)
+            binding.etPostContent.hint = getString(R.string.hint_share_post)
+            // Disable image adding when sharing a post if not supported
+            binding.btnAddPhoto.isEnabled = false
+            binding.btnAddCamera.isEnabled = false
+            binding.btnAddPhoto.alpha = 0.5f
+            binding.btnAddCamera.alpha = 0.5f
+
+            // Show shared post preview
+            binding.cardSharedPostPreview.visibility = android.view.View.VISIBLE
+
+            // Logic to get original content if re-sharing
+            val targetAuthor = sharedPost?.originalAuthorName ?: sharedPost?.authorName
+            val targetContent = if (sharedPost?.originalPostId != null) sharedPost?.originalContent else sharedPost?.content
+            val targetImage = if (sharedPost?.originalPostId != null) sharedPost?.originalImageUrl else sharedPost?.imageUrl
+
+            binding.tvSharedPreviewAuthor.text = targetAuthor
+
+            if (targetContent.isNullOrEmpty()) {
+                binding.tvSharedPreviewContent.visibility = android.view.View.GONE
+            } else {
+                binding.tvSharedPreviewContent.visibility = android.view.View.VISIBLE
+                binding.tvSharedPreviewContent.text = targetContent
+            }
+
+            if (!targetImage.isNullOrEmpty()) {
+                binding.ivSharedPreviewImage.visibility = android.view.View.VISIBLE
+                Glide.with(this).load(targetImage).into(binding.ivSharedPreviewImage)
+            } else {
+                binding.ivSharedPreviewImage.visibility = android.view.View.GONE
+            }
+        }
 
         setupViews()
         setupClickListeners()
@@ -141,6 +191,23 @@ class CreatePostActivity : AppCompatActivity() {
         binding.btnRemoveImage.setOnClickListener {
             removeImage()
         }
+
+        // Show keyboard when clicking on content area
+        binding.etPostContent.setOnClickListener {
+            binding.etPostContent.requestFocus()
+            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+            imm?.showSoftInput(binding.etPostContent, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+        }
+    }
+
+    private fun createPost() {
+        val content = binding.etPostContent.text.toString().trim()
+        if (content.isEmpty() && selectedImageUri == null && sharedPost == null) {
+            Toast.makeText(this, "Please enter some content", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        viewModel.createPost(content, selectedImageUri, sharedPost)
     }
 
     private fun openGallery() {
@@ -197,17 +264,6 @@ class CreatePostActivity : AppCompatActivity() {
         selectedImageUri = null
         photoUri = null
         binding.cardImagePreview.visibility = android.view.View.GONE
-    }
-
-    private fun createPost() {
-        val content = binding.etPostContent.text.toString().trim()
-
-        if (content.isEmpty()) {
-            Toast.makeText(this, "Please write something", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        viewModel.createPost(content, selectedImageUri)
     }
 
     companion object {

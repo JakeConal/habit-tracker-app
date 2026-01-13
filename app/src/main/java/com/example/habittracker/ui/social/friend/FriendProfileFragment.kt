@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.social.friend
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -77,6 +78,14 @@ class FriendProfileFragment : Fragment() {
                     }
                     findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
                 }
+            },
+            onShareClick = { post ->
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                    putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                }
+                startActivity(Intent.createChooser(shareIntent, "Share post via"))
             },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 // Share logic...

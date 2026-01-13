@@ -49,11 +49,18 @@ class PostRepository private constructor() {
 
             val newPost = post.copy(
                 id = postRef.id,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                shareCount = 0 // Ensure starts at 0
             )
 
             // Save the post
             postRef.set(newPost).await()
+
+            // If this is a shared post (internal share), increment share count of original post
+            if (!post.originalPostId.isNullOrEmpty()) {
+                val originalRef = db.collection("posts").document(post.originalPostId)
+                originalRef.update("shareCount", FieldValue.increment(1))
+            }
 
             Result.success(true)
         } catch (e: Exception) {
@@ -117,6 +124,20 @@ class PostRepository private constructor() {
     }
 
 
+
+    suspend fun getPost(postId: String): Result<Post> {
+        return try {
+            val snapshot = db.collection("posts").document(postId).get().await()
+            val post = Post.fromDocument(snapshot)
+            if (post != null) {
+                Result.success(post)
+            } else {
+                Result.failure(Exception("Post not found"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 
     // --- Comment Functions ---
 
@@ -203,6 +224,40 @@ class PostRepository private constructor() {
         return try {
             val postRef = db.collection("posts").document(postId)
             postRef.update("shareCount", FieldValue.increment(1)).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun sharePostToFeed(originalPost: Post, currentUserId: String, currentUserName: String, currentUserAvatar: String?): Result<Boolean> {
+        return try {
+             // Create a new post that references the original one
+            val postRef = db.collection("posts").document()
+            val sharedPost = Post(
+                id = postRef.id,
+                userId = currentUserId,
+                authorName = currentUserName,
+                authorAvatarUrl = currentUserAvatar,
+                content = "", // Content can be empty or something like "Shared a post"
+                timestamp = System.currentTimeMillis(),
+
+                // Copy original content visuals for display
+                imageUrl = originalPost.imageUrl,
+
+                // Set reference fields
+                originalPostId = originalPost.originalPostId ?: originalPost.id, // Chain references to the ROOT post
+                originalUserId = originalPost.originalUserId ?: originalPost.userId,
+                originalAuthorName = originalPost.originalAuthorName ?: originalPost.authorName,
+                originalAuthorAvatarUrl = originalPost.originalAuthorAvatarUrl ?: originalPost.authorAvatarUrl
+            )
+
+            postRef.set(sharedPost.toMap()).await()
+
+            // Increment share count on the ORIGINAL post
+            val originalId = originalPost.originalPostId ?: originalPost.id
+            sharePost(originalId)
+
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)

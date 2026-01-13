@@ -41,6 +41,7 @@
         <!-- Comments Activity -->
         <activity
             android:name=".ui.feed.CommentsActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="false" />
 
         <!-- Challenge Detail Activity -->
