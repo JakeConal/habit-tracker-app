@@ -21,8 +21,8 @@ class PostAdapter(
     private val currentUserId: String,
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
-    private val onAuthorClick: (String) -> Unit,
     private val onShareClick: (Post) -> Unit,
+    private val onAuthorClick: (String) -> Unit,
     private val onMoreOptionsClick: (Post, View) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
@@ -63,8 +63,8 @@ class PostAdapter(
             currentUserId: String,
             onLikeClick: (Post) -> Unit,
             onCommentClick: (Post) -> Unit,
-            onAuthorClick: (String) -> Unit,
             onShareClick: (Post) -> Unit,
+            onAuthorClick: (String) -> Unit,
             onMoreOptionsClick: (Post, View) -> Unit
         ) {
             // Handle Shared Post display

@@ -351,4 +351,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             _isLoading.value = false
         }
     }
+
+    fun sharePost(postId: String) {
+        viewModelScope.launch {
+            postRepository.sharePost(postId)
+        }
+    }
 }

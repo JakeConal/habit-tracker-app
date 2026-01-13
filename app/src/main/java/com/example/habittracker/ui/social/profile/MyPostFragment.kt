@@ -86,6 +86,15 @@ class MyPostFragment : Fragment() {
                 }
                 commentsLauncher.launch(intent)
             },
+            onShareClick = { post ->
+                viewModel.sharePost(post.id)
+                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
+                    putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                }
+                startActivity(Intent.createChooser(shareIntent, "Share post via"))
+            },
             onAuthorClick = { userId ->
                 // Since this is the user's own profile, clicking the author doesn't need to do much.
                 // But for consistency, let's just make sure it's handled.
@@ -104,6 +113,7 @@ class MyPostFragment : Fragment() {
                             true
                         }
                         "Share" -> {
+                            viewModel.sharePost(post.id)
                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
