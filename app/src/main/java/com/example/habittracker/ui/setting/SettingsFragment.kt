@@ -83,8 +83,7 @@ class SettingsFragment : Fragment() {
     }
     
     private fun navigateToResetPassword() {
-        // TODO: Navigate to reset password screen
-        // findNavController().navigate(R.id.action_settingsFragment_to_resetPasswordFragment)
+        findNavController().navigate(R.id.action_settingsFragment_to_resetPasswordFragment)
     }
     
     private fun navigateToNotificationSettings() {

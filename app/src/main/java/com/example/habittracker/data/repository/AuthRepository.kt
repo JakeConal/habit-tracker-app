@@ -4,6 +4,7 @@ import com.example.habittracker.data.model.Category
 import com.example.habittracker.data.model.CategoryColor
 import com.example.habittracker.data.model.CategoryIcon
 import com.example.habittracker.data.model.User
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
@@ -175,6 +176,31 @@ class AuthRepository private constructor() {
     suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
         return try {
             auth.sendPasswordResetEmail(email).await()
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Check if current user is signed in with email and password
+     */
+    fun isEmailPasswordUser(): Boolean {
+        val user = auth.currentUser ?: return false
+        return user.providerData.any { it.providerId == "password" }
+    }
+
+    /**
+     * Change user password
+     */
+    suspend fun changePassword(oldPassword: String, newPassword: String): Result<Unit> {
+        return try {
+            val user = auth.currentUser ?: return Result.failure(Exception("No user logged in"))
+            val email = user.email ?: return Result.failure(Exception("User email not found"))
+            
+            val credential = EmailAuthProvider.getCredential(email, oldPassword)
+            user.reauthenticate(credential).await()
+            user.updatePassword(newPassword).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

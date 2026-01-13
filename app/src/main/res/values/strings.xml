@@ -217,4 +217,18 @@
     <string name="logout_confirm_title">Logout</string>
     <string name="logout_confirm_message">Are you sure you want to log out of your account?</string>
     <string name="logout_confirm_button">Logout</string>
+
+    <!-- Reset Password Screen -->
+    <string name="reset_password_title">Reset Password</string>
+    <string name="current_password">Current Password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_new_password">Confirm New Password</string>
+    <string name="current_password_hint">Enter current password</string>
+    <string name="new_password_hint">Enter new password</string>
+    <string name="confirm_new_password_hint">Confirm your new password</string>
+    <string name="change_password_button">Change Password</string>
+    <string name="password_changed_success">Password changed successfully! Please log in again.</string>
+    <string name="passwords_do_not_match">New passwords do not match</string>
+    <string name="empty_password_fields">Please fill in all password fields</string>
+    <string name="google_account_reset_password_note">Since you are signed in with Google, you can manage your password in your Google Account settings.</string>
 </resources>
