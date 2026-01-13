@@ -49,7 +49,7 @@ class FriendProfileFragment : Fragment() {
         // Get friendId from arguments
         val friendId = arguments?.getString("friendId") ?: ""
         
-        setupRecyclerViews()
+        setupRecyclerViews(friendId)
         setupClickListeners()
         observeViewModel()
         
@@ -57,7 +57,7 @@ class FriendProfileFragment : Fragment() {
         viewModel.loadFriendProfile(friendId)
     }
 
-    private fun setupRecyclerViews() {
+    private fun setupRecyclerViews(friendId: String) {
         // Posts Adapter
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
@@ -67,6 +67,16 @@ class FriendProfileFragment : Fragment() {
             },
             onCommentClick = { _ ->
                 Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show()
+            },
+            onAuthorClick = { userId ->
+                if (userId == currentUserId) {
+                    findNavController().navigate(R.id.nav_profile)
+                } else if (userId != friendId) {
+                    val bundle = Bundle().apply {
+                        putString("friendId", userId)
+                    }
+                    findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
+                }
             },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 // Share logic...
@@ -127,6 +137,11 @@ class FriendProfileFragment : Fragment() {
         binding.btnFriendsTab.setOnClickListener {
             viewModel.selectTab(FriendProfileViewModel.ProfileTab.MY_FRIENDS)
         }
+
+        // Add Friend button
+        binding.btnAddFriend.setOnClickListener {
+            viewModel.sendFriendRequest()
+        }
     }
 
     private fun observeViewModel() {
@@ -176,6 +191,13 @@ class FriendProfileFragment : Fragment() {
                 binding.tvEmptyState.text = message
             }
         }
+
+        // Observe friendship status
+        lifecycleScope.launch {
+            viewModel.friendshipStatus.collect { status ->
+                updateFriendshipUI(status)
+            }
+        }
     }
 
     private fun loadAvatar(avatarUrl: String) {
@@ -188,6 +210,33 @@ class FriendProfileFragment : Fragment() {
                 .placeholder(R.drawable.ic_person)
                 .error(R.drawable.ic_person)
                 .into(binding.ivProfileAvatar)
+        }
+    }
+
+    private fun updateFriendshipUI(status: FriendProfileViewModel.FriendshipStatus) {
+        when (status) {
+            FriendProfileViewModel.FriendshipStatus.NOT_FRIEND -> {
+                binding.btnAddFriend.visibility = View.VISIBLE
+                binding.btnAddFriend.text = "Add Friend"
+                binding.btnAddFriend.isEnabled = true
+                binding.btnAddFriend.alpha = 1.0f
+            }
+            FriendProfileViewModel.FriendshipStatus.PENDING -> {
+                binding.btnAddFriend.visibility = View.VISIBLE
+                binding.btnAddFriend.text = "Request Sent"
+                binding.btnAddFriend.isEnabled = false
+                binding.btnAddFriend.alpha = 0.7f
+            }
+            FriendProfileViewModel.FriendshipStatus.FRIEND -> {
+                binding.btnAddFriend.visibility = View.VISIBLE
+                binding.btnAddFriend.text = "Friends"
+                binding.btnAddFriend.isEnabled = false
+                binding.btnAddFriend.alpha = 0.7f
+                // Alternatively, could show "Unfriend" button
+            }
+            FriendProfileViewModel.FriendshipStatus.SELF -> {
+                binding.btnAddFriend.visibility = View.GONE
+            }
         }
     }
 

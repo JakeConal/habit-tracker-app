@@ -21,6 +21,7 @@ class PostAdapter(
     private val currentUserId: String,
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
+    private val onAuthorClick: (String) -> Unit,
     private val onMoreOptionsClick: (Post, View) -> Unit
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
@@ -31,7 +32,7 @@ class PostAdapter(
     }
 
     override fun onBindViewHolder(holder: PostViewHolder, position: Int) {
-        holder.bind(getItem(position), currentUserId, onLikeClick, onCommentClick, onMoreOptionsClick)
+        holder.bind(getItem(position), currentUserId, onLikeClick, onCommentClick, onAuthorClick, onMoreOptionsClick)
     }
 
     class PostViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -52,6 +53,7 @@ class PostAdapter(
             currentUserId: String,
             onLikeClick: (Post) -> Unit,
             onCommentClick: (Post) -> Unit,
+            onAuthorClick: (String) -> Unit,
             onMoreOptionsClick: (Post, View) -> Unit
         ) {
             tvAuthorName.text = post.authorName
@@ -95,6 +97,8 @@ class PostAdapter(
             }
 
             // Click listeners
+            ivAuthorAvatar.setOnClickListener { onAuthorClick(post.userId) }
+            tvAuthorName.setOnClickListener { onAuthorClick(post.userId) }
             containerLike.setOnClickListener { onLikeClick(post) }
             containerComment.setOnClickListener { onCommentClick(post) }
 

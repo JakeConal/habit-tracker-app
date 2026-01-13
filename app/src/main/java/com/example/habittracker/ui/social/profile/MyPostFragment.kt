@@ -86,6 +86,11 @@ class MyPostFragment : Fragment() {
                 }
                 commentsLauncher.launch(intent)
             },
+            onAuthorClick = { userId ->
+                // Since this is the user's own profile, clicking the author doesn't need to do much.
+                // But for consistency, let's just make sure it's handled.
+                // User is already on their profile.
+            },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 val popupMenu = PopupMenu(requireContext(), anchorView)
                 popupMenu.menu.add("Delete")

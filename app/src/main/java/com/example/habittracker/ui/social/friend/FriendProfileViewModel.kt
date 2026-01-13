@@ -28,8 +28,18 @@ class FriendProfileViewModel : ViewModel() {
         MY_FRIENDS
     }
 
+    enum class FriendshipStatus {
+        NOT_FRIEND,
+        PENDING,
+        FRIEND,
+        SELF
+    }
+
     private val _selectedTab = MutableStateFlow(ProfileTab.MY_POST)
     val selectedTab: StateFlow<ProfileTab> = _selectedTab.asStateFlow()
+
+    private val _friendshipStatus = MutableStateFlow(FriendshipStatus.NOT_FRIEND)
+    val friendshipStatus: StateFlow<FriendshipStatus> = _friendshipStatus.asStateFlow()
 
     // Friend data
     private val _friendProfile = MutableStateFlow<FriendProfile?>(null)
@@ -59,6 +69,32 @@ class FriendProfileViewModel : ViewModel() {
         currentFriendId = friendId
         
         viewModelScope.launch {
+            val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+            
+            // 0. Update Friendship Status
+            if (friendId == currentUserId) {
+                _friendshipStatus.value = FriendshipStatus.SELF
+            } else {
+                val isFriend = friendRepository.isFriend(currentUserId, friendId)
+                if (isFriend) {
+                    _friendshipStatus.value = FriendshipStatus.FRIEND
+                } else {
+                    // Check if request is pending
+                    val requests = friendRepository.getFriendRequests()
+                    val sentRequests = com.example.habittracker.data.firebase.FirestoreManager.getCollectionWhere(
+                        com.example.habittracker.data.model.FriendRequest.COLLECTION_NAME,
+                        "senderId",
+                        currentUserId
+                    ) { it.getString("receiverId") }
+                    
+                    if (sentRequests.contains(friendId)) {
+                        _friendshipStatus.value = FriendshipStatus.PENDING
+                    } else {
+                        _friendshipStatus.value = FriendshipStatus.NOT_FRIEND
+                    }
+                }
+            }
+
             // 1. Fetch User Info
             val user = userRepository.getUserById(friendId)
             if (user != null) {
@@ -109,6 +145,19 @@ class FriendProfileViewModel : ViewModel() {
             ProfileTab.MY_FRIENDS -> {
                 _showEmptyState.value = _friendListItems.value.isEmpty()
                 _emptyStateMessage.value = "No friends yet"
+            }
+        }
+    }
+    /**
+     * Send friend request to current profile user
+     */
+    fun sendFriendRequest() {
+        if (currentFriendId.isEmpty() || _friendshipStatus.value != FriendshipStatus.NOT_FRIEND) return
+        
+        viewModelScope.launch {
+            val result = friendRepository.sendFriendRequest(currentFriendId)
+            if (result) {
+                _friendshipStatus.value = FriendshipStatus.PENDING
             }
         }
     }

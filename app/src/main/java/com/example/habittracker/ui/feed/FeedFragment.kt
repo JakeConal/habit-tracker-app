@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
@@ -119,6 +120,16 @@ class FeedFragment : Fragment() {
             onCommentClick = { post ->
                 // Open comments activity
                 openCommentsActivity(post)
+            },
+            onAuthorClick = { userId ->
+                if (userId == currentUserId) {
+                    findNavController().navigate(R.id.nav_profile)
+                } else {
+                    val bundle = Bundle().apply {
+                        putString("friendId", userId)
+                    }
+                    findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
+                }
             },
             onMoreOptionsClick = { post, anchorView ->
                 showPostOptions(post, anchorView)
