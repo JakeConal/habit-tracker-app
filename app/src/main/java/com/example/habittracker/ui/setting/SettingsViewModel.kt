@@ -26,12 +26,12 @@ class SettingsViewModel : ViewModel() {
             SettingMenuItem(
                 id = 1,
                 titleRes = R.string.settings_edit_profile,
-                iconRes = R.drawable.ic_settings_general
+                iconRes = R.drawable.ic_person
             ),
             SettingMenuItem(
                 id = 2,
                 titleRes = R.string.settings_reset_password,
-                iconRes = R.drawable.ic_settings_general
+                iconRes = R.drawable.ic_lock
             ),
             SettingMenuItem(
                 id = 3,
@@ -46,7 +46,7 @@ class SettingsViewModel : ViewModel() {
             SettingMenuItem(
                 id = 5,
                 titleRes = R.string.settings_review_challenge,
-                iconRes = R.drawable.ic_settings_general
+                iconRes = R.drawable.ic_verified_badge
             ),
             SettingMenuItem(
                 id = 6,

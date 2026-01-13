@@ -88,13 +88,11 @@ class SettingsFragment : Fragment() {
     }
     
     private fun navigateToNotificationSettings() {
-        // TODO: Navigate to notification settings screen
-        // findNavController().navigate(R.id.action_settingsFragment_to_notificationSettingsFragment)
+        findNavController().navigate(R.id.action_settingsFragment_to_notificationSettingsFragment)
     }
     
     private fun navigateToTerms() {
-        // TODO: Navigate to terms screen
-        // findNavController().navigate(R.id.action_settingsFragment_to_termsFragment)
+        findNavController().navigate(R.id.action_settingsFragment_to_termsFragment)
     }
     
     private fun navigateToReviewChallenge() {

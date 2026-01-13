@@ -239,4 +239,23 @@
     <string name="passwords_do_not_match">New passwords do not match</string>
     <string name="empty_password_fields">Please fill in all password fields</string>
     <string name="google_account_reset_password_note">Since you are signed in with Google, you can manage your password in your Google Account settings.</string>
+
+    <!-- Terms of Use -->
+    <string name="terms_of_use_title">Terms of Use</string>
+    <string name="terms_last_updated">Last updated: January 13, 2026</string>
+    <string name="terms_section_1_title">1. Acceptance of Terms</string>
+    <string name="terms_section_1_content">By accessing or using the Habit Tracker application, you agree to be bound by these Terms of Use and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using or accessing this app.</string>
+    <string name="terms_section_2_title">2. Use License</string>
+    <string name="terms_section_2_content">Permission is granted to download one copy of the Habit Tracker for personal, non-commercial transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not modify or copy the materials, use the materials for any commercial purpose, or attempt to decompile or reverse engineer any software contained in the app.</string>
+    <string name="terms_section_3_title">3. User Accounts</string>
+    <string name="terms_section_3_content">When you create an account with us, you must provide information that is accurate, complete, and current at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account on our Service.</string>
+    <string name="terms_section_4_title">4. Privacy Policy</string>
+    <string name="terms_section_4_content">Your privacy is important to us. It is Habit Tracker\'s policy to respect your privacy regarding any information we may collect from you across our app. We only ask for personal information when we truly need it to provide a service to you.</string>
+    <string name="terms_section_5_title">5. Disclaimer</string>
+    <string name="terms_section_5_content">The materials within Habit Tracker are provided on an \'as is\' basis. Habit Tracker makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.</string>
+    <string name="terms_section_6_title">6. Limitations</string>
+    <string name="terms_section_6_content">In no event shall Habit Tracker or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the app.</string>
+    <string name="terms_section_7_title">7. Termination</string>
+    <string name="terms_section_7_content">We may terminate or suspend access to our Service immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms.</string>
+    <string name="terms_contact">If you have any questions about these Terms, please contact us at support@habittracker.com</string>
 </resources>
