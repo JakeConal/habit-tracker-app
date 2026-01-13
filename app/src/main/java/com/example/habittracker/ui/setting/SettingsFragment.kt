@@ -45,10 +45,6 @@ class SettingsFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
-        
-        binding.btnSettings.setOnClickListener {
-            // Settings button in header - could open additional options
-        }
     }
     
     private fun setupRecyclerView() {
@@ -107,8 +103,28 @@ class SettingsFragment : Fragment() {
     }
     
     private fun handleLogout() {
-        // TODO: Implement logout functionality
-        // Show confirmation dialog and handle logout
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.logout_confirm_title)
+            .setMessage(R.string.logout_confirm_message)
+            .setPositiveButton(R.string.logout_confirm_button) { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun performLogout() {
+        // Sign out from Firebase
+        com.example.habittracker.data.repository.AuthRepository.getInstance().signOut()
+        
+        // Clear local preferences
+        com.example.habittracker.utils.UserPreferences.clearUserData(requireContext())
+        
+        // Navigate to login and clear backstack
+        val navOptions = androidx.navigation.NavOptions.Builder()
+            .setPopUpTo(R.id.nav_graph_main, true)
+            .build()
+        findNavController().navigate(R.id.nav_login, null, navOptions)
     }
 
     override fun onDestroyView() {

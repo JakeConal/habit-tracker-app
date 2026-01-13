@@ -36,4 +36,8 @@ object UserPreferences {
     fun getUserId(context: Context): String {
         return getPreferences(context).getString(KEY_USER_ID, "user_default") ?: "user_default"
     }
+
+    fun clearUserData(context: Context) {
+        getPreferences(context).edit().clear().apply()
+    }
 }
