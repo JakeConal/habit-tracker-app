@@ -55,12 +55,27 @@ data class Category(
         // Convert Firestore DocumentSnapshot to Category object
         fun fromDocument(document: DocumentSnapshot): Category? {
             return try {
+                val colorValue = document.get("color")
+                val iconValue = document.get("icon")
+
+                val color = when (colorValue) {
+                    is String -> CategoryColor.entries.firstOrNull { it.name == colorValue }
+                    is Long -> CategoryColor.entries.firstOrNull { it.resId == colorValue.toInt() }
+                    else -> null
+                } ?: CategoryColor.RED
+
+                val icon = when (iconValue) {
+                    is String -> CategoryIcon.entries.firstOrNull { it.name == iconValue }
+                    is Long -> CategoryIcon.entries.firstOrNull { it.resId == iconValue.toInt() }
+                    else -> null
+                } ?: CategoryIcon.HEART
+
                 Category(
                     id = document.id,
                     userId = document.getString("userId") ?: "",
                     title = document.getString("title") ?: "",
-                    color = CategoryColor.entries.firstOrNull { it.resId == document.getLong("color")?.toInt() } ?: CategoryColor.RED,
-                    icon = CategoryIcon.entries.firstOrNull { it.resId == document.getLong("icon")?.toInt() } ?: CategoryIcon.HEART
+                    color = color,
+                    icon = icon
                 )
             } catch (_: Exception) {
                 null
@@ -73,8 +88,8 @@ data class Category(
         return mapOf(
             "userId" to userId,
             "title" to title,
-            "color" to color.resId,
-            "icon" to icon.resId
+            "color" to color.name,
+            "icon" to icon.name
         )
     }
 }
