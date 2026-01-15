@@ -17,13 +17,11 @@
         android:padding="16dp">
 
     <!-- Habit Icon -->
-    <com.google.android.material.card.MaterialCardView
+    <FrameLayout
         android:id="@+id/habitIconBackground"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        app:cardBackgroundColor="@color/icon_bg_pink"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
+        android:background="@drawable/bg_category_icon_pink_light"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent">
@@ -34,8 +32,9 @@
             android:layout_height="32dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_heart"
-            android:contentDescription="@string/app_name" />
-    </com.google.android.material.card.MaterialCardView>
+            android:contentDescription="@string/app_name"
+            app:tint="@color/white" />
+    </FrameLayout>
 
     <!-- Habit Info -->
     <TextView

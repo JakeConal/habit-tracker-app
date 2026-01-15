@@ -9,9 +9,9 @@ data class HabitStatItem(
     val name: String,
     val score: String,
     val iconRes: Int,
-    val iconBgColor: Int,
+    val iconBgRes: Int,
     val badgeText: String,
-    val badgeColor: Int
+    val badgeBgRes: Int
 )
 
 class HabitStatAdapter : RecyclerView.Adapter<HabitStatAdapter.HabitStatViewHolder>() {
@@ -40,10 +40,9 @@ class HabitStatAdapter : RecyclerView.Adapter<HabitStatAdapter.HabitStatViewHold
             binding.tvHabitName.text = item.name
             binding.tvHabitScore.text = item.score
             binding.ivHabitIcon.setImageResource(item.iconRes)
-            binding.iconCard.setCardBackgroundColor(item.iconBgColor)
+            binding.iconCard.setBackgroundResource(item.iconBgRes)
             binding.tvBadge.text = item.badgeText
-            binding.badgeCard.setCardBackgroundColor(item.badgeColor)
+            binding.badgeCard.setBackgroundResource(item.badgeBgRes)
         }
     }
 }
-

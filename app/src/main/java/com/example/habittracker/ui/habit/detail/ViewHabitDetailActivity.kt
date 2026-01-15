@@ -183,18 +183,7 @@ class ViewHabitDetailActivity : AppCompatActivity() {
     }
 
     private fun updateCategoryIconBackground(backgroundRes: Int) {
-        val colorRes = when (backgroundRes) {
-            R.drawable.bg_category_icon_red -> R.color.icon_bg_red
-            R.drawable.bg_category_icon_blue -> R.color.icon_bg_blue
-            R.drawable.bg_category_icon_yellow -> R.color.icon_bg_yellow
-            R.drawable.bg_category_icon_pink_light -> R.color.icon_bg_pink_light
-            R.drawable.bg_category_icon_purple -> R.color.icon_bg_purple
-            R.drawable.bg_category_icon_orange_light -> R.color.icon_bg_orange_light
-            R.drawable.bg_category_icon_green -> R.color.icon_bg_green
-            R.drawable.bg_category_icon_indigo -> R.color.icon_bg_indigo
-            else -> R.color.icon_bg_pink
-        }
-        binding.categoryIconBackground.setCardBackgroundColor(getColor(colorRes))
+        binding.categoryIconBackground.setBackgroundResource(backgroundRes)
     }
 
     private fun setupClickListeners() {

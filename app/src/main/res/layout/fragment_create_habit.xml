@@ -140,13 +140,11 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="17dp">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <FrameLayout
                         android:id="@+id/categoryIconBackground"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        app:cardBackgroundColor="@color/icon_bg_pink"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp">
+                        android:background="@drawable/bg_category_icon_pink_light">
 
                         <ImageView
                             android:id="@+id/ivCategoryIcon"
@@ -156,7 +154,7 @@
                             android:contentDescription="@string/app_name"
                             android:src="@drawable/ic_book"
                             app:tint="@color/white" />
-                    </com.google.android.material.card.MaterialCardView>
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/tvCategoryName"

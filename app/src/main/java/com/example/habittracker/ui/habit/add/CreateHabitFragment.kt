@@ -146,9 +146,7 @@ class CreateHabitFragment : BaseFragment<FragmentCreateHabitBinding>() {
     private fun updateCategoryUI(category: Category) {
         binding.tvCategoryName.text = category.title
         binding.ivCategoryIcon.setImageResource(category.icon.resId)
-        binding.categoryIconBackground.setCardBackgroundColor(
-            requireContext().getColor(category.color.colorResId)
-        )
+        binding.categoryIconBackground.setBackgroundResource(category.color.resId)
     }
 
     private fun setupInitialValues() {
