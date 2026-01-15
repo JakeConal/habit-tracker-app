@@ -50,6 +50,20 @@ class CategoryViewModel : ViewModel() {
 
     init {
         loadCategories()
+        observeCategoriesRealtime()
+    }
+
+    /**
+     * Observe categories with real-time habit count updates
+     */
+    private fun observeCategoriesRealtime() {
+        viewModelScope.launch {
+            currentUserId?.let { userId ->
+                repository.observeCategoriesWithHabitCount(userId).collect { categoriesList ->
+                    _categories.value = categoriesList
+                }
+            }
+        }
     }
 
     /**
