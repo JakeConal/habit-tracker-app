@@ -1,7 +1,7 @@
 package com.example.habittracker.data.repository
 
 import com.example.habittracker.data.firebase.FirestoreManager
-import com.example.habittracker.data.model.ChallengeStatus
+import com.example.habittracker.data.model.UserChallengeStatus
 import com.example.habittracker.data.model.UserChallenge
 
 /**
@@ -29,14 +29,14 @@ class UserChallengeRepository {
      * Get all ongoing challenges for a user
      */
     suspend fun getOngoingChallenges(userId: String): List<UserChallenge> {
-        return getUserChallenges(userId).filter { it.status == ChallengeStatus.ONGOING }
+        return getUserChallenges(userId).filter { it.status == UserChallengeStatus.ONGOING }
     }
 
     /**
      * Get all completed challenges for a user
      */
     suspend fun getCompletedChallenges(userId: String): List<UserChallenge> {
-        return getUserChallenges(userId).filter { it.status == ChallengeStatus.COMPLETED }
+        return getUserChallenges(userId).filter { it.status == UserChallengeStatus.COMPLETED }
     }
 
     /**
@@ -75,7 +75,7 @@ class UserChallengeRepository {
                 userId = userId,
                 challengeId = challengeId,
                 joinedAt = System.currentTimeMillis(),
-                status = ChallengeStatus.ONGOING
+                status = UserChallengeStatus.ONGOING
             )
             val id = userChallenge.generateId()
             println("DEBUG: Attempting to join challenge - userId: $userId, challengeId: $challengeId, id: $id")
@@ -138,7 +138,7 @@ class UserChallengeRepository {
                 collectionName,
                 id,
                 mapOf(
-                    "status" to ChallengeStatus.COMPLETED.name,
+                    "status" to UserChallengeStatus.COMPLETED.name,
                     "completedAt" to System.currentTimeMillis(),
                     "progress" to 100
                 )
@@ -158,7 +158,7 @@ class UserChallengeRepository {
             FirestoreManager.updateDocument(
                 collectionName,
                 id,
-                mapOf("status" to ChallengeStatus.ABANDONED.name)
+                mapOf("status" to UserChallengeStatus.ABANDONED.name)
             )
         } catch (e: Exception) {
             println("Error abandoning challenge: ${e.message}")

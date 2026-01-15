@@ -60,7 +60,7 @@ class SettingsFragment : Fragment() {
     }
     
     private fun observeViewModel() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.settingsMenuItems.collect { items ->
                 settingsMenuAdapter.submitList(items)
             }
@@ -96,8 +96,7 @@ class SettingsFragment : Fragment() {
     }
     
     private fun navigateToReviewChallenge() {
-        // TODO: Navigate to review challenge screen
-        // findNavController().navigate(R.id.action_settingsFragment_to_reviewChallengeFragment)
+        findNavController().navigate(R.id.action_settingsFragment_to_reviewChallengeFragment)
     }
     
     private fun handleLogout() {

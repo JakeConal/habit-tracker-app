@@ -14,6 +14,7 @@ data class Challenge(
     val creatorId: String = "", // ID của user tạo challenge
     val createdAt: Long = System.currentTimeMillis(),
     val participantCount: Int = 0, // Số lượng user đã tham gia
+    val status: ChallengeStatus = ChallengeStatus.PENDING
 ) {
     companion object {
         const val COLLECTION_NAME = "challenges"
@@ -32,7 +33,8 @@ data class Challenge(
                     reward = document.getLong("reward")?.toInt() ?: 0,
                     creatorId = document.getString("creatorId") ?: "",
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
-                    participantCount = document.getLong("participantCount")?.toInt() ?: 0
+                    participantCount = document.getLong("participantCount")?.toInt() ?: 0,
+                    status = ChallengeStatus.valueOf(document.getString("status") ?: "PENDING")
                 )
             } catch (e: Exception) {
                 null
@@ -52,9 +54,16 @@ data class Challenge(
             "reward" to reward,
             "creatorId" to creatorId,
             "createdAt" to createdAt,
-            "participantCount" to participantCount
+            "participantCount" to participantCount,
+            "status" to status.name
         )
     }
+}
+
+enum class ChallengeStatus {
+    PENDING,
+    APPROVED,
+    REJECTED
 }
 
 enum class ChallengeDuration(val duration: String, val color: BadgeColor) {

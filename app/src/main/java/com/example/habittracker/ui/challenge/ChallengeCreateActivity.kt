@@ -177,7 +177,7 @@ class ChallengeCreateActivity : AppCompatActivity() {
                 if (challengeId != null) {
                     Toast.makeText(
                         this@ChallengeCreateActivity,
-                        getString(R.string.challenge_created),
+                        "Challenge created and pending approval!",
                         Toast.LENGTH_SHORT
                     ).show()
                     finish()

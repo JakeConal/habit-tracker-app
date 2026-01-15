@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.repository.ChallengeRepository
@@ -19,6 +20,7 @@ import kotlinx.coroutines.launch
 class ChallengesFragment : Fragment() {
 
     private lateinit var recyclerViewChallenges: RecyclerView
+    private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var challengeAdapter: ChallengeAdapter
     private val challengeRepository = ChallengeRepository()
     private val userChallengeRepository = UserChallengeRepository()
@@ -34,8 +36,16 @@ class ChallengesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupSwipeRefresh(view)
         setupRecyclerView(view)
         loadData()
+    }
+
+    private fun setupSwipeRefresh(view: View) {
+        swipeRefresh = view.findViewById(R.id.swipeRefresh)
+        swipeRefresh.setOnRefreshListener {
+            loadData()
+        }
     }
 
     override fun onResume() {
@@ -77,6 +87,8 @@ class ChallengesFragment : Fragment() {
                 }
             } catch (e: Exception) {
                 println("Error loading challenges: ${e.message}")
+            } finally {
+                swipeRefresh.isRefreshing = false
             }
         }
     }

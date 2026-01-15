@@ -11,10 +11,13 @@ data class User(
     val email: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
     val lastLoginAt: Long = System.currentTimeMillis(),
-    val joinedChallengeIds: List<String> = emptyList() // Danh sách ID của challenge đã tham gia
+    val joinedChallengeIds: List<String> = emptyList(), // Danh sách ID của challenge đã tham gia
+    val role: String = ROLE_USER
 ) {
     companion object {
         const val COLLECTION_NAME = "users"
+        const val ROLE_USER = "user"
+        const val ROLE_ADMIN = "admin"
 
         // Convert Firestore DocumentSnapshot to User object
         fun fromDocument(document: DocumentSnapshot): User? {
@@ -28,7 +31,8 @@ data class User(
                     email = document.getString("email"),
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
                     lastLoginAt = document.getLong("lastLoginAt") ?: System.currentTimeMillis(),
-                    joinedChallengeIds = (document.get("joinedChallengeIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+                    joinedChallengeIds = (document.get("joinedChallengeIds") as? List<*>)?.mapNotNull { it as? String } ?: emptyList(),
+                    role = document.getString("role") ?: ROLE_USER
                 )
             } catch (e: Exception) {
                 null
@@ -46,7 +50,8 @@ data class User(
             "email" to (email ?: ""),
             "createdAt" to createdAt,
             "lastLoginAt" to lastLoginAt,
-            "joinedChallengeIds" to joinedChallengeIds
+            "joinedChallengeIds" to joinedChallengeIds,
+            "role" to role
         )
     }
 }
