@@ -276,6 +276,10 @@ class HomeFragment : Fragment() {
                 // Navigate to ViewHabitFragment to view/edit habit details
                 navigateToViewHabit(habit)
             },
+            onHabitLongClick = { habit ->
+                // Show delete confirmation dialog
+                showDeleteConfirmationDialog(habit)
+            },
             onCheckClick = { habit ->
                 // Handle check button click - toggle completion
                 toggleHabitCompletion(habit)
@@ -286,6 +290,17 @@ class HomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = habitsAdapter
         }
+    }
+
+    private fun showDeleteConfirmationDialog(habit: com.example.habittracker.data.model.Habit) {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle(R.string.confirm_delete_title)
+            .setMessage(R.string.confirm_delete_message)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                viewModel.deleteHabit(habit.id)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun toggleHabitCompletion(habit: com.example.habittracker.data.model.Habit) {

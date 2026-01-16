@@ -55,7 +55,8 @@ class SettingsFragment : Fragment() {
         binding.rvSettingsMenu.apply {
             adapter = settingsMenuAdapter
             layoutManager = LinearLayoutManager(requireContext())
-            setHasFixedSize(true)
+            setHasFixedSize(false)
+            isNestedScrollingEnabled = false
         }
     }
     
