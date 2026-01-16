@@ -13,7 +13,7 @@ data class User(
     val lastLoginAt: Long = System.currentTimeMillis(),
     val joinedChallengeIds: List<String> = emptyList(), // Danh sách ID của challenge đã tham gia
     val notificationsEnabled: Boolean = true, // Whether the user wants to receive notifications
-    val fcmToken: String? = null
+    val fcmToken: String? = null,
     val role: String = ROLE_USER
 ) {
     companion object {
@@ -48,7 +48,7 @@ data class User(
                     lastLoginAt = lastLoginAt,
                     joinedChallengeIds = joinedChallengeIds,
                     notificationsEnabled = notificationsEnabled,
-                    fcmToken = fcmToken
+                    fcmToken = fcmToken,
                     role = role
                 )
             } catch (e: Exception) {
@@ -70,7 +70,7 @@ data class User(
             "fcmToken" to (fcmToken ?: ""),
             "lastLoginAt" to lastLoginAt,
             "joinedChallengeIds" to joinedChallengeIds,
-            "notificationsEnabled" to notificationsEnabled
+            "notificationsEnabled" to notificationsEnabled,
             "role" to role
         )
     }

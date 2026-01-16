@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityViewHabitDetailBinding
 import com.example.habittracker.ui.category.CategoryActivity
+import com.example.habittracker.ui.habit.add.CreateHabitActivity
 import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.util.formatFrequency
 import com.google.android.material.snackbar.Snackbar
@@ -238,6 +239,17 @@ class ViewHabitDetailActivity : AppCompatActivity() {
         // Start CategoryActivity for result
         val intent = Intent(this, CategoryActivity::class.java)
         startActivityForResult(intent, REQUEST_CODE_CATEGORY)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CATEGORY && resultCode == RESULT_OK) {
+            val categoryId = data?.getStringExtra(CreateHabitActivity.EXTRA_CATEGORY_ID)
+            categoryId?.let {
+                viewModel.updateCategoryId(it)
+                viewModel.loadCategory(it)
+            }
+        }
     }
 
     private fun showMeasurementSelector() {
