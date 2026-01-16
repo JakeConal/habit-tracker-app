@@ -108,6 +108,12 @@
             </intent-filter>
         </service>
 
+        <!-- Focus Timer Activity -->
+        <activity
+            android:name=".ui.pomodoro.FocusTimerActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
     </application>
 
 </manifest>

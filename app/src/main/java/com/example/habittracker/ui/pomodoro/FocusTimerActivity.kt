@@ -1,80 +1,137 @@
 package com.example.habittracker.ui.pomodoro
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
-import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
-import com.example.habittracker.databinding.FragmentFocusTimerBinding
+import com.example.habittracker.databinding.ActivityFocusTimerBinding
+import com.example.habittracker.ui.main.MainActivity
 import kotlinx.coroutines.launch
 
 /**
- * FocusTimerFragment - Focus Timer Screen
- * 
+ * FocusTimerActivity - Focus Timer Screen for Habits
+ *
  * Responsibilities:
- * - Display timer UI
+ * - Display timer UI for habit completion
  * - Handle user interactions
  * - Observe ViewModel state changes
+ * - Complete habit when all sessions are done
  */
-class FocusTimerFragment : Fragment() {
+class FocusTimerActivity : AppCompatActivity() {
 
-    private var _binding: FragmentFocusTimerBinding? = null
-    private val binding get() = _binding!!
-
+    private lateinit var binding: ActivityFocusTimerBinding
     private val viewModel: FocusTimerViewModel by viewModels()
 
     // Session dots views for dynamic updates
     private val sessionDots = mutableListOf<View>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentFocusTimerBinding.inflate(inflater, container, false)
-        return binding.root
+    companion object {
+        private const val EXTRA_HABIT_ID = "extra_habit_id"
+        private const val EXTRA_HABIT_NAME = "extra_habit_name"
+        private const val EXTRA_FOCUS_DURATION = "extra_focus_duration"
+        private const val EXTRA_SHORT_BREAK = "extra_short_break"
+        private const val EXTRA_LONG_BREAK = "extra_long_break"
+        private const val EXTRA_TOTAL_SESSIONS = "extra_total_sessions"
+
+        fun newIntent(
+            context: Context,
+            habitId: String,
+            habitName: String,
+            focusDuration: Int,
+            shortBreak: Int,
+            longBreak: Int,
+            totalSessions: Int
+        ): Intent {
+            return Intent(context, FocusTimerActivity::class.java).apply {
+                putExtra(EXTRA_HABIT_ID, habitId)
+                putExtra(EXTRA_HABIT_NAME, habitName)
+                putExtra(EXTRA_FOCUS_DURATION, focusDuration)
+                putExtra(EXTRA_SHORT_BREAK, shortBreak)
+                putExtra(EXTRA_LONG_BREAK, longBreak)
+                putExtra(EXTRA_TOTAL_SESSIONS, totalSessions)
+            }
+        }
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+        binding = ActivityFocusTimerBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
+        MainActivity.hideSystemUI(this)
         applyWindowInsets()
         setupSessionDots()
         setupClickListeners()
         observeViewModel()
-        
-        // Get task name from arguments if provided
-        arguments?.getString("taskName")?.let { taskName ->
-            viewModel.setTaskName(taskName)
-        }
+
+        // Configure timer with habit settings
+        configureTimerFromIntent()
     }
 
     /**
      * Apply window insets to handle status bar properly
      */
     private fun applyWindowInsets() {
-        // Xử lý edge-to-edge và window insets
         ViewCompat.setOnApplyWindowInsetsListener(binding.rootContainer) { view, windowInsets ->
             val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
-            
-            // Áp padding top cho status bar
+
+            // Apply padding top for status bar
             view.updatePadding(
                 top = systemBarsInsets.top
             )
-            
-            // Truyền insets xuống các child views
+
+            // Pass insets down to child views
             windowInsets
         }
+
+        // Handle bottom inset (navigation/gesture bar)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.timerCard) { view, windowInsets ->
+            val systemBarsInsets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val navBarHeight = systemBarsInsets.bottom
+
+            // Apply padding bottom = spacing_md (16dp) + nav bar height
+            val basePadding = resources.getDimensionPixelSize(R.dimen.spacing_md)
+            view.updatePadding(
+                bottom = basePadding + navBarHeight
+            )
+
+            // Consume bottom inset
+            WindowInsetsCompat.CONSUMED
+        }
+    }
+
+    /**
+     * Configure timer settings from intent extras
+     */
+    private fun configureTimerFromIntent() {
+        val habitName = intent.getStringExtra(EXTRA_HABIT_NAME) ?: "Habit"
+        val focusDuration = intent.getIntExtra(EXTRA_FOCUS_DURATION, 25)
+        val shortBreak = intent.getIntExtra(EXTRA_SHORT_BREAK, 5)
+        val longBreak = intent.getIntExtra(EXTRA_LONG_BREAK, 15)
+        val totalSessions = intent.getIntExtra(EXTRA_TOTAL_SESSIONS, 4)
+
+        // Set task name
+        viewModel.setTaskName(habitName)
+
+        // Configure timer durations
+        viewModel.setFocusDuration(focusDuration)
+        viewModel.setBreakDuration(shortBreak)
+        viewModel.setLongBreakDuration(longBreak)
+        viewModel.setTotalSessions(totalSessions)
+
+        // Start in focus mode
+        viewModel.setMode(FocusTimerViewModel.TimerMode.FOCUS)
     }
 
     /**
@@ -94,22 +151,9 @@ class FocusTimerFragment : Fragment() {
     private fun setupClickListeners() {
         // Back button
         binding.btnBack.setOnClickListener {
-            findNavController().navigateUp()
-        }
-        
-        // Task selector - opens task picker
-        binding.focusTaskContainer.setOnClickListener {
-            onTaskSelectorClicked()
+            finish()
         }
 
-        // Mode selectors
-        binding.btnFocusMode.setOnClickListener {
-            viewModel.setMode(FocusTimerViewModel.TimerMode.FOCUS)
-        }
-
-        binding.btnBreakMode.setOnClickListener {
-            viewModel.setMode(FocusTimerViewModel.TimerMode.BREAK)
-        }
 
         // Timer controls
         binding.btnPlayPause.setOnClickListener {
@@ -122,22 +166,12 @@ class FocusTimerFragment : Fragment() {
     }
 
     /**
-     * Handle task selector click
-     */
-    private fun onTaskSelectorClicked() {
-        // Navigate to task picker or show task selection dialog
-        // TODO: Implement task selection functionality
-    }
-
-    /**
      * Observe ViewModel state and update UI
      */
     private fun observeViewModel() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect { state ->
-                    updateUI(state)
-                }
+        lifecycleScope.launch {
+            viewModel.uiState.collect { state ->
+                updateUI(state)
             }
         }
     }
@@ -159,6 +193,7 @@ class FocusTimerFragment : Fragment() {
         binding.tvTimerTypeLabel.text = when (state.mode) {
             FocusTimerViewModel.TimerMode.FOCUS -> getString(R.string.focus_time)
             FocusTimerViewModel.TimerMode.BREAK -> getString(R.string.break_time)
+            FocusTimerViewModel.TimerMode.LONG_BREAK -> "Long Break"
         }
 
         // Update mode selector appearance
@@ -169,6 +204,23 @@ class FocusTimerFragment : Fragment() {
 
         // Update session progress dots
         updateSessionDots(state.completedSessions, state.totalSessions)
+
+        // Check if all sessions completed
+        if (state.completedSessions >= state.totalSessions && state.mode == FocusTimerViewModel.TimerMode.FOCUS) {
+            onAllSessionsCompleted()
+        }
+    }
+
+    /**
+     * Handle completion of all pomodoro sessions
+     */
+    private fun onAllSessionsCompleted() {
+        // Complete the habit by returning result to ViewHabitDetailActivity
+        val resultIntent = Intent().apply {
+            putExtra("habit_completed", true)
+        }
+        setResult(RESULT_OK, resultIntent)
+        finish()
     }
 
     /**
@@ -178,15 +230,15 @@ class FocusTimerFragment : Fragment() {
         when (mode) {
             FocusTimerViewModel.TimerMode.FOCUS -> {
                 binding.btnFocusMode.setBackgroundResource(R.drawable.bg_mode_selected)
-                binding.btnFocusMode.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                binding.btnFocusMode.setTextColor(ContextCompat.getColor(this, android.R.color.white))
                 binding.btnBreakMode.setBackgroundResource(R.drawable.bg_mode_unselected)
-                binding.btnBreakMode.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_blue))
+                binding.btnBreakMode.setTextColor(ContextCompat.getColor(this, R.color.primary_blue))
             }
-            FocusTimerViewModel.TimerMode.BREAK -> {
+            FocusTimerViewModel.TimerMode.BREAK, FocusTimerViewModel.TimerMode.LONG_BREAK -> {
                 binding.btnBreakMode.setBackgroundResource(R.drawable.bg_mode_selected)
-                binding.btnBreakMode.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.white))
+                binding.btnBreakMode.setTextColor(ContextCompat.getColor(this, android.R.color.white))
                 binding.btnFocusMode.setBackgroundResource(R.drawable.bg_mode_unselected)
-                binding.btnFocusMode.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary_blue))
+                binding.btnFocusMode.setTextColor(ContextCompat.getColor(this, R.color.primary_blue))
             }
         }
     }
@@ -226,7 +278,6 @@ class FocusTimerFragment : Fragment() {
 
         // If more than 4 sessions, dynamically add dots
         if (totalSessions > 4) {
-            // Add additional dots programmatically if needed
             addExtraSessionDots(totalSessions)
         }
     }
@@ -239,7 +290,7 @@ class FocusTimerFragment : Fragment() {
         val currentDotCount = sessionDots.size
 
         for (i in currentDotCount until totalSessions) {
-            val dot = View(requireContext()).apply {
+            val dot = View(this).apply {
                 layoutParams = ViewGroup.MarginLayoutParams(
                     resources.getDimensionPixelSize(R.dimen.session_dot_size),
                     resources.getDimensionPixelSize(R.dimen.session_dot_size)
@@ -251,11 +302,5 @@ class FocusTimerFragment : Fragment() {
             container.addView(dot)
             sessionDots.add(dot)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        sessionDots.clear()
-        _binding = null
     }
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Locale
 
 /**
  * FocusTimerViewModel - Manages Focus Timer state and logic
@@ -26,7 +27,8 @@ class FocusTimerViewModel : ViewModel() {
     // Timer Mode enum
     enum class TimerMode {
         FOCUS,
-        BREAK
+        BREAK,
+        LONG_BREAK
     }
 
     // UI State data class
@@ -41,7 +43,8 @@ class FocusTimerViewModel : ViewModel() {
         val currentSession: Int = 1,
         val completedSessions: Int = 0,
         val focusDurationMinutes: Int = 25,
-        val breakDurationMinutes: Int = 5
+        val breakDurationMinutes: Int = 5,
+        val longBreakDurationMinutes: Int = 15
     )
 
     private val _uiState = MutableStateFlow(FocusTimerUiState())
@@ -52,6 +55,7 @@ class FocusTimerViewModel : ViewModel() {
     // Configuration
     private var focusDurationMinutes = 25
     private var breakDurationMinutes = 5
+    private var longBreakDurationMinutes = 15
     private var totalSessions = 4
 
     /**
@@ -66,12 +70,13 @@ class FocusTimerViewModel : ViewModel() {
      */
     fun setMode(mode: TimerMode) {
         if (_uiState.value.status == TimerStatus.RUNNING) {
-            return // Don't allow mode change while timer is running
+            pauseTimer()
         }
 
         val newTotalTime = when (mode) {
             TimerMode.FOCUS -> focusDurationMinutes * 60 * 1000L
             TimerMode.BREAK -> breakDurationMinutes * 60 * 1000L
+            TimerMode.LONG_BREAK -> longBreakDurationMinutes * 60 * 1000L
         }
 
         _uiState.value = _uiState.value.copy(
@@ -167,6 +172,22 @@ class FocusTimerViewModel : ViewModel() {
     }
 
     /**
+     * Set long break duration in minutes
+     */
+    fun setLongBreakDuration(minutes: Int) {
+        longBreakDurationMinutes = minutes
+        _uiState.value = _uiState.value.copy(longBreakDurationMinutes = minutes)
+
+        if (_uiState.value.mode == TimerMode.LONG_BREAK && _uiState.value.status == TimerStatus.IDLE) {
+            val newTotalTime = minutes * 60 * 1000L
+            _uiState.value = _uiState.value.copy(
+                totalTimeMillis = newTotalTime,
+                remainingTimeMillis = newTotalTime
+            )
+        }
+    }
+
+    /**
      * Set total number of sessions
      */
     fun setTotalSessions(sessions: Int) {
@@ -205,33 +226,37 @@ class FocusTimerViewModel : ViewModel() {
             TimerMode.FOCUS -> {
                 // Completed a focus session
                 val newCompletedSessions = currentState.completedSessions + 1
-                val newCurrentSession = if (newCompletedSessions < currentState.totalSessions) {
-                    currentState.currentSession + 1
+
+                if (newCompletedSessions >= currentState.totalSessions) {
+                    // Completed all sessions
+                    _uiState.value = currentState.copy(
+                        status = TimerStatus.IDLE,
+                        completedSessions = newCompletedSessions,
+                        remainingTimeMillis = 0,
+                        progress = 0f
+                    )
                 } else {
-                    currentState.currentSession
-                }
+                    // Update state and determine next mode
+                    val newCurrentSession = currentState.currentSession + 1
 
-                _uiState.value = currentState.copy(
-                    status = TimerStatus.IDLE,
-                    completedSessions = newCompletedSessions,
-                    currentSession = newCurrentSession,
-                    remainingTimeMillis = currentState.totalTimeMillis,
-                    progress = 100f
-                )
+                    // Logic: Completed odd sessions -> Short Break, Completed even sessions -> Long Break
+                    val nextMode = if (newCompletedSessions % 2 != 0) TimerMode.BREAK else TimerMode.LONG_BREAK
 
-                // Auto-switch to break mode
-                if (newCompletedSessions < currentState.totalSessions) {
-                    setMode(TimerMode.BREAK)
+                    _uiState.value = currentState.copy(
+                        status = TimerStatus.IDLE,
+                        completedSessions = newCompletedSessions,
+                        currentSession = newCurrentSession
+                    )
+
+                    // Switch mode and automatically start next phase
+                    setMode(nextMode)
+                    startTimer()
                 }
             }
-            TimerMode.BREAK -> {
-                // Completed a break session, switch back to focus
-                _uiState.value = currentState.copy(
-                    status = TimerStatus.IDLE,
-                    remainingTimeMillis = currentState.totalTimeMillis,
-                    progress = 100f
-                )
+            TimerMode.BREAK, TimerMode.LONG_BREAK -> {
+                // Completed a break session, switch back to focus and automatically start
                 setMode(TimerMode.FOCUS)
+                startTimer()
             }
         }
     }
@@ -254,9 +279,8 @@ class FocusTimerViewModel : ViewModel() {
         val totalSeconds = millis / 1000
         val minutes = totalSeconds / 60
         val seconds = totalSeconds % 60
-        return String.format("%02d:%02d", minutes, seconds)
+        return String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
     }
-
     override fun onCleared() {
         super.onCleared()
         countDownTimer?.cancel()

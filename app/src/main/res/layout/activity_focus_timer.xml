@@ -7,57 +7,45 @@
     android:layout_height="match_parent"
     android:background="@drawable/background_gradient"
     android:clipToPadding="false"
-    tools:context=".ui.pomodoro.FocusTimerFragment">
+    tools:context=".ui.pomodoro.FocusTimerActivity">
 
     <!-- Header Container -->
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
         android:background="@color/header_background"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingVertical="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Back Button -->
-        <FrameLayout
+        <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_action_button">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_back"
-                app:tint="@color/primary_blue" />
-        </FrameLayout>
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:src="@mipmap/ic_back"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="@string/back" />
 
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
-            style="@style/HeaderTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
-            android:text="Focus Timer"
-            android:textAllCaps="true"
+            android:layout_centerInParent="true"
             android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg" />
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Focus Timer" />
 
-        <!-- Spacer for symmetry -->
-        <View
-            android:layout_width="40dp"
-            android:layout_height="40dp" />
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Focus Task Selector - Top Pill -->
     <LinearLayout
@@ -136,6 +124,8 @@
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="10dp"
                 android:text="Focus"
+                android:clickable="false"
+                android:focusable="false"
                 android:textColor="@android:color/white"
                 android:textSize="14sp" />
 
@@ -148,6 +138,8 @@
                 android:paddingHorizontal="24dp"
                 android:paddingVertical="10dp"
                 android:text="Break"
+                android:clickable="false"
+                android:focusable="false"
                 android:textColor="#364153"
                 android:textSize="14sp" />
 
@@ -165,7 +157,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/modeSelectorContainer"
-            app:layout_constraintWidth_max="280dp">
+            app:layout_constraintWidth_max="240dp">
 
             <!-- Circular Progress Bar -->
             <com.google.android.material.progressindicator.CircularProgressIndicator
@@ -177,7 +169,7 @@
                 app:indicatorColor="#51A2FF"
                 app:indicatorDirectionCircular="clockwise"
                 app:indicatorInset="0dp"
-                app:indicatorSize="280dp"
+                app:indicatorSize="240dp"
                 app:trackColor="#E8F4FF"
                 app:trackCornerRadius="4dp"
                 app:trackThickness="8dp" />
@@ -247,7 +239,6 @@
 
             </FrameLayout>
 
-            <!-- Stop Button -->
             <!-- Stop Button -->
             <FrameLayout
                 android:id="@+id/btnStop"

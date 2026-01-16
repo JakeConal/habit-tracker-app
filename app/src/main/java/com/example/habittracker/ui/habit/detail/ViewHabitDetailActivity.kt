@@ -16,8 +16,9 @@ import com.example.habittracker.databinding.ActivityViewHabitDetailBinding
 import com.example.habittracker.ui.category.CategoryActivity
 import com.example.habittracker.ui.habit.add.CreateHabitActivity
 import com.example.habittracker.ui.main.MainActivity
-import com.example.habittracker.util.formatFrequency
+import com.example.habittracker.ui.pomodoro.FocusTimerActivity
 import com.example.habittracker.util.DateUtils
+import com.example.habittracker.util.formatFrequency
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -44,7 +45,8 @@ class ViewHabitDetailActivity : AppCompatActivity() {
     companion object {
         const val EXTRA_HABIT_ID = "extra_habit_id"
         private const val REQUEST_CODE_CATEGORY = 1001
-        
+        private const val REQUEST_CODE_FOCUS_TIMER = 1002
+
         fun newIntent(context: Context, habitId: String): Intent {
             return Intent(context, ViewHabitDetailActivity::class.java).apply {
                 putExtra(EXTRA_HABIT_ID, habitId)
@@ -324,6 +326,11 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                 viewModel.updateCategoryId(it)
                 viewModel.loadCategory(it)
             }
+        } else if (requestCode == REQUEST_CODE_FOCUS_TIMER && resultCode == RESULT_OK) {
+            val habitCompleted = data?.getBooleanExtra("habit_completed", false) ?: false
+            if (habitCompleted) {
+                viewModel.completeHabit()
+            }
         }
     }
 
@@ -377,8 +384,21 @@ class ViewHabitDetailActivity : AppCompatActivity() {
         val habitName = binding.etHabitTitle.text.toString().ifEmpty { 
             viewModel.title.value 
         }
-        // TODO: Navigate to FocusTimerActivity with habitName
-        showError("Focus Timer not implemented yet for: $habitName")
+        val focusDuration = viewModel.focusDuration.value
+        val shortBreak = viewModel.shortBreak.value
+        val longBreak = viewModel.longBreak.value
+        val totalSessions = viewModel.totalSessions.value
+
+        val intent = FocusTimerActivity.newIntent(
+            this,
+            habitId,
+            habitName,
+            focusDuration,
+            shortBreak,
+            longBreak,
+            totalSessions
+        )
+        startActivityForResult(intent, REQUEST_CODE_FOCUS_TIMER)
     }
 
     private fun showDeleteConfirmationDialog() {
