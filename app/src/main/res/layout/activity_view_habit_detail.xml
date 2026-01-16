@@ -311,49 +311,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Time Selector -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:fontFamily="sans-serif"
-                    android:text="@string/time_label"
-                    android:textColor="#364153"
-                    android:textSize="@dimen/text_lg" />
-
-                <LinearLayout
-                    android:id="@+id/btnTimeSelector"
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:background="@drawable/bg_input_field"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="17dp">
-
-                    <TextView
-                        android:id="@+id/tvTime"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="sans-serif"
-                        android:text="@string/default_time"
-                        android:textColor="#364153"
-                        android:textSize="@dimen/text_lg" />
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:contentDescription="@string/app_name"
-                        android:src="@drawable/ic_chevron_down" />
-                </LinearLayout>
-            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

@@ -53,7 +53,7 @@ class HabitListViewModel(
     /**
      * Add a new habit for current user
      */
-    fun addHabit(name: String, quantity: Int, unit: String, frequency: List<String>, categoryId: String = "", time: String = "") {
+    fun addHabit(name: String, quantity: Int, unit: String, frequency: List<String>, categoryId: String = "") {
         viewModelScope.launch {
             try {
                 val userId = authRepository.getCurrentUser()?.uid
@@ -65,8 +65,7 @@ class HabitListViewModel(
                         unit = unit,
                         frequency = frequency,
                         createdAt = System.currentTimeMillis(),
-                        categoryId = categoryId,
-                        time = time
+                        categoryId = categoryId
                     )
                     repository.addHabit(habit)
                     loadHabits()

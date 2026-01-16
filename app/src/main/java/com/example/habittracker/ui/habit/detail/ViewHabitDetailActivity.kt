@@ -1,7 +1,6 @@
 package com.example.habittracker.ui.habit.detail
 
 import android.app.AlertDialog
-import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -20,7 +19,6 @@ import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.util.formatFrequency
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 /**
  * ViewHabitDetailActivity - Activity for viewing and editing an existing habit
@@ -147,12 +145,6 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             }
         }
 
-        // Observe time
-        lifecycleScope.launch {
-            viewModel.time.collect { time ->
-                binding.tvTime.text = time
-            }
-        }
 
         // Observe habit update success
         lifecycleScope.launch {
@@ -224,10 +216,6 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             showFrequencySelector()
         }
 
-        // Time selector
-        binding.btnTimeSelector.setOnClickListener {
-            showTimeSelector()
-        }
 
         // Start Pomodoro button
         binding.btnStartPomodoro.setOnClickListener {
@@ -289,37 +277,6 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showTimeSelector() {
-        val calendar = Calendar.getInstance()
-
-        // Show start time picker
-        TimePickerDialog(
-            this,
-            { _, startHour, startMinute ->
-                // Show end time picker after start time is selected
-                TimePickerDialog(
-                    this,
-                    { _, endHour, endMinute ->
-                        val timeRange = java.util.Locale.getDefault().let { locale ->
-                            String.format(
-                                locale,
-                                "%02d:%02d - %02d:%02d",
-                                startHour, startMinute, endHour, endMinute
-                            )
-                        }
-                        binding.tvTime.text = timeRange
-                        viewModel.updateTime(timeRange)
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    true
-                ).show()
-            },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            true
-        ).show()
-    }
 
     private fun navigateToFocusTimer() {
         val habitName = binding.etHabitTitle.text.toString().ifEmpty { 

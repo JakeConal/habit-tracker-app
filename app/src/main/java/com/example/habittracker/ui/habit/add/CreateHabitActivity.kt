@@ -1,7 +1,6 @@
 package com.example.habittracker.ui.habit.add
 
 import android.app.AlertDialog
-import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
@@ -21,7 +20,6 @@ import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.util.formatFrequency
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
-import java.util.Calendar
 
 /**
  * CreateHabitActivity - Activity for creating a new habit
@@ -128,12 +126,6 @@ class CreateHabitActivity : AppCompatActivity() {
             }
         }
 
-        // Observe time changes
-        lifecycleScope.launch {
-            viewModel.time.collect { time ->
-                binding.tvTime.text = time
-            }
-        }
 
         // Observe quantity changes
         lifecycleScope.launch {
@@ -185,7 +177,6 @@ class CreateHabitActivity : AppCompatActivity() {
         // Set default values
         viewModel.updateMeasurement("Mins")
         viewModel.updateFrequency(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
-        viewModel.updateTime("5:00 - 12:00")
     }
 
     private fun setupClickListeners() {
@@ -218,11 +209,6 @@ class CreateHabitActivity : AppCompatActivity() {
         // Frequency selector
         binding.btnFrequencySelector.setOnClickListener {
             showFrequencySelector()
-        }
-        
-        // Time selector
-        binding.btnTimeSelector.setOnClickListener {
-            showTimeSelector()
         }
         
         // Create button
@@ -277,37 +263,6 @@ class CreateHabitActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun showTimeSelector() {
-        val calendar = Calendar.getInstance()
-        
-        // Show start time picker
-        TimePickerDialog(
-            this,
-            { _, startHour, startMinute ->
-                // Show end time picker after start time is selected
-                TimePickerDialog(
-                    this,
-                    { _, endHour, endMinute ->
-                        val timeRange = java.util.Locale.getDefault().let { locale ->
-                            String.format(
-                                locale,
-                                "%02d:%02d - %02d:%02d",
-                                startHour, startMinute, endHour, endMinute
-                            )
-                        }
-                        binding.tvTime.text = timeRange
-                        viewModel.updateTime(timeRange)
-                    },
-                    calendar.get(Calendar.HOUR_OF_DAY),
-                    calendar.get(Calendar.MINUTE),
-                    true
-                ).show()
-            },
-            calendar.get(Calendar.HOUR_OF_DAY),
-            calendar.get(Calendar.MINUTE),
-            true
-        ).show()
-    }
 
     private fun validateAndCreateHabit() {
         val habitTitle = binding.etHabitTitle.text.toString().trim()

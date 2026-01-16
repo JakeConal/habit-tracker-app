@@ -45,8 +45,6 @@ class CreateHabitViewModel : ViewModel() {
     private val _frequency = MutableStateFlow<List<String>>(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
     val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
-    private val _time = MutableStateFlow("5:00 - 12:00")
-    val time: StateFlow<String> = _time.asStateFlow()
 
     // Events
     private val _habitCreated = MutableSharedFlow<Boolean>()
@@ -110,12 +108,6 @@ class CreateHabitViewModel : ViewModel() {
         _frequency.value = frequency
     }
 
-    /**
-     * Update time range
-     */
-    fun updateTime(time: String) {
-        _time.value = time
-    }
 
     /**
      * Create a new habit with the current state
@@ -149,8 +141,7 @@ class CreateHabitViewModel : ViewModel() {
                     createdAt = System.currentTimeMillis(),
                     categoryId = _categoryId.value,
                     completedDates = emptyList(),
-                    streak = 0,
-                    time = _time.value
+                    streak = 0
                 )
 
                 // Save to repository
@@ -187,6 +178,5 @@ class CreateHabitViewModel : ViewModel() {
         _quantity.value = 30
         _measurement.value = "Mins"
         _frequency.value = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-        _time.value = "5:00 - 12:00"
     }
 }

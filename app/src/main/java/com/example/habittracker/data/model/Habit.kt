@@ -17,8 +17,7 @@ data class Habit(
     val createdAt: Long = System.currentTimeMillis(),
     val categoryId: String = "", // ID of the category this habit belongs to
     val completedDates: List<String> = emptyList(), // Track completed dates
-    val streak: Int = 0, // Current streak count
-    val time: String = "" // Time period for the habit, e.g., "9:00 - 10:00"
+    val streak: Int = 0 // Current streak count
 ) {
     companion object {
         const val COLLECTION_NAME = "habits"
@@ -37,8 +36,7 @@ data class Habit(
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
                     categoryId = document.getString("categoryId") ?: "",
                     completedDates = document.get("completedDates") as? List<String> ?: emptyList(),
-                    streak = document.getLong("streak")?.toInt() ?: 0,
-                    time = document.getString("time") ?: ""
+                    streak = document.getLong("streak")?.toInt() ?: 0
                 )
             } catch (e: Exception) {
                 null
@@ -58,8 +56,7 @@ data class Habit(
             "createdAt" to createdAt,
             "categoryId" to categoryId,
             "completedDates" to completedDates,
-            "streak" to streak,
-            "time" to time
+            "streak" to streak
         )
     }
 }

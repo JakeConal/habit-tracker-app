@@ -48,8 +48,6 @@ class ViewHabitViewModel : ViewModel() {
     private val _frequency = MutableStateFlow<List<String>>(emptyList())
     val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
-    private val _time = MutableStateFlow("Every Time")
-    val time: StateFlow<String> = _time.asStateFlow()
 
     // Events
     private val _habitUpdated = MutableSharedFlow<Boolean>()
@@ -81,13 +79,6 @@ class ViewHabitViewModel : ViewModel() {
                     
                     // Load frequency directly from habit.frequency field
                     _frequency.value = habit.frequency
-                    
-                    // Load time directly from habit.time field with validation
-                    _time.value = if (isValidTimeFormat(habit.time)) {
-                        habit.time
-                    } else {
-                        "5:00 - 12:00"
-                    }
                     
                     // Load quantity and unit directly from habit fields
                     _quantity.value = habit.quantity
@@ -155,12 +146,6 @@ class ViewHabitViewModel : ViewModel() {
         _frequency.value = frequency
     }
 
-    /**
-     * Update time range
-     */
-    fun updateTime(time: String) {
-        _time.value = time
-    }
 
     /**
      * Save/Update the habit with current state
@@ -188,8 +173,7 @@ class ViewHabitViewModel : ViewModel() {
                     quantity = _quantity.value,
                     unit = _measurement.value,
                     frequency = _frequency.value,
-                    categoryId = _categoryId.value,
-                    time = _time.value
+                    categoryId = _categoryId.value
                 )
 
                 // Update in repository
@@ -230,20 +214,5 @@ class ViewHabitViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
-    }
-
-    /**
-     * Validate if time string is in valid format (HH:MM - HH:MM)
-     * Returns true if valid, false otherwise
-     */
-    private fun isValidTimeFormat(time: String): Boolean {
-        // Check for empty or common invalid values
-        if (time.isBlank() || time == "Every Time") {
-            return false
-        }
-        
-        // Regex pattern for time range format: HH:MM - HH:MM
-        val timeRangePattern = """^\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}$""".toRegex()
-        return timeRangePattern.matches(time)
     }
 }
