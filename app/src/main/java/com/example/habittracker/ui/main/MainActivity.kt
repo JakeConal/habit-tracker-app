@@ -1,20 +1,38 @@
 package com.example.habittracker.ui.main
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.habittracker.R
+import com.example.habittracker.data.model.Notification
+import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.NotificationRepository
+import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.databinding.ActivityMainBinding
+import com.example.habittracker.utils.UserPreferences
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.launch
 
 /**
  * MainActivity - Container chính của ứng dụng
@@ -26,16 +44,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var navController: NavController
 
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission is granted.
+        } else {
+            // Permission is denied.
+            Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         
-        // Hide system navigation bar
-        hideSystemUI(this)
-
-        // Cho phép content vẽ phía sau system bars (không chiếm diện tích)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             window.isNavigationBarContrastEnforced = false
         }
@@ -47,26 +70,121 @@ class MainActivity : AppCompatActivity() {
         setupNavigation()
         setupBottomNavigation()
         setupFab()
-        setupImmersiveMode()
+        hideSystemUI(this)
+
+        // Ask for permission after UI is ready
+        binding.root.post {
+            askNotificationPermission()
+            updateFcmToken()
+        }
+
+        setupNotificationListener()
+    }
+
+    private fun updateFcmToken() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                return@addOnCompleteListener
+            }
+            val token = task.result
+            val user = AuthRepository.getInstance().getCurrentUser()
+            if (user != null) {
+                lifecycleScope.launch {
+                    FirestoreUserRepository.getInstance().updateFcmToken(user.uid, token)
+                }
+            }
+        }
+    }
+
+    private fun setupNotificationListener() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                try {
+                    val user = AuthRepository.getInstance().getCurrentUser()
+                    if (user != null) {
+                        android.util.Log.d("NotificationListener", "Starting listener for user: ${user.uid}")
+                        NotificationRepository.getInstance()
+                            .getNewNotifications(user.uid)
+                            .collect { notification ->
+                                android.util.Log.d("NotificationListener", "Received notification: ${notification.id}")
+                                if (UserPreferences.areNotificationsEnabled(this@MainActivity)) {
+                                    showInAppNotification(notification)
+                                }
+                            }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("NotificationListener", "Error: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+
+    private fun showInAppNotification(notification: Notification) {
+        // Show Snackbar for immediate In-App feedback
+        val text = when(notification.type) {
+            Notification.NotificationType.LIKE_POST -> "${notification.senderName} liked your post"
+            Notification.NotificationType.COMMENT_POST -> "${notification.senderName} commented on your post"
+            Notification.NotificationType.SHARE_POST -> "${notification.senderName} shared your post"
+            Notification.NotificationType.REPLY_COMMENT -> "${notification.senderName} replied to your comment"
+            Notification.NotificationType.LIKE_COMMENT -> "${notification.senderName} liked your comment"
+            Notification.NotificationType.DISLIKE_COMMENT -> "${notification.senderName} disliked your comment"
+        }
+
+        try {
+
+            com.google.android.material.snackbar.Snackbar.make(binding.root, text, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
+                .setAnchorView(binding.fabAdd) // Avoid covering FAB
+                .show()
+
+            // Trigger system notification
+            triggerSystemNotification(text, text)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun triggerSystemNotification(title: String, messageBody: String) {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+        )
+
+        val channelId = "habit_tracker_default_channel"
+        val channelName = "Habit Tracker Notifications"
+        val defaultSoundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
+
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(messageBody)
+            .setAutoCancel(true)
+            .setSound(defaultSoundUri)
+            .setContentIntent(pendingIntent)
+
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 
     private fun setupWindowInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { _, insets ->
             insets
         }
     }
 
-    /**
-     * Setup immersive mode to keep navigation bar hidden even when user interacts
-     */
-    private fun setupImmersiveMode() {
-        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
-            if (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION == 0) {
-                // Navigation bar appeared, hide it again
-                MainActivity.hideSystemUI(this)
-            }
-        }
-    }
+
 
     /**
      * Setup Navigation Component với NavHostFragment
@@ -85,12 +203,12 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_create_category,
                 R.id.nav_view_habit,
                 R.id.nav_focus_timer -> {
-                    binding.bottomNavigation.visibility = android.view.View.GONE
-                    binding.fabAdd.visibility = android.view.View.GONE
+                    binding.bottomNavigation.visibility = View.GONE
+                    binding.fabAdd.visibility = View.GONE
                 }
                 else -> {
-                    binding.bottomNavigation.visibility = android.view.View.VISIBLE
-                    binding.fabAdd.visibility = android.view.View.VISIBLE
+                    binding.bottomNavigation.visibility = View.VISIBLE
+                    binding.fabAdd.visibility = View.VISIBLE
                 }
             }
         }
@@ -137,11 +255,26 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemUI(this)
+        }
+    }
+
     /**
-     * Xử lý back navigation
+     * Yêu cầu quyền thông báo trên Android 13+ (Tiramisu)
      */
-    override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
+    private fun askNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
     }
 
     companion object {

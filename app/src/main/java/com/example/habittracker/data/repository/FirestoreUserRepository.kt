@@ -52,8 +52,17 @@ class FirestoreUserRepository private constructor() {
             }
             success
         } catch (e: Exception) {
-            println("Error creating/updating user: ${e.message}")
+            e.printStackTrace()
             false
+        }
+    }
+
+    suspend fun updateFcmToken(userId: String, token: String) {
+        try {
+            val updates = mapOf("fcmToken" to token)
+            FirestoreManager.updateDocument(User.COLLECTION_NAME, userId, updates)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
@@ -254,6 +263,19 @@ class FirestoreUserRepository private constructor() {
             } else {
                 false
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * Update user notification settings
+     */
+    suspend fun updateNotificationsEnabled(userId: String, enabled: Boolean): Boolean {
+        return try {
+            val updates = mapOf("notificationsEnabled" to enabled)
+            FirestoreManager.updateDocument(User.COLLECTION_NAME, userId, updates)
         } catch (e: Exception) {
             e.printStackTrace()
             false

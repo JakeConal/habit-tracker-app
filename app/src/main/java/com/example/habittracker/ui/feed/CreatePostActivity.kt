@@ -19,6 +19,7 @@ import com.example.habittracker.databinding.ActivityCreatePostBinding
 import com.example.habittracker.utils.UserPreferences
 import com.example.habittracker.R
 import com.example.habittracker.ui.main.MainActivity
+import com.example.habittracker.ui.common.ImagePreviewActivity
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -92,15 +93,10 @@ class CreatePostActivity : AppCompatActivity() {
             sharedPost = intent.getParcelableExtra("EXTRA_SHARED_POST")
         }
 
-        if (sharedPost != null) {
-            binding.tvHeaderTitle.text = getString(R.string.title_share_post)
-            binding.etPostContent.hint = getString(R.string.hint_share_post)
-            // Disable image adding when sharing a post if not supported
-            binding.btnAddPhoto.isEnabled = false
-            binding.btnAddCamera.isEnabled = false
-            binding.btnAddPhoto.alpha = 0.5f
-            binding.btnAddCamera.alpha = 0.5f
+        binding.tvHeaderTitle.text = if (sharedPost != null) getString(R.string.title_share_post) else getString(R.string.create_post)
+        binding.etPostContent.hint = if (sharedPost != null) getString(R.string.hint_share_post) else getString(R.string.whats_on_your_mind)
 
+        if (sharedPost != null) {
             // Show shared post preview
             binding.cardSharedPostPreview.visibility = android.view.View.VISIBLE
 
@@ -108,8 +104,24 @@ class CreatePostActivity : AppCompatActivity() {
             val targetAuthor = sharedPost?.originalAuthorName ?: sharedPost?.authorName
             val targetContent = if (sharedPost?.originalPostId != null) sharedPost?.originalContent else sharedPost?.content
             val targetImage = if (sharedPost?.originalPostId != null) sharedPost?.originalImageUrl else sharedPost?.imageUrl
+            val targetAvatar = sharedPost?.originalAuthorAvatarUrl ?: sharedPost?.authorAvatarUrl
 
             binding.tvSharedPreviewAuthor.text = targetAuthor
+
+            // Set timestamp
+            val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())
+            binding.tvSharedPreviewTimestamp.text = sdf.format(Date(sharedPost?.timestamp ?: System.currentTimeMillis()))
+
+            // Set Avatar
+            if (!targetAvatar.isNullOrEmpty()) {
+                Glide.with(this)
+                    .load(targetAvatar)
+                    .placeholder(R.drawable.ic_person)
+                    .error(R.drawable.ic_person)
+                    .into(binding.ivSharedPreviewAvatar)
+            } else {
+                binding.ivSharedPreviewAvatar.setImageResource(R.drawable.ic_person)
+            }
 
             if (targetContent.isNullOrEmpty()) {
                 binding.tvSharedPreviewContent.visibility = android.view.View.GONE
@@ -120,7 +132,17 @@ class CreatePostActivity : AppCompatActivity() {
 
             if (!targetImage.isNullOrEmpty()) {
                 binding.ivSharedPreviewImage.visibility = android.view.View.VISIBLE
-                Glide.with(this).load(targetImage).into(binding.ivSharedPreviewImage)
+                Glide.with(this)
+                    .load(targetImage)
+                    .centerCrop()
+                    .into(binding.ivSharedPreviewImage)
+
+                binding.ivSharedPreviewImage.setOnClickListener {
+                     val intent = Intent(this, ImagePreviewActivity::class.java).apply {
+                         putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, targetImage)
+                     }
+                     startActivity(intent)
+                }
             } else {
                 binding.ivSharedPreviewImage.visibility = android.view.View.GONE
             }
@@ -168,6 +190,10 @@ class CreatePostActivity : AppCompatActivity() {
                 .into(binding.ivUserAvatar)
         } else {
             binding.ivUserAvatar.setImageResource(R.drawable.ic_person)
+        }
+
+        if (sharedPost != null) {
+            binding.cardActions.visibility = android.view.View.GONE
         }
     }
 
@@ -255,9 +281,27 @@ class CreatePostActivity : AppCompatActivity() {
 
     private fun showImagePreview(uri: Uri) {
         binding.cardImagePreview.visibility = android.view.View.VISIBLE
+        // Keep shared preview visible if it exists
+        if (sharedPost != null) {
+            binding.cardSharedPostPreview.visibility = android.view.View.VISIBLE
+        }
+
         Glide.with(this)
             .load(uri)
+            .fitCenter()
             .into(binding.ivImagePreview)
+
+        binding.btnRemoveImage.setOnClickListener {
+            selectedImageUri = null
+            binding.cardImagePreview.visibility = android.view.View.GONE
+        }
+
+        binding.ivImagePreview.setOnClickListener {
+             val intent = Intent(this, ImagePreviewActivity::class.java).apply {
+                 putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, uri.toString())
+             }
+             startActivity(intent)
+        }
     }
 
     private fun removeImage() {

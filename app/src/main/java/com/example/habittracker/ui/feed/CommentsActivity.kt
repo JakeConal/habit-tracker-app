@@ -23,8 +23,15 @@ import com.example.habittracker.data.model.Comment
 import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.ui.main.MainActivity
+import com.example.habittracker.ui.common.ImagePreviewActivity
 import com.example.habittracker.utils.UserPreferences
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import androidx.core.app.NotificationCompat
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.app.PendingIntent
 
 class CommentsActivity : AppCompatActivity() {
 
@@ -84,6 +91,13 @@ class CommentsActivity : AppCompatActivity() {
         val commentsCount = intent.getIntExtra(EXTRA_COMMENTS_COUNT, 0)
         val isLikedExtra = intent.getBooleanExtra(EXTRA_IS_LIKED, false)
 
+        val originalPostId = intent.getStringExtra(EXTRA_ORIGINAL_POST_ID)
+        val originalUserId = intent.getStringExtra(EXTRA_ORIGINAL_USER_ID)
+        val originalAuthorName = intent.getStringExtra(EXTRA_ORIGINAL_AUTHOR_NAME)
+        val originalAuthorAvatar = intent.getStringExtra(EXTRA_ORIGINAL_AUTHOR_AVATAR)
+        val originalContent = intent.getStringExtra(EXTRA_ORIGINAL_CONTENT)
+        val originalImageUrl = intent.getStringExtra(EXTRA_ORIGINAL_IMAGE_URL)
+
         val existingComments = try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableArrayListExtra(EXTRA_COMMENTS, Comment::class.java) ?: arrayListOf()
@@ -111,7 +125,13 @@ class CommentsActivity : AppCompatActivity() {
             // isLiked logic needs to be consistent. Constructing Post here is mainly for reference.
             // data.model.Post doesn't have isLiked, it has likedBy.
             // We can fake it or just use local isLiked variable.
-            likedBy = if(isLikedExtra) listOf(currentUserId) else emptyList()
+            likedBy = if(isLikedExtra) listOf(currentUserId) else emptyList(),
+            originalPostId = originalPostId,
+            originalUserId = originalUserId,
+            originalAuthorName = originalAuthorName,
+            originalAuthorAvatarUrl = originalAuthorAvatar,
+            originalContent = originalContent,
+            originalImageUrl = originalImageUrl
         )
 
         isLiked = isLikedExtra
@@ -168,8 +188,49 @@ class CommentsActivity : AppCompatActivity() {
                 Glide.with(this)
                     .load(post.imageUrl)
                     .into(binding.ivPostImage)
+
+                binding.ivPostImage.setOnClickListener {
+                    val intent = android.content.Intent(this, ImagePreviewActivity::class.java).apply {
+                        putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, post.imageUrl)
+                    }
+                    startActivity(intent)
+                }
             } else {
                 binding.ivPostImage.visibility = View.GONE
+            }
+
+            // Shared post
+            if (!post.originalPostId.isNullOrEmpty()) {
+                binding.cardSharedPost.visibility = View.VISIBLE
+                binding.tvSharedAuthorName.text = post.originalAuthorName ?: "Unknown"
+                binding.tvSharedContent.text = post.originalContent ?: ""
+
+                if (!post.originalAuthorAvatarUrl.isNullOrEmpty()) {
+                    Glide.with(this)
+                        .load(post.originalAuthorAvatarUrl)
+                        .placeholder(R.drawable.ic_person)
+                        .into(binding.ivSharedAuthorAvatar)
+                } else {
+                    binding.ivSharedAuthorAvatar.setImageResource(R.drawable.ic_person)
+                }
+
+                if (!post.originalImageUrl.isNullOrEmpty()) {
+                    binding.ivSharedImage.visibility = View.VISIBLE
+                    Glide.with(this)
+                        .load(post.originalImageUrl)
+                        .into(binding.ivSharedImage)
+
+                    binding.ivSharedImage.setOnClickListener {
+                         val intent = android.content.Intent(this, ImagePreviewActivity::class.java).apply {
+                            putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, post.originalImageUrl)
+                        }
+                        startActivity(intent)
+                    }
+                } else {
+                    binding.ivSharedImage.visibility = View.GONE
+                }
+            } else {
+                binding.cardSharedPost.visibility = View.GONE
             }
 
             // Update like UI
@@ -218,20 +279,38 @@ class CommentsActivity : AppCompatActivity() {
 
     private fun toggleLike() {
         val currentPost = post ?: return
+        val currentUserId = UserPreferences.getUserId(this)
+
+        // Toggle locally
+        val newLikedBy = if (isLiked) {
+             if (currentPost.likedBy.contains(currentUserId)) currentPost.likedBy - currentUserId else currentPost.likedBy
+        } else {
+             if (!currentPost.likedBy.contains(currentUserId)) currentPost.likedBy + currentUserId else currentPost.likedBy
+        }
 
         isLiked = !isLiked
         likeCount = if (isLiked) likeCount + 1 else if (likeCount > 0) likeCount - 1 else 0
         updateLikeUI()
 
-        // val userId = UserPreferences.getUserId(this) (Unused)
+        val updatedPost = currentPost.copy(
+            likedBy = newLikedBy,
+            likeCount = likeCount
+        )
+        post = updatedPost
+
+        // Send to server
+        val senderName = UserPreferences.getUserName(this)
+        val senderAvatar = UserPreferences.getUserAvatar(this)
+
         lifecycleScope.launch {
-            val result = PostRepository.getInstance().toggleLikePost(currentPost.id, isLiked)
+            val result = PostRepository.getInstance().toggleLikePost(currentPost.id, isLiked, senderName, senderAvatar)
             if (result.isFailure) {
-                // Revert
+                // Revert UI if needed, but for now just show error
+                Toast.makeText(this@CommentsActivity, "Failed to update like", Toast.LENGTH_SHORT).show()
+                // Revert local state
                 isLiked = !isLiked
                 likeCount = if (isLiked) likeCount + 1 else if (likeCount > 0) likeCount - 1 else 0
                 updateLikeUI()
-                Toast.makeText(this@CommentsActivity, "Failed to update like", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -351,9 +430,13 @@ class CommentsActivity : AppCompatActivity() {
             comments[index] = updatedComment
             commentAdapter.submitList(comments.toList())
 
+            // Get user info
+            val senderName = UserPreferences.getUserName(this@CommentsActivity)
+            val senderAvatar = UserPreferences.getUserAvatar(this@CommentsActivity)
+
             // Call Repo
             lifecycleScope.launch {
-                val result = PostRepository.getInstance().toggleLikeComment(postId, comment.id, currentUserId)
+                val result = PostRepository.getInstance().toggleLikeComment(postId, comment.id, currentUserId, senderName, senderAvatar)
                 if (result.isFailure) {
                     // Revert
                     if (index < comments.size) {
@@ -393,9 +476,13 @@ class CommentsActivity : AppCompatActivity() {
             comments[index] = updatedComment
             commentAdapter.submitList(comments.toList())
 
+            // Get user info
+            val senderName = UserPreferences.getUserName(this@CommentsActivity)
+            val senderAvatar = UserPreferences.getUserAvatar(this@CommentsActivity)
+
             // Call Repo
             lifecycleScope.launch {
-                val result = PostRepository.getInstance().toggleDislikeComment(postId, comment.id, currentUserId)
+                val result = PostRepository.getInstance().toggleDislikeComment(postId, comment.id, currentUserId, senderName, senderAvatar)
                 if (result.isFailure) {
                     // Revert
                     if (index < comments.size) {
@@ -540,24 +627,25 @@ class CommentsActivity : AppCompatActivity() {
         commentAdapter.submitList(comments.toList())
         updateCommentCountUI()
 
-        // Fetch fresh comments from backend
+        // Fetch fresh comments from backend (Real-time)
         lifecycleScope.launch {
-            val result = PostRepository.getInstance().getComments(currentPost.id)
-            result.onSuccess { fetchedComments ->
-                comments.clear()
-                comments.addAll(fetchedComments)
-                commentAdapter.submitList(comments.toList())
-                updateCommentCountUI()
-
-                // Scroll to top if just loaded and empty? content usually fills up.
-            }.onFailure { e ->
+            try {
+                PostRepository.getInstance().listenToComments(currentPost.id).collect { fetchedComments ->
+                    comments.clear()
+                    comments.addAll(fetchedComments)
+                    commentAdapter.submitList(comments.toList())
+                    updateCommentCountUI()
+                }
+            } catch (e: Exception) {
                 if (comments.isEmpty()) {
                     Toast.makeText(this@CommentsActivity, "Failed to load comments: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
                 e.printStackTrace()
             }
+        }
 
-            // Fetch fresh post data (likes, shares)
+        // Fetch fresh post data (likes, shares) separately
+        lifecycleScope.launch {
             val postResult = PostRepository.getInstance().getPost(currentPost.id)
             postResult.onSuccess { fetchedPost ->
                 post = fetchedPost
@@ -568,14 +656,7 @@ class CommentsActivity : AppCompatActivity() {
                 // Update UI
                 updateLikeUI()
                 binding.tvShareCount.text = fetchedPost.shareCount.toString()
-                binding.tvCommentCount.text = fetchedPost.commentCount.toString() // Use server count or local list size?
-                // Often list size is more accurate IF pagination is not used. If pagination is used, server count is better.
-                // Here we fetch all comments, so list size is good. But let's stick to what we have.
-
-                // If comments Fetch failed but Post fetch succeeded, we might want to update comment count from Post
-                if (comments.isEmpty() && fetchedPost.commentCount > 0) {
-                     // binding.tvCommentCount.text = fetchedPost.commentCount.toString()
-                }
+                // Comment count is handled by the real-time listener above
             }
         }
     }
@@ -629,18 +710,11 @@ class CommentsActivity : AppCompatActivity() {
 
                     val result = PostRepository.getInstance().replyToComment(postId, parentId, newReply)
                     if (result.isSuccess) {
-                        val addedReply = result.getOrNull() ?: newReply
-                        val parentIndex = comments.indexOfFirst { it.id == parentId }
-                        if (parentIndex != -1) {
-                            val parent = comments[parentIndex]
-                            val updatedReplies = parent.replies + addedReply
-                            comments[parentIndex] = parent.copy(replies = updatedReplies)
-                            commentAdapter.submitList(comments.toList())
-                            commentAdapter.notifyItemChanged(parentIndex)
-                        }
+                        // List update is handled by SnapshotListener
                         cancelReplyMode()
                         binding.etComment.text?.clear()
                         Toast.makeText(this@CommentsActivity, "Reply sent!", Toast.LENGTH_SHORT).show()
+                        sendLocalNotification("Comment Reply", "You replied: $commentText")
                     } else {
                         Toast.makeText(this@CommentsActivity, "Failed to send reply: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -657,15 +731,10 @@ class CommentsActivity : AppCompatActivity() {
 
                     val result = PostRepository.getInstance().commentPost(postId, newComment)
                     if (result.isSuccess) {
-                        val addedComment = result.getOrNull() ?: newComment
-                        comments.add(0, addedComment)
-                        commentAdapter.submitList(comments.toList())
-                        updateCommentCountUI()
+                        // List update is handled by SnapshotListener
                         binding.etComment.text?.clear()
                         Toast.makeText(this@CommentsActivity, "Comment sent!", Toast.LENGTH_SHORT).show()
-                        binding.scrollView.post {
-                            if (comments.isNotEmpty()) binding.rvComments.scrollToPosition(0)
-                        }
+                        sendLocalNotification("New Comment", "You commented: $commentText")
                     } else {
                         Toast.makeText(this@CommentsActivity, "Failed to send comment: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -679,6 +748,55 @@ class CommentsActivity : AppCompatActivity() {
         }
     }
 
+
+    private fun sendLocalNotification(title: String, message: String) {
+        val channelId = "habit_tracker_comments"
+        val notificationId = System.currentTimeMillis().toInt()
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                channelId,
+                "Comments",
+                NotificationManager.IMPORTANCE_HIGH
+            )
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = android.content.Intent(this, CommentsActivity::class.java).apply {
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            // Re-open this post if clicked (simplified for now, ideally pass post ID)
+            if (post != null) {
+                putExtra(EXTRA_POST_ID, post?.id)
+                putExtra(EXTRA_POST_USER_ID, post?.userId)
+                 putExtra(EXTRA_AUTHOR_NAME, post?.authorName)
+                 // Add other extras if needed to fully restore state
+            }
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            notificationId,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.mipmap.ic_launcher) // Ensure this resource exists or use R.drawable.ic_notification if available
+            .setContentTitle(title)
+            .setContentText(message)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+
+        try {
+            notificationManager.notify(notificationId, builder.build())
+        } catch (e: SecurityException) {
+            // Android 13+ requires POST_NOTIFICATIONS permission
+            e.printStackTrace()
+        }
+    }
 
     private fun returnResult() {
         val resultIntent = android.content.Intent().apply {
@@ -705,6 +823,13 @@ class CommentsActivity : AppCompatActivity() {
         const val EXTRA_COMMENTS_COUNT = "extra_comments_count"
         const val EXTRA_IS_LIKED = "extra_is_liked"
         const val EXTRA_COMMENTS = "extra_comments"
+
+        const val EXTRA_ORIGINAL_POST_ID = "extra_original_post_id"
+        const val EXTRA_ORIGINAL_USER_ID = "extra_original_user_id"
+        const val EXTRA_ORIGINAL_AUTHOR_NAME = "extra_original_author_name"
+        const val EXTRA_ORIGINAL_AUTHOR_AVATAR = "extra_original_author_avatar"
+        const val EXTRA_ORIGINAL_CONTENT = "extra_original_content"
+        const val EXTRA_ORIGINAL_IMAGE_URL = "extra_original_image_url"
 
         const val RESULT_POST_ID = "result_post_id"
         const val RESULT_COMMENT_COUNT = "result_comment_count"

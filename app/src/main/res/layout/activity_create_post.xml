@@ -149,20 +149,50 @@
                     android:orientation="vertical"
                     android:padding="12dp">
 
-                    <TextView
-                        android:id="@+id/tvSharedPreviewAuthor"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:textSize="14sp"
-                        tools:text="Original Author" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/ivSharedPreviewAvatar"
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:scaleType="centerCrop"
+                            app:shapeAppearanceOverlay="@style/CircleImageView"
+                            tools:srcCompat="@tools:sample/avatars" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="8dp">
+
+                            <TextView
+                                android:id="@+id/tvSharedPreviewAuthor"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textStyle="bold"
+                                android:textColor="@color/black"
+                                android:textSize="14sp"
+                                tools:text="Original Author" />
+
+                            <TextView
+                                android:id="@+id/tvSharedPreviewTimestamp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textSize="12sp"
+                                android:textColor="@color/secondary_gray"
+                                tools:text="2 hours ago" />
+                        </LinearLayout>
+                    </LinearLayout>
 
                     <TextView
                         android:id="@+id/tvSharedPreviewContent"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
                         android:ellipsize="end"
                         android:maxLines="3"
                         android:textColor="@color/black"
@@ -191,8 +221,7 @@
                 app:cardElevation="0dp"
                 app:layout_constraintTop_toBottomOf="@id/etPostContent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                tools:visibility="visible">
+                app:layout_constraintEnd_toEndOf="parent">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
@@ -201,8 +230,9 @@
                     <ImageView
                         android:id="@+id/ivImagePreview"
                         android:layout_width="match_parent"
-                        android:layout_height="250dp"
-                        android:scaleType="centerCrop"
+                        android:layout_height="wrap_content"
+                        android:adjustViewBounds="true"
+                        android:scaleType="fitCenter"
                         android:contentDescription="@string/post_image_desc"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -227,7 +257,14 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Actions Card -->
+            <androidx.constraintlayout.widget.Barrier
+                android:id="@+id/barrierPreviews"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:barrierDirection="bottom"
+                app:constraint_referenced_ids="cardSharedPostPreview,cardImagePreview" />
+
+            <!-- Actions Card (Add to your post) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardActions"
                 android:layout_width="0dp"
@@ -238,7 +275,7 @@
                 app:cardElevation="0dp"
                 app:strokeColor="@color/card_border"
                 app:strokeWidth="1dp"
-                app:layout_constraintTop_toBottomOf="@id/cardImagePreview"
+                app:layout_constraintTop_toBottomOf="@id/barrierPreviews"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 

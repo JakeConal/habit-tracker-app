@@ -13,13 +13,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.utils.UserPreferences
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
-// Imports removed
+import android.widget.ImageView
 
 class FeedFragment : Fragment() {
 
@@ -70,6 +71,11 @@ class FeedFragment : Fragment() {
         refreshPosts()
     }
 
+    override fun onResume() {
+        super.onResume()
+        updateUserAvatar()
+    }
+
     private fun initializeUserIfNeeded() {
         val currentName = UserPreferences.getUserName(requireContext())
         // If user name is still default "You", we can prompt them to set it
@@ -84,6 +90,8 @@ class FeedFragment : Fragment() {
     private fun setupViews(view: View) {
         cardCreatePost = view.findViewById(R.id.cardCreatePost)
 
+        updateUserAvatar()
+
         cardCreatePost.setOnClickListener {
             openCreatePostActivity()
         }
@@ -94,6 +102,21 @@ class FeedFragment : Fragment() {
 
         view.findViewById<View>(R.id.tvShareProgress)?.setOnClickListener {
             openCreatePostActivity()
+        }
+    }
+
+    private fun updateUserAvatar() {
+        view?.let { view ->
+            val ivCurrentUserAvatar = view.findViewById<ImageView>(R.id.ivCurrentUserAvatar)
+            val avatarUrl = UserPreferences.getUserAvatar(requireContext())
+
+            if (ivCurrentUserAvatar != null && avatarUrl.isNotEmpty()) {
+                Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.ic_profile)
+                    .error(R.drawable.ic_profile)
+                    .into(ivCurrentUserAvatar)
+            }
         }
     }
 
@@ -252,9 +275,13 @@ class FeedFragment : Fragment() {
             postAdapter.submitList(currentList)
         }
 
+        // Get user info for notification
+        val senderName = UserPreferences.getUserName(requireContext())
+        val senderAvatar = UserPreferences.getUserAvatar(requireContext())
+
         // Send like status to server
         lifecycleScope.launch {
-            val result = PostRepository.getInstance().toggleLikePost(post.id, !isLiked)
+            val result = PostRepository.getInstance().toggleLikePost(post.id, !isLiked, senderName, senderAvatar)
             if (result.isFailure) {
                  // Revert if failed
                  val revertedList = postAdapter.currentList.toMutableList()
@@ -282,8 +309,16 @@ class FeedFragment : Fragment() {
             putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
             putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
             putExtra(CommentsActivity.EXTRA_IS_LIKED, isLiked)
-            // Post doesn't store comments list locally usually, so passing empty or fetching in Activity
-            // putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, ArrayList<Comment>()) // Removed to avoid potential parcelable crash with empty list
+
+            // Pass shared post data
+            if (!post.originalPostId.isNullOrEmpty()) {
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_POST_ID, post.originalPostId)
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_USER_ID, post.originalUserId)
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_NAME, post.originalAuthorName)
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_AVATAR, post.originalAuthorAvatarUrl)
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_CONTENT, post.originalContent)
+                putExtra(CommentsActivity.EXTRA_ORIGINAL_IMAGE_URL, post.originalImageUrl)
+            }
         }
         commentsLauncher.launch(intent)
     }

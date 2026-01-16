@@ -97,6 +97,8 @@ dependencies {
     // Firebase Firestore
     implementation("com.google.firebase:firebase-firestore-ktx")
 
+    // Firebase Messaging
+    implementation("com.google.firebase:firebase-messaging-ktx")
     // Firebase Analytics (optional nhưng nên có)
     implementation("com.google.firebase:firebase-analytics-ktx")
 

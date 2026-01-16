@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.feed
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Post
+import com.example.habittracker.ui.common.ImagePreviewActivity
 import com.google.android.material.imageview.ShapeableImageView
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -107,7 +109,15 @@ class PostAdapter(
                      ivSharedImage.visibility = View.VISIBLE
                      Glide.with(itemView.context)
                         .load(post.originalImageUrl)
+                        .centerCrop()
                         .into(ivSharedImage)
+
+                     ivSharedImage.setOnClickListener {
+                         val intent = Intent(itemView.context, ImagePreviewActivity::class.java).apply {
+                             putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, post.originalImageUrl)
+                         }
+                         itemView.context.startActivity(intent)
+                     }
                  } else {
                      ivSharedImage?.visibility = View.GONE
                  }
@@ -128,7 +138,15 @@ class PostAdapter(
                     ivPostImage.visibility = View.VISIBLE
                     Glide.with(itemView.context)
                         .load(post.imageUrl)
+                        .centerCrop()
                         .into(ivPostImage)
+
+                    ivPostImage.setOnClickListener {
+                         val intent = Intent(itemView.context, ImagePreviewActivity::class.java).apply {
+                             putExtra(ImagePreviewActivity.EXTRA_IMAGE_URI, post.imageUrl)
+                         }
+                         itemView.context.startActivity(intent)
+                    }
                 } else {
                     ivPostImage.visibility = View.GONE
                 }
@@ -206,7 +224,7 @@ class PostAdapter(
                      // For now, let's assume `onCommentClick` opens details.
                      // If I want to open ORIGINAL details, I should maybe pass a modified post to onCommentClick?
                      val originalPostSimulator = post.copy(
-                         id = post.originalPostId!!,
+                         id = post.originalPostId,
                          userId = post.originalUserId ?: "",
                          authorName = post.originalAuthorName ?: "",
                          authorAvatarUrl = post.originalAuthorAvatarUrl,

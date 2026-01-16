@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.databinding.FragmentMyPostBinding
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.CommentsActivity
+import com.example.habittracker.ui.feed.CreatePostActivity
 import com.example.habittracker.ui.feed.PostAdapter
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
@@ -67,7 +68,9 @@ class MyPostFragment : Fragment() {
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
             onLikeClick = { post ->
-                viewModel.toggleLike(post.id)
+                val senderName = UserPreferences.getUserName(requireContext())
+                val senderAvatar = UserPreferences.getUserAvatar(requireContext())
+                viewModel.toggleLike(post.id, senderName, senderAvatar)
             },
             onCommentClick = { post ->
                 val isLiked = post.likedBy.contains(currentUserId)
@@ -83,19 +86,26 @@ class MyPostFragment : Fragment() {
                     putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
                     putExtra(CommentsActivity.EXTRA_IS_LIKED, isLiked)
                     putParcelableArrayListExtra(CommentsActivity.EXTRA_COMMENTS, java.util.ArrayList<com.example.habittracker.data.model.Comment>())
+
+                    // Pass shared post data
+                    if (!post.originalPostId.isNullOrEmpty()) {
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_POST_ID, post.originalPostId)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_USER_ID, post.originalUserId)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_NAME, post.originalAuthorName)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_AVATAR, post.originalAuthorAvatarUrl)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_CONTENT, post.originalContent)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_IMAGE_URL, post.originalImageUrl)
+                    }
                 }
                 commentsLauncher.launch(intent)
             },
             onShareClick = { post ->
-                viewModel.sharePost(post.id)
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
-                    putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                val intent = Intent(requireContext(), CreatePostActivity::class.java).apply {
+                    putExtra("EXTRA_SHARED_POST", post)
                 }
-                startActivity(Intent.createChooser(shareIntent, "Share post via"))
+                startActivity(intent)
             },
-            onAuthorClick = { userId ->
+            onAuthorClick = { _ ->
                 // Since this is the user's own profile, clicking the author doesn't need to do much.
                 // But for consistency, let's just make sure it's handled.
                 // User is already on their profile.
@@ -113,13 +123,10 @@ class MyPostFragment : Fragment() {
                             true
                         }
                         "Share" -> {
-                            viewModel.sharePost(post.id)
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
-                                putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
+                            val intent = Intent(requireContext(), CreatePostActivity::class.java).apply {
+                                putExtra("EXTRA_SHARED_POST", post)
                             }
-                            startActivity(Intent.createChooser(shareIntent, "Share post via"))
+                            startActivity(intent)
                             true
                         }
                         else -> false

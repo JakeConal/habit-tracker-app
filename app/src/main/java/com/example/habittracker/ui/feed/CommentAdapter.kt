@@ -143,10 +143,15 @@ class CommentAdapter(
                 tvReplyCount.visibility = View.VISIBLE
                 tvReplyCount.text = itemView.context.getString(R.string.replies_count_format, comment.replies.size)
 
+                // Collect potential names for @mention highlighting
+                val participants = comment.replies.map { it.authorName }.toMutableSet()
+                participants.add(comment.authorName)
+
                 val replyAdapter = ReplyAdapter(
                     comment.replies,
                     currentUserId,
                     postOwnerId,
+                    participants,
                     onDeleteReplyClick = { reply -> onDeleteReplyClick(comment, reply) },
                     onLikeReplyClick = { reply -> onLikeReplyClick(comment, reply) },
                     onDislikeReplyClick = { reply -> onDislikeReplyClick(comment, reply) },
@@ -176,6 +181,7 @@ class CommentAdapter(
         private val replies: List<Comment>,
         private val currentUserId: String,
         private val postOwnerId: String,
+        private val participants: Set<String>,
         private val onDeleteReplyClick: (Comment) -> Unit,
         private val onLikeReplyClick: (Comment) -> Unit,
         private val onDislikeReplyClick: (Comment) -> Unit,
@@ -187,7 +193,7 @@ class CommentAdapter(
         }
 
         override fun onBindViewHolder(holder: ReplyViewHolder, position: Int) {
-            holder.bind(replies[position], currentUserId, postOwnerId, onDeleteReplyClick, onLikeReplyClick, onDislikeReplyClick, onReplyToReplyClick)
+            holder.bind(replies[position], currentUserId, postOwnerId, participants, onDeleteReplyClick, onLikeReplyClick, onDislikeReplyClick, onReplyToReplyClick)
         }
 
         override fun getItemCount() = replies.size
@@ -213,6 +219,7 @@ class CommentAdapter(
                 reply: Comment,
                 currentUserId: String,
                 postOwnerId: String,
+                participants: Set<String>,
                 onDeleteReplyClick: (Comment) -> Unit,
                 onLikeReplyClick: (Comment) -> Unit,
                 onDislikeReplyClick: (Comment) -> Unit,
@@ -233,7 +240,54 @@ class CommentAdapter(
                 val date = Date(reply.timestamp)
                 val format = SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault())
                 tvReplyTimestamp.text = format.format(date)
-                tvReplyContent.text = reply.content
+
+
+                // Highlight @username
+                val content = reply.content
+                if (content.startsWith("@")) {
+                    var matchName = ""
+                    // Try to find a participant name that matches the start of content
+                    // Sort by length descending to match longest name first
+                    val sortedParticipants = participants.sortedByDescending { it.length }
+
+                    for (name in sortedParticipants) {
+                        if (content.startsWith("@$name")) {
+                            matchName = name
+                            break
+                        }
+                    }
+
+                    val endIndex = if (matchName.isNotEmpty()) {
+                        matchName.length + 1 // +1 for @
+                    } else {
+                        // Fallback to first space if no known participant matched
+                        val splitIndex = content.indexOf(" ")
+                        if (splitIndex != -1) splitIndex else 0
+                    }
+
+                    if (endIndex > 0) {
+                        val spannable = android.text.SpannableString(content)
+                        spannable.setSpan(
+                            android.text.style.ForegroundColorSpan(
+                                ContextCompat.getColor(itemView.context, R.color.primary_blue)
+                            ),
+                            0,
+                            endIndex,
+                            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        spannable.setSpan(
+                            android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
+                            0,
+                            endIndex,
+                            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                        )
+                        tvReplyContent.text = spannable
+                    } else {
+                        tvReplyContent.text = content
+                    }
+                } else {
+                    tvReplyContent.text = content
+                }
 
                 // Like Logic
                 val isLiked = reply.likedBy.contains(currentUserId)
