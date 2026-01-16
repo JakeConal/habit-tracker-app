@@ -133,15 +133,11 @@ class CreateCategoryFragment : Fragment() {
     
     private fun setupView() {
         if (isEditMode) {
-            // Set title for edit mode
-            binding.tvTitleText.text = "Edit Category"
             // Set button text for edit mode
-            binding.tvCreateButtonText.text = "Update"
+            binding.tvCreateButtonText.text = getString(R.string.update)
         } else {
-            // Set title for create mode
-            binding.tvTitleText.text = "Create Category"
             // Set button text for create mode
-            binding.tvCreateButtonText.text = "Create"
+            binding.tvCreateButtonText.text = getString(R.string.create)
         }
         
         // Set preview values
@@ -150,10 +146,6 @@ class CreateCategoryFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnBack.setOnClickListener {
-            findNavController().navigateUp()
-        }
-        
         binding.btnSelectColor.setOnClickListener {
             showColorPickerDialog()
         }
@@ -161,7 +153,7 @@ class CreateCategoryFragment : Fragment() {
         binding.btnSelectIcon.setOnClickListener {
             showIconPickerDialog()
         }
-        
+
         binding.btnCreate.setOnClickListener {
             createCategory()
         }
@@ -219,7 +211,7 @@ class CreateCategoryFragment : Fragment() {
         val categoryTitle = binding.etCategoryTitle.text.toString().trim()
         
         if (categoryTitle.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter a category name", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.please_enter_category_name), Toast.LENGTH_SHORT).show()
             return
         }
         

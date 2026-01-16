@@ -7,66 +7,64 @@
     android:background="@drawable/background_gradient">
 
     <!-- Header Container -->
-    <LinearLayout
+
+    <!-- Categories RecyclerView -->
+    <RelativeLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
         android:background="@color/header_background"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingVertical="20dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Back Button -->
-        <FrameLayout
+        <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_action_button">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_back"
-                app:tint="@color/primary_blue" />
-        </FrameLayout>
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="@string/back"
+            android:padding="10dp"
+            android:scaleType="fitCenter"
+            android:src="@mipmap/ic_back" />
 
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
+            android:layout_centerInParent="true"
+            android:fontFamily="sans-serif-medium"
             android:text="Categories"
             android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg" />
+            android:textSize="18sp" />
 
         <!-- Add Category Button -->
         <FrameLayout
             android:id="@+id/fabAddCategory"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:background="@drawable/bg_add_button"
-            android:elevation="4dp">
+            android:elevation="0dp">
 
             <ImageView
-                android:layout_width="20dp"
+                android:layout_width="wrap_content"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
                 android:contentDescription="@string/app_name"
                 android:src="@drawable/ic_add"
                 app:tint="@color/white" />
         </FrameLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
-    <!-- Categories RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCategories"
         android:layout_width="match_parent"

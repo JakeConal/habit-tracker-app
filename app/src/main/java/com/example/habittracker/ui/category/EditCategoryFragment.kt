@@ -108,22 +108,15 @@ class EditCategoryFragment : Fragment() {
     }
 
     private fun setupView() {
-        // Set title for edit mode
-        binding.tvTitleText.text = "Edit Category"
-        
         // Set button text for edit mode
-        binding.tvCreateButtonText.text = "Update"
-        
+        binding.tvCreateButtonText.text = getString(R.string.update)
+
         // Set preview values from arguments
         binding.viewColorPreview.setBackgroundResource(selectedColorRes)
         binding.ivIconPreview.setImageResource(selectedIconRes)
     }
 
     private fun setupClickListeners() {
-        binding.btnBack.setOnClickListener {
-            findNavController().navigateUp()
-        }
-        
         binding.btnSelectColor.setOnClickListener {
             showColorPickerDialog()
         }
@@ -131,7 +124,7 @@ class EditCategoryFragment : Fragment() {
         binding.btnSelectIcon.setOnClickListener {
             showIconPickerDialog()
         }
-        
+
         binding.btnUpdate.setOnClickListener {
             updateCategory()
         }
@@ -189,7 +182,7 @@ class EditCategoryFragment : Fragment() {
         val categoryTitle = binding.etCategoryTitle.text.toString().trim()
         
         if (categoryTitle.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter a category name", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), getString(R.string.please_enter_category_name), Toast.LENGTH_SHORT).show()
             return
         }
         
