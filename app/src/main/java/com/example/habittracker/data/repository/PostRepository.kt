@@ -3,12 +3,16 @@ package com.example.habittracker.data.repository
 import android.content.Context
 import android.net.Uri
 import com.example.habittracker.data.model.Comment
+import com.example.habittracker.data.model.Notification
 import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.remote.fcm.NotificationSender
 import com.example.habittracker.data.supabase.SupabaseStorageRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
@@ -16,6 +20,7 @@ import java.util.UUID
 class PostRepository private constructor() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
+    private val notificationRepository = NotificationRepository.getInstance()
 
     companion object {
         @Volatile
@@ -60,6 +65,17 @@ class PostRepository private constructor() {
             if (!post.originalPostId.isNullOrEmpty()) {
                 val originalRef = db.collection("posts").document(post.originalPostId)
                 originalRef.update("shareCount", FieldValue.increment(1))
+
+                // Notify original post owner
+                if (!post.originalUserId.isNullOrEmpty()) {
+                    notifyUser(
+                        recipientId = post.originalUserId,
+                        postId = newPost.id,
+                        type = Notification.NotificationType.SHARE_POST,
+                        customSenderName = newPost.authorName,
+                        customSenderAvatar = newPost.authorAvatarUrl
+                    )
+                }
             }
 
             Result.success(true)
@@ -157,6 +173,27 @@ class PostRepository private constructor() {
         }
     }
 
+    fun listenToComments(postId: String): kotlinx.coroutines.flow.Flow<List<Comment>> = callbackFlow {
+        val listenerRegistration = db.collection("posts")
+            .document(postId)
+            .collection("comments")
+            .orderBy("timestamp", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, e ->
+                if (e != null) {
+                    close(e)
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val comments = snapshot.documents.mapNotNull { Comment.fromDocument(it) }
+                    trySend(comments)
+                }
+            }
+
+        awaitClose {
+            listenerRegistration.remove()
+        }
+    }
+
     suspend fun commentPost(postId: String, comment: Comment): Result<Comment> {
         return try {
             val docRef = db.collection("posts").document(postId).collection("comments").document()
@@ -173,6 +210,25 @@ class PostRepository private constructor() {
             batch.update(postRef, "commentCount", FieldValue.increment(1))
 
             batch.commit().await()
+
+            // Notify post owner
+            try {
+                val postSnapshot = postRef.get().await()
+                val postOwnerId = postSnapshot.getString("userId")
+                if (postOwnerId != null) {
+                    notifyUser(
+                        postOwnerId,
+                        postId,
+                        finalComment.id,
+                        Notification.NotificationType.COMMENT_POST,
+                        finalComment.authorName,
+                        finalComment.authorAvatarUrl
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             Result.success(finalComment)
         } catch (e: Exception) {
             Result.failure(e)
@@ -203,6 +259,18 @@ class PostRepository private constructor() {
 
             val commentRef = db.collection("posts").document(postId).collection("comments").document(commentId)
             commentRef.update("replies", FieldValue.arrayUnion(finalReply)).await()
+
+            // Notify comment owner
+            try {
+                val commentSnapshot = commentRef.get().await()
+                val commentOwnerId = commentSnapshot.getString("userId")
+                if (commentOwnerId != null) {
+                    notifyUser(commentOwnerId, postId, commentId, Notification.NotificationType.REPLY_COMMENT, finalReply.authorName, finalReply.authorAvatarUrl)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             Result.success(finalReply)
         } catch (e: Exception) {
             Result.failure(e)
@@ -220,10 +288,29 @@ class PostRepository private constructor() {
         }
     }
 
-    suspend fun sharePost(postId: String): Result<Boolean> {
+    suspend fun sharePost(postId: String, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
         return try {
             val postRef = db.collection("posts").document(postId)
             postRef.update("shareCount", FieldValue.increment(1)).await()
+
+            // Notify post owner
+            try {
+                val postSnapshot = postRef.get().await()
+                val postOwnerId = postSnapshot.getString("userId")
+                if (postOwnerId != null) {
+                    android.util.Log.d("PostRepository", "Notifying user $postOwnerId about SHARE_POST")
+                    notifyUser(
+                        recipientId = postOwnerId,
+                        postId = postId,
+                        type = Notification.NotificationType.SHARE_POST,
+                        customSenderName = senderName,
+                        customSenderAvatar = senderAvatar
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
@@ -249,14 +336,20 @@ class PostRepository private constructor() {
                 originalPostId = originalPost.originalPostId ?: originalPost.id, // Chain references to the ROOT post
                 originalUserId = originalPost.originalUserId ?: originalPost.userId,
                 originalAuthorName = originalPost.originalAuthorName ?: originalPost.authorName,
-                originalAuthorAvatarUrl = originalPost.originalAuthorAvatarUrl ?: originalPost.authorAvatarUrl
+                originalAuthorAvatarUrl = originalPost.originalAuthorAvatarUrl ?: originalPost.authorAvatarUrl,
+                originalContent = originalPost.originalContent ?: originalPost.content,
+                originalImageUrl = originalPost.originalImageUrl ?: originalPost.imageUrl
             )
 
             postRef.set(sharedPost.toMap()).await()
 
             // Increment share count on the ORIGINAL post
             val originalId = originalPost.originalPostId ?: originalPost.id
-            sharePost(originalId)
+            sharePost(originalId, currentUserName, currentUserAvatar)
+
+            // Notify original post owner - Handled by sharePost now
+            // val originalOwnerId = originalPost.originalUserId ?: originalPost.userId
+            // notifyUser(originalOwnerId, originalPost.id, null, Notification.NotificationType.SHARE_POST, currentUserName, currentUserAvatar)
 
             Result.success(true)
         } catch (e: Exception) {
@@ -301,7 +394,7 @@ class PostRepository private constructor() {
         }
     }
 
-    suspend fun toggleLikePost(postId: String, isLiked: Boolean): Result<Boolean> {
+    suspend fun toggleLikePost(postId: String, isLiked: Boolean, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
         return try {
             val userId = auth.currentUser?.uid ?: return Result.failure(Exception("No user"))
             val postRef = db.collection("posts").document(postId)
@@ -315,6 +408,19 @@ class PostRepository private constructor() {
                 batch.update(postRef, "likedBy", FieldValue.arrayRemove(userId))
             }
             batch.commit().await()
+
+            if (isLiked) {
+                try {
+                     val postSnapshot = postRef.get().await()
+                     val postOwnerId = postSnapshot.getString("userId")
+                     if (postOwnerId != null) {
+                         notifyUser(postOwnerId, postId, null, Notification.NotificationType.LIKE_POST, senderName, senderAvatar)
+                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             Result.success(true)
         } catch (e: Exception) {
             Result.failure(e)
@@ -323,7 +429,7 @@ class PostRepository private constructor() {
 
     // Toggle like/dislike for comments/replies
 
-    suspend fun toggleLikeComment(postId: String, commentId: String, userId: String): Result<Boolean> {
+    suspend fun toggleLikeComment(postId: String, commentId: String, userId: String, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
          return try {
             val commentRef = db.collection("posts").document(postId).collection("comments").document(commentId)
             val doc = commentRef.get().await()
@@ -346,13 +452,22 @@ class PostRepository private constructor() {
                 }
             }
             commentRef.update(updates).await()
+
+            if (!likedBy.contains(userId)) {
+                 val commentOwnerId = doc.getString("userId")
+                 if (commentOwnerId != null) {
+                      android.util.Log.d("PostRepository", "Notifying user $commentOwnerId about LIKE_COMMENT")
+                      notifyUser(commentOwnerId, postId, commentId, Notification.NotificationType.LIKE_COMMENT, senderName, senderAvatar)
+                 }
+            }
+
             Result.success(true)
          } catch (e: Exception) {
              Result.failure(e)
          }
     }
 
-    suspend fun toggleDislikeComment(postId: String, commentId: String, userId: String): Result<Boolean> {
+    suspend fun toggleDislikeComment(postId: String, commentId: String, userId: String, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
          return try {
             val commentRef = db.collection("posts").document(postId).collection("comments").document(commentId)
             val doc = commentRef.get().await()
@@ -375,18 +490,30 @@ class PostRepository private constructor() {
                 }
             }
             commentRef.update(updates).await()
+
+            if (!dislikedBy.contains(userId)) {
+                 val commentOwnerId = doc.getString("userId")
+                 if (commentOwnerId != null) {
+                      android.util.Log.d("PostRepository", "Notifying user $commentOwnerId about DISLIKE_COMMENT")
+                      notifyUser(commentOwnerId, postId, commentId, Notification.NotificationType.DISLIKE_COMMENT, senderName, senderAvatar)
+                 }
+            }
+
             Result.success(true)
          } catch (e: Exception) {
              Result.failure(e)
          }
     }
 
-    suspend fun toggleLikeReply(postId: String, commentId: String, replyId: String, userId: String): Result<Boolean> {
+    suspend fun toggleLikeReply(postId: String, commentId: String, replyId: String, userId: String, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
         // Toggling like on a reply (which is inside an array) is complex in Firestore.
         // We have to read the document, find the reply, modify it, and write it back.
         return try {
             val db = FirebaseFirestore.getInstance()
             val commentRef = db.collection("posts").document(postId).collection("comments").document(commentId)
+
+            var targetUserId: String? = null
+            var isLikeAction = false
 
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(commentRef)
@@ -402,9 +529,12 @@ class PostRepository private constructor() {
                         val dislikedBy = (replyMap["dislikedBy"] as? List<String>)?.toMutableList() ?: mutableListOf()
                         var dislikesCount = (replyMap["dislikesCount"] as? Number)?.toInt() ?: 0
 
+                        targetUserId = replyMap["userId"] as? String
+
                         if (likedBy.contains(userId)) {
                             likedBy.remove(userId)
                             likesCount = (likesCount - 1).coerceAtLeast(0)
+                            isLikeAction = false
                         } else {
                             likedBy.add(userId)
                             likesCount += 1
@@ -412,6 +542,7 @@ class PostRepository private constructor() {
                                 dislikedBy.remove(userId)
                                 dislikesCount = (dislikesCount - 1).coerceAtLeast(0)
                             }
+                            isLikeAction = true
                         }
 
                         replyMap.toMutableMap().apply {
@@ -428,6 +559,10 @@ class PostRepository private constructor() {
                 transaction.update(commentRef, "replies", updatedReplies)
             }.await()
 
+            if (isLikeAction && targetUserId != null) {
+                 notifyUser(targetUserId!!, postId, commentId, Notification.NotificationType.LIKE_COMMENT, senderName, senderAvatar) // Using LIKE_COMMENT for reply too, or needed differentiation?
+            }
+
             Result.success(true)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -435,10 +570,13 @@ class PostRepository private constructor() {
         }
     }
 
-    suspend fun toggleDislikeReply(postId: String, commentId: String, replyId: String, userId: String): Result<Boolean> {
+    suspend fun toggleDislikeReply(postId: String, commentId: String, replyId: String, userId: String, senderName: String? = null, senderAvatar: String? = null): Result<Boolean> {
         return try {
             val db = FirebaseFirestore.getInstance()
             val commentRef = db.collection("posts").document(postId).collection("comments").document(commentId)
+
+            var targetUserId: String? = null
+            var isDislikeAction = false
 
             db.runTransaction { transaction ->
                 val snapshot = transaction.get(commentRef)
@@ -452,9 +590,12 @@ class PostRepository private constructor() {
                         val dislikedBy = (replyMap["dislikedBy"] as? List<String>)?.toMutableList() ?: mutableListOf()
                         var dislikesCount = (replyMap["dislikesCount"] as? Number)?.toInt() ?: 0
 
+                        targetUserId = replyMap["userId"] as? String
+
                          if (dislikedBy.contains(userId)) {
                             dislikedBy.remove(userId)
                              dislikesCount = (dislikesCount - 1).coerceAtLeast(0)
+                             isDislikeAction = false
                         } else {
                             dislikedBy.add(userId)
                              dislikesCount += 1
@@ -462,6 +603,7 @@ class PostRepository private constructor() {
                                 likedBy.remove(userId)
                                 likesCount = (likesCount - 1).coerceAtLeast(0)
                             }
+                            isDislikeAction = true
                         }
 
                         replyMap.toMutableMap().apply {
@@ -478,10 +620,104 @@ class PostRepository private constructor() {
                 transaction.update(commentRef, "replies", updatedReplies)
             }.await()
 
+            if (isDislikeAction && targetUserId != null) {
+                 notifyUser(targetUserId!!, postId, commentId, Notification.NotificationType.DISLIKE_COMMENT, senderName, senderAvatar)
+            }
+
             Result.success(true)
         } catch (e: Exception) {
              e.printStackTrace()
-            Result.failure(e)
+             Result.failure(e)
+        }
+    }
+
+    private suspend fun notifyUser(
+        recipientId: String,
+        postId: String,
+        commentId: String? = null,
+        type: Notification.NotificationType,
+        customSenderName: String? = null,
+        customSenderAvatar: String? = null
+    ) {
+        try {
+            if (recipientId.isEmpty()) {
+                android.util.Log.e("PostRepository", "Notification aborted: recipientId is empty")
+                return
+            }
+
+            val currentUserId = auth.currentUser?.uid ?: return
+
+            // Allow self-notification for testing if needed
+            // if (recipientId == currentUserId && type != Notification.NotificationType.LIKE_POST) return
+
+            // Check if recipient has enabled notifications
+            val recipientDoc = db.collection(com.example.habittracker.data.model.User.COLLECTION_NAME).document(recipientId).get().await()
+            val notificationsEnabled = recipientDoc.getBoolean("notificationsEnabled") ?: true
+            if (!notificationsEnabled) {
+                android.util.Log.d("PostRepository", "Notification aborted: Recipient has disabled notifications")
+                return
+            }
+
+            val fcmToken = recipientDoc.getString("fcmToken")
+
+            var senderName = customSenderName
+            var senderAvatar = customSenderAvatar
+
+            if (senderName == null) {
+                try {
+                    val userDoc = db.collection("users").document(currentUserId).get().await()
+                    senderName = userDoc.getString("name")
+                    // If name is found but empty, use "User"
+                    if (senderName.isNullOrEmpty()) senderName = "User"
+
+                    senderAvatar = userDoc.getString("avatarUrl")
+                } catch (e: Exception) {
+                    senderName = "User"
+                    android.util.Log.e("PostRepository", "Failed to fetch sender name: ${e.message}")
+                }
+            }
+
+            // Ensure senderName is not null for Notification object
+            val finalSenderName = senderName ?: "User"
+
+            val notification = Notification(
+                recipientId = recipientId,
+                senderId = currentUserId,
+                senderName = finalSenderName,
+                senderAvatarUrl = senderAvatar ?: "",
+                postId = postId,
+                commentId = commentId,
+                type = type
+            )
+            val result = notificationRepository.sendNotification(notification)
+            if (result.isSuccess) {
+                android.util.Log.d("PostRepository", "Notification saved to Firestore for $recipientId")
+            } else {
+                android.util.Log.e("PostRepository", "Failed to save notification: ${result.exceptionOrNull()?.message}")
+            }
+
+            // Send FCM Push Notification
+            if (!fcmToken.isNullOrEmpty()) {
+                val title = "Habit Tracker"
+                var body = "You have a new notification"
+
+                body = when (type) {
+                    Notification.NotificationType.COMMENT_POST -> "$finalSenderName commented on your post"
+                    Notification.NotificationType.LIKE_POST -> "$finalSenderName liked your post"
+                    Notification.NotificationType.SHARE_POST -> "$finalSenderName shared your post"
+                    Notification.NotificationType.LIKE_COMMENT -> "$finalSenderName liked your comment"
+                    Notification.NotificationType.DISLIKE_COMMENT -> "$finalSenderName disliked your comment"
+                    Notification.NotificationType.REPLY_COMMENT -> "$finalSenderName replied to your comment"
+                }
+
+                android.util.Log.d("PostRepository", "Sending FCM to $fcmToken: $body")
+                NotificationSender.sendNotification(fcmToken, title, body, mapOf("postId" to postId))
+            } else {
+                 android.util.Log.d("PostRepository", "FCM token is null or empty for recipient $recipientId")
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            android.util.Log.e("PostRepository", "Notification error: ${e.message}")
         }
     }
 }

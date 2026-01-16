@@ -278,7 +278,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         _message.value = null
     }
 
-    fun toggleLike(postId: String) {
+    fun toggleLike(postId: String, senderName: String? = null, senderAvatar: String? = null) {
         val currentPosts = _posts.value.toMutableList()
         val postIndex = currentPosts.indexOfFirst { it.id == postId }
         
@@ -300,7 +300,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             // Server update
             viewModelScope.launch {
-                postRepository.toggleLikePost(postId, !isLiked)
+                postRepository.toggleLikePost(postId, !isLiked, senderName, senderAvatar)
             }
         }
     }
@@ -352,9 +352,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun sharePost(postId: String) {
+    fun sharePost(postId: String, senderName: String? = null, senderAvatar: String? = null) {
         viewModelScope.launch {
-            postRepository.sharePost(postId)
+            postRepository.sharePost(postId, senderName, senderAvatar)
         }
     }
 }

@@ -139,7 +139,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:text="Delete"
-                    android:textColor="@color/accent_pink"
+                    android:textColor="@android:color/holo_red_dark"
                     android:textSize="10sp"
                     android:textStyle="bold"
                     android:padding="4dp"
