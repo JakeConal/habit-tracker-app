@@ -6,6 +6,7 @@ import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.CategoryRepository
+import com.example.habittracker.util.DateUtils
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -48,6 +49,21 @@ class ViewHabitViewModel : ViewModel() {
     private val _frequency = MutableStateFlow<List<String>>(emptyList())
     val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
+    private val _isPomodoroRequired = MutableStateFlow(false)
+    val isPomodoroRequired: StateFlow<Boolean> = _isPomodoroRequired.asStateFlow()
+
+    private val _focusDuration = MutableStateFlow(25)
+    val focusDuration: StateFlow<Int> = _focusDuration.asStateFlow()
+
+    private val _shortBreak = MutableStateFlow(5)
+    val shortBreak: StateFlow<Int> = _shortBreak.asStateFlow()
+
+    private val _longBreak = MutableStateFlow(15)
+    val longBreak: StateFlow<Int> = _longBreak.asStateFlow()
+
+    private val _totalSessions = MutableStateFlow(4)
+    val totalSessions: StateFlow<Int> = _totalSessions.asStateFlow()
+
 
     // Events
     private val _habitUpdated = MutableSharedFlow<Boolean>()
@@ -83,6 +99,13 @@ class ViewHabitViewModel : ViewModel() {
                     // Load quantity and unit directly from habit fields
                     _quantity.value = habit.quantity
                     _measurement.value = habit.unit
+
+                    // Load Pomodoro settings
+                    _isPomodoroRequired.value = habit.isPomodoroRequired
+                    _focusDuration.value = habit.focusDuration
+                    _shortBreak.value = habit.shortBreak
+                    _longBreak.value = habit.longBreak
+                    _totalSessions.value = habit.totalSessions
 
                     // Load category details
                     loadCategory(habit.categoryId)
@@ -146,6 +169,28 @@ class ViewHabitViewModel : ViewModel() {
         _frequency.value = frequency
     }
 
+    /**
+     * Update Pomodoro settings
+     */
+    fun updatePomodoroRequired(required: Boolean) {
+        _isPomodoroRequired.value = required
+    }
+
+    fun updateFocusDuration(duration: Int) {
+        _focusDuration.value = duration
+    }
+
+    fun updateShortBreak(duration: Int) {
+        _shortBreak.value = duration
+    }
+
+    fun updateLongBreak(duration: Int) {
+        _longBreak.value = duration
+    }
+
+    fun updateTotalSessions(sessions: Int) {
+        _totalSessions.value = sessions
+    }
 
     /**
      * Save/Update the habit with current state
@@ -173,7 +218,12 @@ class ViewHabitViewModel : ViewModel() {
                     quantity = _quantity.value,
                     unit = _measurement.value,
                     frequency = _frequency.value,
-                    categoryId = _categoryId.value
+                    categoryId = _categoryId.value,
+                    isPomodoroRequired = _isPomodoroRequired.value,
+                    focusDuration = _focusDuration.value,
+                    shortBreak = _shortBreak.value,
+                    longBreak = _longBreak.value,
+                    totalSessions = _totalSessions.value
                 )
 
                 // Update in repository
@@ -210,6 +260,33 @@ class ViewHabitViewModel : ViewModel() {
                 _habitDeleted.emit(true)
             } catch (e: Exception) {
                 _error.emit(e.message ?: "Failed to delete habit")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    /**
+     * Complete the habit without Pomodoro
+     */
+    fun completeHabit() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                val currentHabit = _habit.value ?: return@launch
+
+                // Restriction: Cannot complete if it's already completed for today
+                val today = DateUtils.getCurrentDateString()
+                if (currentHabit.completedDates.contains(today)) {
+                    _error.emit("Habit already completed for today")
+                    return@launch
+                }
+
+                repository.toggleHabitCompletion(currentHabit.id)
+
+                _habitUpdated.emit(true)
+            } catch (e: Exception) {
+                _error.emit(e.message ?: "Failed to complete habit")
             } finally {
                 _isLoading.value = false
             }

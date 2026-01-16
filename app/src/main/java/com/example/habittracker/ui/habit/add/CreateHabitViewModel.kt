@@ -45,6 +45,22 @@ class CreateHabitViewModel : ViewModel() {
     private val _frequency = MutableStateFlow<List<String>>(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
     val frequency: StateFlow<List<String>> = _frequency.asStateFlow()
 
+    // Pomodoro settings
+    private val _isPomodoroRequired = MutableStateFlow(false)
+    val isPomodoroRequired: StateFlow<Boolean> = _isPomodoroRequired.asStateFlow()
+
+    private val _focusDuration = MutableStateFlow(25)
+    val focusDuration: StateFlow<Int> = _focusDuration.asStateFlow()
+
+    private val _shortBreak = MutableStateFlow(5)
+    val shortBreak: StateFlow<Int> = _shortBreak.asStateFlow()
+
+    private val _longBreak = MutableStateFlow(15)
+    val longBreak: StateFlow<Int> = _longBreak.asStateFlow()
+
+    private val _totalSessions = MutableStateFlow(4)
+    val totalSessions: StateFlow<Int> = _totalSessions.asStateFlow()
+
 
     // Events
     private val _habitCreated = MutableSharedFlow<Boolean>()
@@ -108,6 +124,28 @@ class CreateHabitViewModel : ViewModel() {
         _frequency.value = frequency
     }
 
+    /**
+     * Update Pomodoro settings
+     */
+    fun updatePomodoroRequired(required: Boolean) {
+        _isPomodoroRequired.value = required
+    }
+
+    fun updateFocusDuration(duration: Int) {
+        _focusDuration.value = duration
+    }
+
+    fun updateShortBreak(duration: Int) {
+        _shortBreak.value = duration
+    }
+
+    fun updateLongBreak(duration: Int) {
+        _longBreak.value = duration
+    }
+
+    fun updateTotalSessions(sessions: Int) {
+        _totalSessions.value = sessions
+    }
 
     /**
      * Create a new habit with the current state
@@ -137,11 +175,15 @@ class CreateHabitViewModel : ViewModel() {
                     quantity = _quantity.value,
                     unit = _measurement.value,
                     frequency = _frequency.value,
-                    isCompleted = false,
                     createdAt = System.currentTimeMillis(),
                     categoryId = _categoryId.value,
                     completedDates = emptyList(),
-                    streak = 0
+                    streak = 0,
+                    isPomodoroRequired = _isPomodoroRequired.value,
+                    focusDuration = _focusDuration.value,
+                    shortBreak = _shortBreak.value,
+                    longBreak = _longBreak.value,
+                    totalSessions = _totalSessions.value
                 )
 
                 // Save to repository
@@ -178,5 +220,10 @@ class CreateHabitViewModel : ViewModel() {
         _quantity.value = 30
         _measurement.value = "Mins"
         _frequency.value = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+        _isPomodoroRequired.value = false
+        _focusDuration.value = 25
+        _shortBreak.value = 5
+        _longBreak.value = 15
+        _totalSessions.value = 4
     }
 }

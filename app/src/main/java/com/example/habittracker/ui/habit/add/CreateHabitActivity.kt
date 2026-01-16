@@ -142,6 +142,46 @@ class CreateHabitActivity : AppCompatActivity() {
                 binding.tvMeasurement.text = measurement
             }
         }
+
+        // Observe Pomodoro changes
+        lifecycleScope.launch {
+            viewModel.isPomodoroRequired.collect { isRequired ->
+                binding.switchPomodoro.isChecked = isRequired
+                binding.layoutPomodoroSettings.visibility = if (isRequired) android.view.View.VISIBLE else android.view.View.GONE
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.focusDuration.collect { duration ->
+                if (binding.etFocusDuration.text.toString() != duration.toString()) {
+                    binding.etFocusDuration.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.shortBreak.collect { duration ->
+                if (binding.etShortBreak.text.toString() != duration.toString()) {
+                    binding.etShortBreak.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.longBreak.collect { duration ->
+                if (binding.etLongBreak.text.toString() != duration.toString()) {
+                    binding.etLongBreak.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.totalSessions.collect { sessions ->
+                if (binding.etTotalSessions.text.toString() != sessions.toString()) {
+                    binding.etTotalSessions.setText(sessions.toString())
+                }
+            }
+        }
     }
 
     /**
@@ -210,7 +250,29 @@ class CreateHabitActivity : AppCompatActivity() {
         binding.btnFrequencySelector.setOnClickListener {
             showFrequencySelector()
         }
-        
+
+        // Pomodoro switch
+        binding.switchPomodoro.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.updatePomodoroRequired(isChecked)
+        }
+
+        // Pomodoro durations
+        binding.etFocusDuration.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateFocusDuration(text.toIntOrNull() ?: 25)
+        })
+
+        binding.etShortBreak.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateShortBreak(text.toIntOrNull() ?: 5)
+        })
+
+        binding.etLongBreak.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateLongBreak(text.toIntOrNull() ?: 15)
+        })
+
+        binding.etTotalSessions.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateTotalSessions(text.toIntOrNull() ?: 4)
+        })
+
         // Create button
         binding.btnCreate.setOnClickListener {
             validateAndCreateHabit()
@@ -261,6 +323,14 @@ class CreateHabitActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun createSimpleTextWatcher(onChanged: (String) -> Unit) = object : android.text.TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(s: android.text.Editable?) {
+            onChanged(s.toString())
+        }
     }
 
 

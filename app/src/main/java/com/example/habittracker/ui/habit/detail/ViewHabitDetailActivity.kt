@@ -17,6 +17,7 @@ import com.example.habittracker.ui.category.CategoryActivity
 import com.example.habittracker.ui.habit.add.CreateHabitActivity
 import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.util.formatFrequency
+import com.example.habittracker.util.DateUtils
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -107,6 +108,8 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                 habit?.let {
                     binding.tvTitle.text = it.name
                     binding.etHabitTitle.setText(it.name)
+                    val isTodayCompleted = it.completedDates.contains(DateUtils.getCurrentDateString())
+                    updateActionButton(isTodayCompleted, viewModel.isPomodoroRequired.value)
                 }
             }
         }
@@ -145,6 +148,48 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             }
         }
 
+        // Observe Pomodoro settings
+        lifecycleScope.launch {
+            viewModel.isPomodoroRequired.collect { isRequired ->
+                binding.switchPomodoro.isChecked = isRequired
+                binding.layoutPomodoroSettings.visibility = if (isRequired) android.view.View.VISIBLE else android.view.View.GONE
+
+                val isTodayCompleted = viewModel.habit.value?.completedDates?.contains(DateUtils.getCurrentDateString()) == true
+                updateActionButton(isTodayCompleted, isRequired)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.focusDuration.collect { duration ->
+                if (binding.etFocusDuration.text.toString() != duration.toString()) {
+                    binding.etFocusDuration.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.shortBreak.collect { duration ->
+                if (binding.etShortBreak.text.toString() != duration.toString()) {
+                    binding.etShortBreak.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.longBreak.collect { duration ->
+                if (binding.etLongBreak.text.toString() != duration.toString()) {
+                    binding.etLongBreak.setText(duration.toString())
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.totalSessions.collect { sessions ->
+                if (binding.etTotalSessions.text.toString() != sessions.toString()) {
+                    binding.etTotalSessions.setText(sessions.toString())
+                }
+            }
+        }
 
         // Observe habit update success
         lifecycleScope.launch {
@@ -178,6 +223,23 @@ class ViewHabitDetailActivity : AppCompatActivity() {
 
     private fun updateCategoryIconBackground(backgroundRes: Int) {
         binding.categoryIconBackground.setBackgroundResource(backgroundRes)
+    }
+
+    private fun updateActionButton(isCompleted: Boolean, isPomodoroRequired: Boolean) {
+        if (isCompleted) {
+            binding.btnActionButton.text = getString(R.string.habit_completed)
+            binding.btnActionButton.isEnabled = false
+            // Use alpha to visually indicate disabled state
+            binding.btnActionButton.alpha = 0.6f
+        } else {
+            binding.btnActionButton.isEnabled = true
+            binding.btnActionButton.alpha = 1.0f
+            binding.btnActionButton.text = if (isPomodoroRequired) {
+                getString(R.string.start_pomodoro)
+            } else {
+                getString(R.string.complete_habit)
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -216,10 +278,35 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             showFrequencySelector()
         }
 
+        // Pomodoro switch
+        binding.switchPomodoro.setOnCheckedChangeListener { _, isChecked ->
+            viewModel.updatePomodoroRequired(isChecked)
+        }
 
-        // Start Pomodoro button
-        binding.btnStartPomodoro.setOnClickListener {
-            navigateToFocusTimer()
+        // Pomodoro durations
+        binding.etFocusDuration.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateFocusDuration(text.toIntOrNull() ?: 25)
+        })
+
+        binding.etShortBreak.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateShortBreak(text.toIntOrNull() ?: 5)
+        })
+
+        binding.etLongBreak.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateLongBreak(text.toIntOrNull() ?: 15)
+        })
+
+        binding.etTotalSessions.addTextChangedListener(createSimpleTextWatcher { text ->
+            viewModel.updateTotalSessions(text.toIntOrNull() ?: 4)
+        })
+
+        // Action button (Start Pomodoro or Complete Habit)
+        binding.btnActionButton.setOnClickListener {
+            if (viewModel.isPomodoroRequired.value) {
+                navigateToFocusTimer()
+            } else {
+                viewModel.completeHabit()
+            }
         }
     }
 
@@ -275,6 +362,14 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun createSimpleTextWatcher(onChanged: (String) -> Unit) = object : android.text.TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(s: android.text.Editable?) {
+            onChanged(s.toString())
+        }
     }
 
 

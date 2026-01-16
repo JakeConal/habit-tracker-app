@@ -2,6 +2,7 @@ package com.example.habittracker.data.repository
 
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.util.DateUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +37,7 @@ class HabitRepository private constructor() {
                 value = userId,
                 mapper = { document -> Habit.fromDocument(document) }
             )
+
             _habits.value = habits
             habits
         } catch (e: Exception) {
@@ -133,13 +135,26 @@ class HabitRepository private constructor() {
     }
 
     /**
-     * Toggle habit completion status
+     * Toggle habit completion status for the current day
      */
     suspend fun toggleHabitCompletion(habitId: String): Boolean {
         return try {
             val habit = getHabitById(habitId)
             if (habit != null) {
-                val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
+                val today = DateUtils.getCurrentDateString()
+                val isCompleting = !habit.completedDates.contains(today)
+
+                val updatedCompletedDates = habit.completedDates.toMutableList()
+                if (isCompleting) {
+                    updatedCompletedDates.add(today)
+                } else {
+                    updatedCompletedDates.remove(today)
+                }
+
+                val updatedHabit = habit.copy(
+                    completedDates = updatedCompletedDates,
+                    streak = if (isCompleting) habit.streak + 1 else maxOf(0, habit.streak - 1)
+                )
                 updateHabit(updatedHabit)
             } else {
                 false
@@ -161,7 +176,6 @@ class HabitRepository private constructor() {
                 if (!completedDates.contains(date)) {
                     completedDates.add(date)
                     val updatedHabit = habit.copy(
-                        isCompleted = true,
                         completedDates = completedDates,
                         streak = habit.streak + 1
                     )

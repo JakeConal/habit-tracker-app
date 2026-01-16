@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.util.DateUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -82,7 +83,7 @@ class HabitListViewModel(
     fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
             try {
-                repository.updateHabit(habit.copy(isCompleted = !habit.isCompleted))
+                repository.toggleHabitCompletion(habit.id)
                 loadHabits()
             } catch (e: Exception) {
                 println("Error toggling habit completion: ${e.message}")

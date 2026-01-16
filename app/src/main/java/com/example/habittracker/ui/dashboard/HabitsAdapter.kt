@@ -12,14 +12,16 @@ import com.example.habittracker.databinding.ItemHabitBinding
 class HabitsAdapter(
     private var habits: MutableList<Habit>,
     private var categories: List<Category>,
+    private var selectedDate: String,
     private val onHabitClick: (Habit) -> Unit,
     private val onHabitLongClick: (Habit) -> Unit,
     private val onCheckClick: (Habit) -> Unit
 ) : RecyclerView.Adapter<HabitsAdapter.HabitViewHolder>() {
 
-    fun updateHabits(newHabits: MutableList<Habit>, newCategories: List<Category>) {
+    fun updateHabits(newHabits: MutableList<Habit>, newCategories: List<Category>, date: String) {
         habits = newHabits
         categories = newCategories
+        selectedDate = date
         notifyDataSetChanged()
     }
 
@@ -36,7 +38,9 @@ class HabitsAdapter(
                 ivHabitIcon.setImageResource(iconRes)
                 habitIconBackground.setBackgroundResource(iconBackgroundRes)
 
-                if (habit.isCompleted) {
+                val isCompletedOnSelectedDate = habit.completedDates.contains(selectedDate)
+
+                if (isCompletedOnSelectedDate) {
                     tvHabitStatus.text = itemView.context.getString(R.string.habit_completed)
                     tvHabitStatus.setTextColor(
                         ContextCompat.getColor(itemView.context, R.color.habit_completed)

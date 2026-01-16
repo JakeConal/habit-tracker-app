@@ -1,10 +1,12 @@
 package com.example.habittracker.ui.dashboard
 
+import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -15,13 +17,14 @@ import com.example.habittracker.R
 import com.example.habittracker.data.api.QuoteApiService
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.databinding.FragmentHomeBinding
-import com.google.android.material.snackbar.Snackbar
+import com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
 import java.util.*
 
 /**
@@ -73,7 +76,7 @@ class HomeFragment : Fragment() {
             viewModel.currentUser.collect { user ->
                 if (user != null) {
                     // Set greeting text with user name from Firebase
-                    binding.tvGreeting.text = "Hi, ${user.name}"
+                    binding.tvGreeting.text = getString(R.string.greeting_default, user.name)
                     // Load user avatar from Firebase
                     user.avatarUrl?.let { url ->
                         Glide.with(this@HomeFragment)
@@ -86,10 +89,8 @@ class HomeFragment : Fragment() {
                         // If no avatar URL, use default
                         binding.ivAvatar.setImageResource(R.drawable.ic_person)
                     }
-                    // You could also show user points or other info here
-                    // binding.tvUserPoints.text = "${user.points} pts"
                 } else {
-                    binding.tvGreeting.text = "Hi, User"
+                    binding.tvGreeting.text = getString(R.string.greeting_default, "User")
                     binding.ivAvatar.setImageResource(R.drawable.ic_person)
                 }
             }
@@ -209,13 +210,12 @@ class HomeFragment : Fragment() {
             }
         } ?: habitsList
 
-        if (filteredHabits.isEmpty()) {
-            binding.rvHabits.visibility = View.VISIBLE
-            habitsAdapter.updateHabits(mutableListOf(), categoriesList)
-        } else {
-            binding.rvHabits.visibility = View.VISIBLE
-            habitsAdapter.updateHabits(filteredHabits.toMutableList(), categoriesList)
-        }
+        binding.rvHabits.visibility = View.VISIBLE
+        habitsAdapter.updateHabits(
+            filteredHabits.toMutableList(),
+            categoriesList,
+            selectedDay?.fullDate ?: ""
+        )
     }
 
     private fun setupCalendar() {
@@ -237,15 +237,18 @@ class HomeFragment : Fragment() {
     private fun generateCalendarDays(): List<CalendarDay> {
         val days = mutableListOf<CalendarDay>()
         val calendar = Calendar.getInstance()
-        val today = calendar.get(Calendar.DAY_OF_MONTH)
-        
+        val todayDate = Date()
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayString = sdf.format(todayDate)
+
         // Start from 3 days before today to show 7 days total (today in the middle)
         calendar.add(Calendar.DAY_OF_MONTH, -3)
 
         for (i in 0..6) {
             val dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH)
             val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK)
-            
+            val fullDateString = sdf.format(calendar.time)
+
             // Get abbreviated day name (Sun, Mon, Tue, etc.)
             val dayName = when (dayOfWeek) {
                 Calendar.SUNDAY -> "Sun"
@@ -258,9 +261,9 @@ class HomeFragment : Fragment() {
                 else -> ""
             }
             
-            val isToday = dayOfMonth == today && i == 3
+            val isToday = fullDateString == todayString
 
-            days.add(CalendarDay(dayOfMonth, dayName, isToday))
+            days.add(CalendarDay(dayOfMonth, dayName, fullDateString, isToday, isToday))
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
         
@@ -268,13 +271,18 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupHabits() {
-        val habits = mutableListOf<com.example.habittracker.data.model.Habit>()
+        val habits = mutableListOf<Habit>()
         habitsAdapter = HabitsAdapter(
             habits = habits,
             categories = viewModel.categories.value,
+            selectedDate = selectedDay?.fullDate ?: "",
             onHabitClick = { habit ->
-                // Navigate to ViewHabitFragment to view/edit habit details
-                navigateToViewHabit(habit)
+                // Navigate to ViewHabitFragment only if selected day is today
+                if (selectedDay?.isToday == true) {
+                    navigateToViewHabit(habit)
+                } else {
+                    showError("You can only view details for today")
+                }
             },
             onHabitLongClick = { habit ->
                 // Show delete confirmation dialog
@@ -292,8 +300,8 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun showDeleteConfirmationDialog(habit: com.example.habittracker.data.model.Habit) {
-        android.app.AlertDialog.Builder(requireContext())
+    private fun showDeleteConfirmationDialog(habit: Habit) {
+        AlertDialog.Builder(requireContext())
             .setTitle(R.string.confirm_delete_title)
             .setMessage(R.string.confirm_delete_message)
             .setPositiveButton(R.string.delete) { _, _ ->
@@ -303,16 +311,22 @@ class HomeFragment : Fragment() {
             .show()
     }
 
-    private fun toggleHabitCompletion(habit: com.example.habittracker.data.model.Habit) {
+    private fun toggleHabitCompletion(habit: Habit) {
+        // Restriction: Only allow completion for "Today"
+        if (selectedDay?.isToday == false) {
+            showError("You can only complete habits for today")
+            return
+        }
+
         // Update in Firestore via ViewModel
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.toggleHabitCompletion(habit)
         }
     }
 
-    private fun navigateToViewHabit(habit: com.example.habittracker.data.model.Habit) {
+    private fun navigateToViewHabit(habit: Habit) {
         // Start ViewHabitDetailActivity with habitId
-        val intent = com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity.newIntent(
+        val intent = ViewHabitDetailActivity.newIntent(
             requireContext(),
             habit.id
         )
@@ -320,7 +334,7 @@ class HomeFragment : Fragment() {
     }
 
     private fun showError(message: String) {
-        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 
     private fun setupClickListeners() {

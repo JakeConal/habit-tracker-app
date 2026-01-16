@@ -118,8 +118,7 @@ class HomeViewModel : ViewModel() {
     fun toggleHabitCompletion(habit: Habit) {
         viewModelScope.launch {
             try {
-                val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
-                habitRepository.updateHabit(updatedHabit)
+                habitRepository.toggleHabitCompletion(habit.id)
                 loadHabits() // Reload habits to reflect changes
             } catch (e: Exception) {
                 _error.emit("Error updating habit: ${e.message}")
@@ -137,8 +136,7 @@ class HomeViewModel : ViewModel() {
                 // Find habit with matching ID hash
                 val habit = _habits.value.find { it.id.hashCode() == uiHabitId }
                 if (habit != null) {
-                    val updatedHabit = habit.copy(isCompleted = !habit.isCompleted)
-                    habitRepository.updateHabit(updatedHabit)
+                    habitRepository.toggleHabitCompletion(habit.id)
                     loadHabits() // Reload habits to reflect changes
                 }
             } catch (e: Exception) {
