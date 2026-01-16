@@ -5,11 +5,14 @@ import com.example.habittracker.data.model.Category
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 
 /**
  * Repository for managing Category data, combining local caching with Firestore persistence
  */
-class CategoryRepository private constructor() {
+class CategoryRepository private constructor(
+    private val habitRepository: HabitRepository = HabitRepository.getInstance()
+) {
 
     private val _categories = MutableStateFlow<List<Category>>(emptyList())
     val categories: Flow<List<Category>> = _categories.asStateFlow()
@@ -36,8 +39,15 @@ class CategoryRepository private constructor() {
                 value = userId,
                 mapper = { document -> Category.fromDocument(document) }
             )
-            _categories.value = categories
-            categories
+            
+            // Calculate habit count for each category
+            val categoriesWithCount = categories.map { category ->
+                val habitCount = habitRepository.getHabitCountByCategory(userId, category.id)
+                category.copy(habitCount = habitCount)
+            }
+            
+            _categories.value = categoriesWithCount
+            categoriesWithCount
         } catch (e: Exception) {
             println("Error getting categories for user: ${e.message}")
             emptyList()
@@ -129,6 +139,27 @@ class CategoryRepository private constructor() {
         } catch (e: Exception) {
             println("Error getting category by ID: ${e.message}")
             null
+        }
+    }
+
+    /**
+     * Observe categories for a user with real-time habit count updates
+     * This will automatically update when habits are added/deleted/updated
+     */
+    fun observeCategoriesWithHabitCount(userId: String): Flow<List<Category>> {
+        return FirestoreManager.observeCollectionWhere(
+            collectionName = Category.COLLECTION_NAME,
+            field = "userId",
+            value = userId,
+            mapper = { document -> Category.fromDocument(document) }
+        ).map { categories ->
+            // Calculate habit count for each category whenever categories change
+            categories.map { category ->
+                val habitCount = habitRepository.getHabitCountByCategory(userId, category.id)
+                category.copy(habitCount = habitCount)
+            }.also { categoriesWithCount ->
+                _categories.value = categoriesWithCount
+            }
         }
     }
 

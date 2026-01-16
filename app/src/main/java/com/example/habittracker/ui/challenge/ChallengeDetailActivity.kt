@@ -43,8 +43,16 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
         initViews()
         loadChallengeData()
+        handleHideJoinButton()
         setupClickListeners()
         MainActivity.hideSystemUI(this) // Hide the system navigation bar
+    }
+
+    private fun handleHideJoinButton() {
+        val hideJoin = intent.getBooleanExtra(EXTRA_HIDE_JOIN_BUTTON, false)
+        if (hideJoin) {
+            btnJoinNow.visibility = android.view.View.GONE
+        }
     }
 
     private fun initViews() {
@@ -234,5 +242,6 @@ class ChallengeDetailActivity : AppCompatActivity() {
         const val EXTRA_CHALLENGE_CREATOR_ID = "extra_challenge_creator_id"
         const val EXTRA_CHALLENGE_CREATED_AT = "extra_challenge_created_at"
         const val EXTRA_CHALLENGE_PARTICIPANT_COUNT = "extra_challenge_participant_count"
+        const val EXTRA_HIDE_JOIN_BUTTON = "extra_hide_join_button"
     }
 }

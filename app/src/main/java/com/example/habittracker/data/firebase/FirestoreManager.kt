@@ -4,6 +4,9 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.Source
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 object FirestoreManager {
@@ -193,5 +196,31 @@ object FirestoreManager {
             println("Error setting document: ${e.message}")
             false
         }
+    }
+
+    /**
+     * Observe collection changes with where clause
+     * Returns a Flow that emits the list whenever the collection changes
+     */
+    fun <T> observeCollectionWhere(
+        collectionName: String,
+        field: String,
+        value: Any,
+        mapper: (DocumentSnapshot) -> T?
+    ): Flow<List<T>> = callbackFlow {
+        val listenerRegistration = db.collection(collectionName)
+            .whereEqualTo(field, value)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    println("Error observing collection '$collectionName': ${error.message}")
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                
+                val items = snapshot?.documents?.mapNotNull { mapper(it) } ?: emptyList()
+                trySend(items)
+            }
+        
+        awaitClose { listenerRegistration.remove() }
     }
 }

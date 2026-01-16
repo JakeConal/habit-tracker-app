@@ -13,6 +13,7 @@ class HabitsAdapter(
     private var habits: MutableList<Habit>,
     private var categories: List<Category>,
     private val onHabitClick: (Habit) -> Unit,
+    private val onHabitLongClick: (Habit) -> Unit,
     private val onCheckClick: (Habit) -> Unit
 ) : RecyclerView.Adapter<HabitsAdapter.HabitViewHolder>() {
 
@@ -61,6 +62,10 @@ class HabitsAdapter(
 
                 // Open habit detail when card is tapped, toggle completion when check button is tapped
                 root.setOnClickListener { onHabitClick(habit) }
+                root.setOnLongClickListener {
+                    onHabitLongClick(habit)
+                    true
+                }
                 btnCheck.setOnClickListener { onCheckClick(habit) }
             }
         }

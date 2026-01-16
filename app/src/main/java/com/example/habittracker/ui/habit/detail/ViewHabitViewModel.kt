@@ -89,9 +89,9 @@ class ViewHabitViewModel : ViewModel() {
                         "5:00 - 12:00"
                     }
                     
-                    // Parse quantity/measurement from description only
-                    // (time and frequency are loaded directly from habit fields above)
-                    parseDescription(habit.description)
+                    // Load quantity and unit directly from habit fields
+                    _quantity.value = habit.quantity
+                    _measurement.value = habit.unit
 
                     // Load category details
                     loadCategory(habit.categoryId)
@@ -118,31 +118,6 @@ class ViewHabitViewModel : ViewModel() {
                 _error.emit(e.message ?: "Failed to load category")
             }
         }
-    }
-
-    /**
-     * Parse habit description to extract quantity and measurement ONLY
-     * 
-     * NOTE: Time and frequency are NOT parsed from description to avoid conflicts.
-     * - Time is loaded directly from habit.time field in loadHabit()
-     * - Frequency is loaded directly from habit.frequency field in loadHabit()
-     * 
-     * Description format: "Category: ... • Goal: 30 Mins • Frequency: ... • Time: ..."
-     * We use regex to extract Goal values to handle the bullet-separated format correctly.
-     */
-    private fun parseDescription(description: String) {
-        // Use regex to extract "Goal: <number> <unit>" from description
-        // This handles format: "Category: Reading • Goal: 30 Mins • Frequency: ..."
-        val goalRegex = Regex("""Goal:\s*(\d+)\s+([A-Za-z]+)""")
-        val match = goalRegex.find(description)
-        
-        // Extract and set quantity if found
-        match?.groups?.get(1)?.value?.toIntOrNull()?.let { _quantity.value = it }
-        // Extract and set measurement if found
-        match?.groups?.get(2)?.value?.let { _measurement.value = it }
-        
-        // DO NOT parse time from description - it's already loaded from habit.time in loadHabit()
-        // DO NOT parse frequency from description - it's already loaded from habit.frequency in loadHabit()
     }
 
     /**
@@ -207,13 +182,11 @@ class ViewHabitViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Create updated habit description
-                val description = buildHabitDescription()
-
                 // Create updated habit object
                 val updatedHabit = currentHabit.copy(
                     name = _title.value,
-                    description = description,
+                    quantity = _quantity.value,
+                    unit = _measurement.value,
                     frequency = _frequency.value,
                     categoryId = _categoryId.value,
                     time = _time.value
@@ -256,23 +229,6 @@ class ViewHabitViewModel : ViewModel() {
             } finally {
                 _isLoading.value = false
             }
-        }
-    }
-
-    /**
-     * Build habit description from selected options
-     * 
-     * NOTE: This description is for display purposes. The actual time and frequency
-     * are stored separately in habit.time and habit.frequency fields.
-     * When loading, we use those fields directly, not this description string.
-     */
-    private fun buildHabitDescription(): String {
-        return buildString {
-            append("${_quantity.value} ${_measurement.value}")
-            append(", ")
-            append(_frequency.value.joinToString(", "))
-            append(", ")
-            append(_time.value)
         }
     }
 

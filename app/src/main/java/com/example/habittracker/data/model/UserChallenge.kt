@@ -14,7 +14,7 @@ data class UserChallenge(
     val joinedAt: Long = System.currentTimeMillis(),
     val completedAt: Long? = null, // Null nếu chưa hoàn thành
     val progress: Int = 0, // Phần trăm hoàn thành (0-100)
-    val status: ChallengeStatus = ChallengeStatus.ONGOING // ONGOING, COMPLETED, ABANDONED
+    val status: UserChallengeStatus = UserChallengeStatus.ONGOING // ONGOING, COMPLETED, ABANDONED
 ) {
     companion object {
         const val COLLECTION_NAME = "userChallenges"
@@ -29,7 +29,7 @@ data class UserChallenge(
                     joinedAt = document.getLong("joinedAt") ?: System.currentTimeMillis(),
                     completedAt = document.getLong("completedAt"),
                     progress = document.getLong("progress")?.toInt() ?: 0,
-                    status = ChallengeStatus.valueOf(document.getString("status") ?: "ONGOING")
+                    status = UserChallengeStatus.valueOf(document.getString("status") ?: "ONGOING")
                 )
             } catch (e: Exception) {
                 null
@@ -58,7 +58,7 @@ data class UserChallenge(
     }
 }
 
-enum class ChallengeStatus {
+enum class UserChallengeStatus {
     ONGOING,      // Đang thực hiện
     COMPLETED,    // Đã hoàn thành
     ABANDONED     // Đã bỏ cuộc

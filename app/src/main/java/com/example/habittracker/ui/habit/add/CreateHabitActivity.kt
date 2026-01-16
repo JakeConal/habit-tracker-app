@@ -4,8 +4,7 @@ import android.app.AlertDialog
 import android.app.TimePickerDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.NumberPicker
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -18,6 +17,7 @@ import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.CategoryRepository
 import com.example.habittracker.databinding.ActivityCreateHabitBinding
 import com.example.habittracker.ui.category.CategoryActivity
+import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.util.formatFrequency
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -35,7 +35,11 @@ class CreateHabitActivity : AppCompatActivity() {
     // Flag to prevent setupInitialValues from overwriting user-selected category
     private var isInitialCategoryLoaded = false
     
-    private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
+    private val measurements = listOf(
+        "Mins", "Hours", "Pages", "Times", "Km", "Miles",
+        "Steps", "Glasses", "Cups", "Calories", "Litres", "Ml",
+        "Words", "Lessons", "Exercises", "Kg", "Lbs", "Minutes", "Hours"
+    ).distinct()
     private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     companion object {
@@ -44,21 +48,16 @@ class CreateHabitActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         binding = ActivityCreateHabitBinding.inflate(layoutInflater)
         setContentView(binding.root)
         
-        setupView()
+        MainActivity.hideSystemUI(this)
         applyWindowInsets()
         setupClickListeners()
         observeData()
         setupInitialValues()
-    }
-
-    private fun setupView() {
-        // Enable edge-to-edge
-        window.decorView.systemUiVisibility = android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
-                android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
     }
 
     private fun applyWindowInsets() {
@@ -135,6 +134,22 @@ class CreateHabitActivity : AppCompatActivity() {
                 binding.tvTime.text = time
             }
         }
+
+        // Observe quantity changes
+        lifecycleScope.launch {
+            viewModel.quantity.collect { quantity ->
+                if (binding.etQuantity.text.toString() != quantity.toString()) {
+                    binding.etQuantity.setText(quantity.toString())
+                }
+            }
+        }
+
+        // Observe measurement changes
+        lifecycleScope.launch {
+            viewModel.measurement.collect { measurement ->
+                binding.tvMeasurement.text = measurement
+            }
+        }
     }
 
     /**
@@ -144,9 +159,7 @@ class CreateHabitActivity : AppCompatActivity() {
     private fun updateCategoryUI(category: Category) {
         binding.tvCategoryName.text = category.title
         binding.ivCategoryIcon.setImageResource(category.icon.resId)
-        binding.categoryIconBackground.setCardBackgroundColor(
-            getColor(category.color.colorResId)
-        )
+        binding.categoryIconBackground.setBackgroundResource(category.color.resId)
     }
 
     private fun setupInitialValues() {
@@ -154,15 +167,15 @@ class CreateHabitActivity : AppCompatActivity() {
         if (!isInitialCategoryLoaded) {
             lifecycleScope.launch {
                 try {
-                    val userId = AuthRepository.getInstance().getCurrentUser()?.uid ?: return@launch
-                    val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
-                    if (categories.isNotEmpty()) {
-                        val defaultCategory = categories[0]
-                        viewModel.loadCategory(defaultCategory.id)
-                        isInitialCategoryLoaded = true
-                    } else {
-                        showError("No categories available. Please create a category first.")
+                    val userId = AuthRepository.getInstance().getCurrentUser()?.uid
+                    if (userId != null) {
+                        val categories = CategoryRepository.getInstance().getCategoriesForUser(userId)
+                        // Use first category as default if available
+                        if (categories.isNotEmpty()) {
+                            viewModel.loadCategory(categories[0].id)
+                        }
                     }
+                    isInitialCategoryLoaded = true
                 } catch (e: Exception) {
                     showError("Failed to load categories: ${e.message}")
                 }
@@ -170,7 +183,6 @@ class CreateHabitActivity : AppCompatActivity() {
         }
 
         // Set default values
-        viewModel.updateQuantity(30)
         viewModel.updateMeasurement("Mins")
         viewModel.updateFrequency(listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
         viewModel.updateTime("5:00 - 12:00")
@@ -187,11 +199,17 @@ class CreateHabitActivity : AppCompatActivity() {
             showCategorySelector()
         }
         
-        // Quantity selector
-        binding.btnQuantitySelector.setOnClickListener {
-            showQuantitySelector()
-        }
-        
+        // Quantity is now an EditText, we don't need btnQuantitySelector listener
+        // But we need to update ViewModel when EditText changes
+        binding.etQuantity.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val quantity = s.toString().toIntOrNull() ?: 0
+                viewModel.updateQuantity(quantity)
+            }
+        })
+
         // Measurement selector
         binding.btnMeasurementSelector.setOnClickListener {
             showMeasurementSelector()
@@ -219,27 +237,9 @@ class CreateHabitActivity : AppCompatActivity() {
         startActivityForResult(intent, REQUEST_CODE_CATEGORY)
     }
 
-    private fun showQuantitySelector() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_number_picker, null)
-        val numberPicker = dialogView.findViewById<NumberPicker>(R.id.numberPicker).apply {
-            minValue = 1
-            maxValue = 999
-            value = viewModel.quantity.value
-            wrapSelectorWheel = false
-        }
-        
-        AlertDialog.Builder(this)
-            .setTitle("Select Quantity")
-            .setView(dialogView)
-            .setPositiveButton("OK") { _, _ ->
-                val quantity = numberPicker.value
-                binding.tvQuantity.text = quantity.toString()
-                viewModel.updateQuantity(quantity)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
+    /**
+     * Show measurement selector dialog
+     */
     private fun showMeasurementSelector() {
         val currentIndex = measurements.indexOf(viewModel.measurement.value)
         
@@ -288,10 +288,13 @@ class CreateHabitActivity : AppCompatActivity() {
                 TimePickerDialog(
                     this,
                     { _, endHour, endMinute ->
-                        val timeRange = String.format(
-                            "%02d:%02d - %02d:%02d",
-                            startHour, startMinute, endHour, endMinute
-                        )
+                        val timeRange = java.util.Locale.getDefault().let { locale ->
+                            String.format(
+                                locale,
+                                "%02d:%02d - %02d:%02d",
+                                startHour, startMinute, endHour, endMinute
+                            )
+                        }
                         binding.tvTime.text = timeRange
                         viewModel.updateTime(timeRange)
                     },

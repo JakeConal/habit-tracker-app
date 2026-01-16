@@ -2,20 +2,61 @@ package com.example.habittracker.data.repository
 
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Challenge
+import com.example.habittracker.data.model.ChallengeStatus
 
 class ChallengeRepository {
     private val collectionName = "challenges"
     private val userChallengeRepository = UserChallengeRepository()
 
-    // Get all challenges
+    // Get all approved challenges
     suspend fun getAllChallenges(): List<Challenge> {
         return try {
             FirestoreManager.getCollection(collectionName) { doc ->
                 Challenge.fromDocument(doc)
-            }.filterNotNull()
+            }.filterNotNull().filter { it.status == ChallengeStatus.APPROVED }
         } catch (e: Exception) {
             println("Error getting all challenges: ${e.message}")
             emptyList()
+        }
+    }
+
+    // Get all pending challenges for admin review
+    suspend fun getPendingChallenges(): List<Challenge> {
+        return try {
+            FirestoreManager.getCollection(collectionName) { doc ->
+                Challenge.fromDocument(doc)
+            }.filterNotNull().filter { it.status == ChallengeStatus.PENDING }
+        } catch (e: Exception) {
+            println("Error getting pending challenges: ${e.message}")
+            emptyList()
+        }
+    }
+
+    // Approve a challenge
+    suspend fun approveChallenge(challengeId: String): Boolean {
+        return try {
+            FirestoreManager.updateDocument(
+                collectionName,
+                challengeId,
+                mapOf("status" to ChallengeStatus.APPROVED.name)
+            )
+        } catch (e: Exception) {
+            println("Error approving challenge: ${e.message}")
+            false
+        }
+    }
+
+    // Reject a challenge
+    suspend fun rejectChallenge(challengeId: String): Boolean {
+        return try {
+            FirestoreManager.updateDocument(
+                collectionName,
+                challengeId,
+                mapOf("status" to ChallengeStatus.REJECTED.name)
+            )
+        } catch (e: Exception) {
+            println("Error rejecting challenge: ${e.message}")
+            false
         }
     }
 

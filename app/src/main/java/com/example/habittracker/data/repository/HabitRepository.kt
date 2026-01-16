@@ -192,6 +192,24 @@ class HabitRepository private constructor() {
     }
 
     /**
+     * Get the count of habits for a specific category
+     */
+    suspend fun getHabitCountByCategory(userId: String, categoryId: String): Int {
+        return try {
+            val habits = FirestoreManager.getCollectionWhere(
+                collectionName = Habit.COLLECTION_NAME,
+                field = "userId",
+                value = userId,
+                mapper = { document -> Habit.fromDocument(document) }
+            )
+            habits.count { it.categoryId == categoryId }
+        } catch (e: Exception) {
+            println("Error getting habit count by category: ${e.message}")
+            0
+        }
+    }
+
+    /**
      * Clear all local cache
      */
     fun clearCache() {

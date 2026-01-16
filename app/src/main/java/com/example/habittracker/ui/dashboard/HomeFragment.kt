@@ -13,9 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.api.QuoteApiService
+import com.example.habittracker.data.model.Habit
 import com.example.habittracker.databinding.FragmentHomeBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
@@ -180,10 +182,12 @@ class HomeFragment : Fragment() {
     }
 
     private fun observeData() {
-        // Observe habits from ViewModel
+        // Observe both habits and categories together to ensure icons are always updated correctly
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.habits.collect { habitsList ->
-                updateHabits(habitsList)
+            combine(viewModel.habits, viewModel.categories) { habitsList, categoriesList ->
+                Pair(habitsList, categoriesList)
+            }.collect { (habitsList, categoriesList) ->
+                updateHabits(habitsList, categoriesList)
             }
         }
 
@@ -197,7 +201,7 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun updateHabits(habitsList: List<com.example.habittracker.data.model.Habit>) {
+    private fun updateHabits(habitsList: List<Habit>, categoriesList: List<com.example.habittracker.data.model.Category>) {
         val filteredHabits = selectedDay?.let { day ->
             habitsList.filter { habit ->
                 val fullDayName = getFullDayName(day.dayName)
@@ -206,13 +210,11 @@ class HomeFragment : Fragment() {
         } ?: habitsList
 
         if (filteredHabits.isEmpty()) {
-            // No habits found - show empty state or sample data
-            binding.rvHabits.visibility = View.VISIBLE // Keep visible to show empty state
-            // Convert empty list to UI model
-            habitsAdapter.updateHabits(mutableListOf(), viewModel.categories.value)
+            binding.rvHabits.visibility = View.VISIBLE
+            habitsAdapter.updateHabits(mutableListOf(), categoriesList)
         } else {
             binding.rvHabits.visibility = View.VISIBLE
-            habitsAdapter.updateHabits(filteredHabits.toMutableList(), viewModel.categories.value)
+            habitsAdapter.updateHabits(filteredHabits.toMutableList(), categoriesList)
         }
     }
 
@@ -223,7 +225,7 @@ class HomeFragment : Fragment() {
             // Handle day click
             selectedDay = day
             calendarAdapter.setSelectedDay(day)
-            updateHabits(viewModel.habits.value)
+            updateHabits(viewModel.habits.value, viewModel.categories.value)
         }
         
         binding.rvCalendar.apply {
@@ -274,6 +276,10 @@ class HomeFragment : Fragment() {
                 // Navigate to ViewHabitFragment to view/edit habit details
                 navigateToViewHabit(habit)
             },
+            onHabitLongClick = { habit ->
+                // Show delete confirmation dialog
+                showDeleteConfirmationDialog(habit)
+            },
             onCheckClick = { habit ->
                 // Handle check button click - toggle completion
                 toggleHabitCompletion(habit)
@@ -284,6 +290,17 @@ class HomeFragment : Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = habitsAdapter
         }
+    }
+
+    private fun showDeleteConfirmationDialog(habit: com.example.habittracker.data.model.Habit) {
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle(R.string.confirm_delete_title)
+            .setMessage(R.string.confirm_delete_message)
+            .setPositiveButton(R.string.delete) { _, _ ->
+                viewModel.deleteHabit(habit.id)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
     private fun toggleHabitCompletion(habit: com.example.habittracker.data.model.Habit) {

@@ -9,56 +9,42 @@
     android:clipToPadding="false">
 
     <!-- Header Container -->
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/headerContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="72dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp"
         android:background="@color/header_background"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingVertical="20dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <!-- Back Button -->
-        <FrameLayout
+        <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/bg_action_button">
-
-            <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_back"
-                app:tint="@color/primary_blue" />
-        </FrameLayout>
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:padding="10dp"
+            android:src="@mipmap/ic_back"
+            android:scaleType="fitCenter"
+            android:background="@drawable/button_background_round"
+            android:contentDescription="@string/back" />
 
         <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
-            style="@style/HeaderTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif"
-            android:gravity="center"
+            android:layout_centerInParent="true"
             android:text="Create Habit"
             android:textColor="@color/primary_blue"
-            android:textSize="@dimen/text_lg" />
+            android:textSize="18sp"
+            android:fontFamily="sans-serif-medium" />
 
-        <!-- Optional Action Button (right) -->
-        <FrameLayout
-            android:id="@+id/btnOptionalAction"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_action_button"
-            android:visibility="invisible" />
-    </LinearLayout>
+    </RelativeLayout>
 
     <!-- Form Content with ScrollView -->
     <androidx.core.widget.NestedScrollView
@@ -140,13 +126,11 @@
                     android:orientation="horizontal"
                     android:paddingHorizontal="17dp">
 
-                    <com.google.android.material.card.MaterialCardView
+                    <FrameLayout
                         android:id="@+id/categoryIconBackground"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        app:cardBackgroundColor="@color/icon_bg_pink"
-                        app:cardCornerRadius="8dp"
-                        app:cardElevation="0dp">
+                        android:background="@drawable/bg_category_icon_pink_light">
 
                         <ImageView
                             android:id="@+id/ivCategoryIcon"
@@ -156,7 +140,7 @@
                             android:contentDescription="@string/app_name"
                             android:src="@drawable/ic_book"
                             app:tint="@color/white" />
-                    </com.google.android.material.card.MaterialCardView>
+                    </FrameLayout>
 
                     <TextView
                         android:id="@+id/tvCategoryName"
@@ -197,37 +181,24 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:fontFamily="sans-serif"
-                        android:text="Quantity"
+                        android:text="@string/quantity_label"
                         android:textColor="#364153"
                         android:textSize="@dimen/text_lg" />
 
-                    <LinearLayout
-                        android:id="@+id/btnQuantitySelector"
+                    <EditText
+                        android:id="@+id/etQuantity"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:background="@drawable/bg_input_field"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="17dp">
-
-                        <TextView
-                            android:id="@+id/tvQuantity"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif"
-                            android:text="30"
-                            android:textColor="#364153"
-                            android:textSize="@dimen/text_lg" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:contentDescription="@string/app_name"
-                            android:src="@drawable/ic_chevron_down" />
-                    </LinearLayout>
+                        android:fontFamily="sans-serif"
+                        android:hint="30"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:paddingHorizontal="17dp"
+                        android:paddingVertical="13dp"
+                        android:textColor="#364153"
+                        android:textColorHint="#6A7282"
+                        android:textSize="@dimen/text_lg" />
                 </LinearLayout>
 
                 <!-- Measurement -->

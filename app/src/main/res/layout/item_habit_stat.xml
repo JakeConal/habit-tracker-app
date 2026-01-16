@@ -13,13 +13,11 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <com.google.android.material.card.MaterialCardView
+        <FrameLayout
             android:id="@+id/iconCard"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:cardBackgroundColor="@color/icon_bg_pink"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            android:background="@drawable/bg_category_icon_pink_light"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -29,8 +27,9 @@
                 android:layout_height="32dp"
                 android:layout_gravity="center"
                 android:contentDescription="@string/app_name"
-                android:src="@drawable/ic_walk" />
-        </com.google.android.material.card.MaterialCardView>
+                android:src="@drawable/ic_walk"
+                app:tint="@color/white" />
+        </FrameLayout>
 
         <LinearLayout
             android:id="@+id/habitInfo"

@@ -14,9 +14,12 @@ data class User(
     val joinedChallengeIds: List<String> = emptyList(), // Danh sách ID của challenge đã tham gia
     val notificationsEnabled: Boolean = true, // Whether the user wants to receive notifications
     val fcmToken: String? = null
+    val role: String = ROLE_USER
 ) {
     companion object {
         const val COLLECTION_NAME = "users"
+        const val ROLE_USER = "user"
+        const val ROLE_ADMIN = "admin"
 
         // Convert Firestore DocumentSnapshot to User object
         fun fromDocument(document: DocumentSnapshot): User? {
@@ -32,6 +35,7 @@ data class User(
                 val joinedChallengeIds = (document.get("joinedChallengeIds") as? List<String>) ?: emptyList()
                 val notificationsEnabled = document.getBoolean("notificationsEnabled") ?: true
                 val fcmToken = document.getString("fcmToken")
+                val role = document.getString("role") ?: ROLE_USER
 
                 User(
                     id = id,
@@ -45,6 +49,7 @@ data class User(
                     joinedChallengeIds = joinedChallengeIds,
                     notificationsEnabled = notificationsEnabled,
                     fcmToken = fcmToken
+                    role = role
                 )
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -66,6 +71,7 @@ data class User(
             "lastLoginAt" to lastLoginAt,
             "joinedChallengeIds" to joinedChallengeIds,
             "notificationsEnabled" to notificationsEnabled
+            "role" to role
         )
     }
 }

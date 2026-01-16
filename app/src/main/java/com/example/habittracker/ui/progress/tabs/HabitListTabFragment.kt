@@ -47,25 +47,25 @@ class HabitListTabFragment : Fragment() {
                 name = "Praying Namaz",
                 score = "Habit Score: 85%",
                 iconRes = R.drawable.ic_person,
-                iconBgColor = ContextCompat.getColor(requireContext(), R.color.icon_bg_pink),
+                iconBgRes = R.drawable.bg_category_icon_pink_light,
                 badgeText = "Weekday",
-                badgeColor = ContextCompat.getColor(requireContext(), R.color.badge_7_days_cyan)
+                badgeBgRes = R.drawable.badge_color_cyan
             ),
             HabitStatItem(
                 name = "Walk",
                 score = "Habit Score: 72%",
                 iconRes = R.drawable.ic_walk,
-                iconBgColor = ContextCompat.getColor(requireContext(), R.color.icon_bg_pink),
+                iconBgRes = R.drawable.bg_category_icon_pink_light,
                 badgeText = "Weekday",
-                badgeColor = ContextCompat.getColor(requireContext(), R.color.badge_7_days_cyan)
+                badgeBgRes = R.drawable.badge_color_cyan
             ),
             HabitStatItem(
                 name = "Drink The Water",
                 score = "Habit Score: 60%",
                 iconRes = R.drawable.ic_water,
-                iconBgColor = ContextCompat.getColor(requireContext(), R.color.icon_bg_pink),
+                iconBgRes = R.drawable.bg_category_icon_pink_light,
                 badgeText = "Weekday",
-                badgeColor = ContextCompat.getColor(requireContext(), R.color.badge_7_days_cyan)
+                badgeBgRes = R.drawable.badge_color_cyan
             )
         )
         adapter.setItems(items)

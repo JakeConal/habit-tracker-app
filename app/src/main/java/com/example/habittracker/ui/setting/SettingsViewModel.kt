@@ -1,10 +1,14 @@
 package com.example.habittracker.ui.setting
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.habittracker.R
+import com.example.habittracker.data.model.User
+import com.example.habittracker.data.repository.FirestoreUserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 data class SettingMenuItem(
     val id: Int,
@@ -14,55 +18,42 @@ data class SettingMenuItem(
 
 class SettingsViewModel : ViewModel() {
 
-    private val _settingsMenuItems = MutableStateFlow<List<SettingMenuItem>>(emptyList())
+    private val userRepository = FirestoreUserRepository.getInstance()
+    private val _settingsMenuItems = MutableStateFlow<List<SettingMenuItem>>(getDefaultItems())
     val settingsMenuItems: StateFlow<List<SettingMenuItem>> = _settingsMenuItems.asStateFlow()
 
     init {
-        loadMenuItems()
+        observeUser()
     }
 
-    private fun loadMenuItems() {
-        _settingsMenuItems.value = listOf(
-            SettingMenuItem(
-                id = 1,
-                titleRes = R.string.settings_edit_profile,
-                iconRes = R.drawable.ic_person
-            ),
-            SettingMenuItem(
-                id = 2,
-                titleRes = R.string.settings_reset_password,
-                iconRes = R.drawable.ic_lock
-            ),
-            SettingMenuItem(
-                id = 3,
-                titleRes = R.string.settings_notification,
-                iconRes = R.drawable.ic_notification_menu
-            ),
-            SettingMenuItem(
-                id = 4,
-                titleRes = R.string.settings_terms,
-                iconRes = R.drawable.ic_terms
-            ),
-            SettingMenuItem(
-                id = 5,
-                titleRes = R.string.settings_review_challenge,
-                iconRes = R.drawable.ic_verified_badge
-            ),
-            SettingMenuItem(
-                id = 6,
-                titleRes = R.string.settings_logout,
-                iconRes = R.drawable.ic_settings_general
-            ),
-            SettingMenuItem(
-                id = 7,
-                titleRes = R.string.settings_delete_account,
-                iconRes = R.drawable.ic_trash
-            )
-        )
+    private fun observeUser() {
+        viewModelScope.launch {
+            // First time fetch
+            userRepository.getCurrentUser()
+
+            // Then observe changes
+            userRepository.currentUser.collect { user ->
+                val isAdmin = user?.role == User.ROLE_ADMIN
+                _settingsMenuItems.value = generateMenuItems(isAdmin)
+            }
+        }
     }
 
-    fun onMenuItemClick(menuItemId: Int) {
-        // Handle navigation based on menu item ID
-        // This will be handled by the Fragment using Navigation Component
+    private fun getDefaultItems() = generateMenuItems(false)
+
+    private fun generateMenuItems(isAdmin: Boolean): List<SettingMenuItem> {
+        return mutableListOf<SettingMenuItem>().apply {
+            add(SettingMenuItem(1, R.string.settings_edit_profile, R.drawable.ic_person))
+            add(SettingMenuItem(2, R.string.settings_reset_password, R.drawable.ic_lock))
+            add(SettingMenuItem(3, R.string.settings_notification, R.drawable.ic_notification_menu))
+            add(SettingMenuItem(4, R.string.settings_terms, R.drawable.ic_terms))
+
+            if (isAdmin) {
+                add(SettingMenuItem(5, R.string.settings_review_challenge, R.drawable.ic_verified_badge))
+            }
+
+            add(SettingMenuItem(6, R.string.settings_logout, R.drawable.ic_settings_general))
+            add(SettingMenuItem(7, R.string.settings_delete_account, R.drawable.ic_trash))
+        }
     }
 }
