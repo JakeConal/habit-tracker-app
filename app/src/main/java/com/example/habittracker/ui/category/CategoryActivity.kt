@@ -12,7 +12,6 @@ import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
-import com.example.habittracker.data.model.Category
 import com.example.habittracker.databinding.ActivityCategoryBinding
 import com.example.habittracker.ui.habit.add.CreateHabitActivity
 import com.example.habittracker.ui.main.MainActivity

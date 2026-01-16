@@ -84,10 +84,9 @@
             android:paddingBottom="@dimen/spacing_lg"
             android:orientation="vertical">
 
-            <!-- ... (all the inputs remain original) ... -->
-
             <!-- Habit Title Input -->
             <LinearLayout
+                android:id="@+id/layoutHabitTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_md"
@@ -118,8 +117,64 @@
                     android:textSize="@dimen/text_lg" />
             </LinearLayout>
 
+            <!-- Challenge Info Card (Shown only for challenge habits) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/challengeInfoCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:visibility="gone"
+                app:cardBackgroundColor="#CCFFFFFF"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                tools:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Challenge Details"
+                        android:textColor="@color/primary_blue"
+                        android:textSize="18sp" />
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:layout_marginBottom="12dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:id="@+id/ivChallengeImage"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            tools:src="@drawable/placeholder_challenge" />
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <TextView
+                        android:id="@+id/tvChallengeDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif"
+                        android:lineSpacingExtra="4dp"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        tools:text="This is a detailed description of the challenge that the user has joined." />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- Categories Selector -->
             <LinearLayout
+                android:id="@+id/layoutCategory"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_md"
@@ -182,6 +237,7 @@
 
             <!-- Quantity and Measurement Row -->
             <LinearLayout
+                android:id="@+id/layoutQuantityMeasurement"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_md"
@@ -268,6 +324,7 @@
 
             <!-- Frequency Selector -->
             <LinearLayout
+                android:id="@+id/layoutFrequency"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_md"

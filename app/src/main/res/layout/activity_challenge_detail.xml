@@ -41,18 +41,6 @@
             android:textColor="@color/primary_blue"
             android:fontFamily="sans-serif-medium" />
 
-        <!-- Notification Button -->
-        <ImageButton
-            android:id="@+id/btnNotification"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:padding="10dp"
-            android:src="@mipmap/ic_notification"
-            android:scaleType="fitCenter"
-            android:background="@drawable/button_background_round"
-            android:contentDescription="@string/notifications" />
 
     </RelativeLayout>
 

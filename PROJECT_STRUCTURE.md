@@ -316,16 +316,13 @@ data class Habit(
     val userId: String,
     val categoryId: String,
     val name: String,
-    val description: String,
-    val frequency: List<DayOfWeek>, // Ngày trong tuần
-    val goalType: GoalType, // DURATION, COUNT, DISTANCE
-    val goalValue: Int,
-    val goalUnit: String, // "phút", "lần", "km"
-    val isPomodoroEnabled: Boolean,
-    val pomodoroWorkDuration: Int,
-    val pomodoroBreakDuration: Int,
+    val quantity: Int,
+    val unit: String,
+    val frequency: List<String>,
+    val isCompleted: Boolean,
+    val streak: Int,
     val createdAt: Long,
-    val updatedAt: Long
+    val completedDates: List<String>
 )
 
 // HabitLog.kt

@@ -21,7 +21,12 @@ data class Habit(
     val focusDuration: Int = 25, // in minutes
     val shortBreak: Int = 5, // in minutes
     val longBreak: Int = 15, // in minutes
-    val totalSessions: Int = 4
+    val totalSessions: Int = 4,
+    val isChallengeHabit: Boolean = false,
+    val challengeId: String? = null,
+    val challengeImageUrl: String? = null,
+    val challengeDescription: String? = null,
+    val challengeDurationDays: Int? = null
 ) {
     companion object {
         const val COLLECTION_NAME = "habits"
@@ -45,7 +50,12 @@ data class Habit(
                     focusDuration = document.getLong("focusDuration")?.toInt() ?: 25,
                     shortBreak = document.getLong("shortBreak")?.toInt() ?: 5,
                     longBreak = document.getLong("longBreak")?.toInt() ?: 15,
-                    totalSessions = document.getLong("totalSessions")?.toInt() ?: 4
+                    totalSessions = document.getLong("totalSessions")?.toInt() ?: 4,
+                    isChallengeHabit = document.getBoolean("isChallengeHabit") ?: false,
+                    challengeId = document.getString("challengeId"),
+                    challengeImageUrl = document.getString("challengeImageUrl"),
+                    challengeDescription = document.getString("challengeDescription"),
+                    challengeDurationDays = document.getLong("challengeDurationDays")?.toInt()
                 )
             } catch (e: Exception) {
                 null
@@ -55,7 +65,7 @@ data class Habit(
 
     // Convert Habit object to Map for Firestore
     fun toMap(): Map<String, Any> {
-        return mapOf(
+        val map = mutableMapOf<String, Any>(
             "userId" to userId,
             "name" to name,
             "quantity" to quantity,
@@ -69,7 +79,15 @@ data class Habit(
             "focusDuration" to focusDuration,
             "shortBreak" to shortBreak,
             "longBreak" to longBreak,
-            "totalSessions" to totalSessions
+            "totalSessions" to totalSessions,
+            "isChallengeHabit" to isChallengeHabit
         )
+
+        challengeId?.let { map["challengeId"] = it }
+        challengeImageUrl?.let { map["challengeImageUrl"] = it }
+        challengeDescription?.let { map["challengeDescription"] = it }
+        challengeDurationDays?.let { map["challengeDurationDays"] = it }
+
+        return map
     }
 }

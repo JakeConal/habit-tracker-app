@@ -66,10 +66,10 @@ enum class ChallengeStatus {
     REJECTED
 }
 
-enum class ChallengeDuration(val duration: String, val color: BadgeColor) {
-    SEVEN_DAYS("7 Days Challenge", BadgeColor.CYAN),
-    THIRTY_DAYS("30 Days Challenge", BadgeColor.GREEN),
-    HUNDRED_DAYS("100 Days Challenge", BadgeColor.YELLOW),
+enum class ChallengeDuration(val duration: String, val color: BadgeColor, val days: Int) {
+    SEVEN_DAYS("7 Days Challenge", BadgeColor.CYAN, 7),
+    THIRTY_DAYS("30 Days Challenge", BadgeColor.GREEN, 30),
+    HUNDRED_DAYS("100 Days Challenge", BadgeColor.YELLOW, 100),
 }
 
 enum class BadgeColor {
@@ -77,4 +77,3 @@ enum class BadgeColor {
     GREEN,
     YELLOW,
 }
-

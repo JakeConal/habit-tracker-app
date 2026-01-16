@@ -11,6 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ActivityViewHabitDetailBinding
 import com.example.habittracker.ui.category.CategoryActivity
@@ -104,14 +105,39 @@ class ViewHabitDetailActivity : AppCompatActivity() {
     }
 
     private fun observeData() {
-        // Observe habit data
+        // Observe habit changes
         lifecycleScope.launch {
             viewModel.habit.collect { habit ->
                 habit?.let {
                     binding.tvTitle.text = it.name
                     binding.etHabitTitle.setText(it.name)
-                    val isTodayCompleted = it.completedDates.contains(DateUtils.getCurrentDateString())
-                    updateActionButton(isTodayCompleted, viewModel.isPomodoroRequired.value)
+
+                    if (it.isChallengeHabit) {
+                        binding.challengeInfoCard.visibility = android.view.View.VISIBLE
+                        binding.layoutHabitTitle.visibility = android.view.View.GONE
+                        binding.layoutCategory.visibility = android.view.View.GONE
+                        binding.layoutQuantityMeasurement.visibility = android.view.View.GONE
+                        binding.layoutFrequency.visibility = android.view.View.GONE
+                        binding.btnSaveHeader.visibility = android.view.View.GONE
+
+                        binding.tvChallengeDescription.text = it.challengeDescription
+
+                        if (!it.challengeImageUrl.isNullOrEmpty()) {
+                            Glide.with(this@ViewHabitDetailActivity)
+                                .load(it.challengeImageUrl)
+                                .placeholder(R.drawable.placeholder_challenge)
+                                .into(binding.ivChallengeImage)
+                        }
+                    } else {
+                        binding.challengeInfoCard.visibility = android.view.View.GONE
+                        binding.layoutHabitTitle.visibility = android.view.View.VISIBLE
+                        binding.layoutCategory.visibility = android.view.View.VISIBLE
+                        binding.layoutQuantityMeasurement.visibility = android.view.View.VISIBLE
+                        binding.layoutFrequency.visibility = android.view.View.VISIBLE
+                        binding.btnSaveHeader.visibility = android.view.View.VISIBLE
+                    }
+
+                    updateActionButton(it.completedDates.contains(DateUtils.getCurrentDateString()), it.isPomodoroRequired)
                 }
             }
         }

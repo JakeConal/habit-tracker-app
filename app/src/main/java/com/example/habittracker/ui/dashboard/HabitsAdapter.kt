@@ -30,8 +30,13 @@ class HabitsAdapter(
 
         fun bind(habit: Habit) {
             val category = categories.find { it.id == habit.categoryId }
-            val iconRes = category?.icon?.resId ?: R.drawable.ic_other
-            val iconBackgroundRes = category?.color?.resId ?: R.drawable.bg_habit_icon_pink
+            var iconRes = category?.icon?.resId ?: R.drawable.ic_other
+            var iconBackgroundRes = category?.color?.resId ?: R.drawable.bg_habit_icon_pink
+
+            if (habit.isChallengeHabit) {
+                iconRes = R.drawable.ic_trophy
+                iconBackgroundRes = R.drawable.bg_rainbow_gradient
+            }
 
             binding.apply {
                 tvHabitName.text = habit.name

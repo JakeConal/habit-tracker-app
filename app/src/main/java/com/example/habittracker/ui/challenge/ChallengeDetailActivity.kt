@@ -11,7 +11,9 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeDuration
+import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.ChallengeRepository
+import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.UserChallengeRepository
 import com.example.habittracker.ui.main.MainActivity
 import com.google.android.material.button.MaterialButton
@@ -22,7 +24,6 @@ import kotlinx.coroutines.launch
 class ChallengeDetailActivity : AppCompatActivity() {
 
     private lateinit var btnBack: ImageButton
-    private lateinit var btnNotification: ImageButton
     private lateinit var ivChallengeImage: ImageView
     private lateinit var tvChallengeTitle: TextView
     private lateinit var tvChallengeDetail: TextView
@@ -57,7 +58,6 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
     private fun initViews() {
         btnBack = findViewById(R.id.btnBack)
-        btnNotification = findViewById(R.id.btnNotification)
         ivChallengeImage = findViewById(R.id.ivChallengeImage)
         tvChallengeTitle = findViewById(R.id.tvChallengeTitle)
         tvChallengeDetail = findViewById(R.id.tvChallengeDetail)
@@ -166,10 +166,6 @@ class ChallengeDetailActivity : AppCompatActivity() {
             finish()
         }
 
-        btnNotification.setOnClickListener {
-            Toast.makeText(this@ChallengeDetailActivity, "Notifications", Toast.LENGTH_SHORT).show()
-        }
-
         btnJoinNow.setOnClickListener {
             if (!isUserJoined) {
                 joinChallenge()
@@ -182,12 +178,27 @@ class ChallengeDetailActivity : AppCompatActivity() {
             val currentUserId = auth.currentUser?.uid
             val challengeId = challenge?.id
 
-            if (currentUserId != null && challengeId != null) {
+            if (currentUserId != null && challengeId != null && challenge != null) {
                 try {
                     // Join challenge
                     val joinSuccess = userChallengeRepository.joinChallenge(currentUserId, challengeId)
 
                     if (joinSuccess) {
+                        // Create a special challenge habit
+                        val challengeHabit = Habit(
+                            userId = currentUserId,
+                            name = challenge!!.title,
+                            quantity = 1,
+                            unit = "times",
+                            frequency = listOf("Daily"),
+                            isChallengeHabit = true,
+                            challengeId = challengeId,
+                            challengeImageUrl = challenge!!.imgURL,
+                            challengeDescription = challenge!!.detail,
+                            challengeDurationDays = challenge!!.duration.days
+                        )
+                        HabitRepository.getInstance().addHabit(challengeHabit)
+
                         // Update participant count
                         challengeRepository.updateParticipantCount(challengeId)
 

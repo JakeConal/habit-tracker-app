@@ -66,13 +66,25 @@ class HomeViewModel : ViewModel() {
                 val userId = currentUserId
                 if (userId != null) {
                     // Load user info from Firestore
-                    var user = firestoreUserRepository.getUserById(userId)
+                    val user = firestoreUserRepository.getUserById(userId)
 
                     _currentUser.value = user
 
                     // Load user's habits from Firestore
                     val habitsList = habitRepository.getHabitsForUser(userId)
-                    _habits.value = habitsList
+
+                    // Filter out expired challenge habits
+                    val currentTime = System.currentTimeMillis()
+                    val filteredHabits = habitsList.filter { habit ->
+                        if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
+                            val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
+                            val expiryTime = habit.createdAt + durationMillis
+                            currentTime <= expiryTime
+                        } else {
+                            true
+                        }
+                    }
+                    _habits.value = filteredHabits
 
                     // Load user's categories from Firestore
                     val categoriesList = categoryRepository.getCategoriesForUser(userId)
@@ -98,7 +110,19 @@ class HomeViewModel : ViewModel() {
                 val userId = currentUserId
                 if (userId != null) {
                     val habitsList = habitRepository.getHabitsForUser(userId)
-                    _habits.value = habitsList
+
+                    // Filter out expired challenge habits
+                    val currentTime = System.currentTimeMillis()
+                    val filteredHabits = habitsList.filter { habit ->
+                        if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
+                            val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
+                            val expiryTime = habit.createdAt + durationMillis
+                            currentTime <= expiryTime
+                        } else {
+                            true
+                        }
+                    }
+                    _habits.value = filteredHabits
                     // Also reload categories
                     val categoriesList = categoryRepository.getCategoriesForUser(userId)
                     _categories.value = categoriesList
