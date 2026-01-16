@@ -37,7 +37,7 @@ class HabitAdapter(
         
         fun bind(habit: Habit) {
             titleText.text = habit.name
-            descriptionText.text = "${habit.frequency.formatFrequency()} - ${if (habit.isCompleted) "✓ Completed" else "Pending"}"
+            descriptionText.text = "${habit.quantity} ${habit.unit} - ${habit.frequency.formatFrequency()}"
             itemView.setOnClickListener { onHabitClick(habit) }
         }
     }
@@ -52,4 +52,3 @@ class HabitAdapter(
         }
     }
 }
-

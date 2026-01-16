@@ -5,8 +5,6 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.NumberPicker
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -36,7 +34,11 @@ class ViewHabitDetailActivity : AppCompatActivity() {
         intent.getStringExtra(EXTRA_HABIT_ID) ?: ""
     }
 
-    private val measurements = listOf("Mins", "Hours", "Pages", "Times", "Km", "Miles")
+    private val measurements = listOf(
+        "Mins", "Hours", "Pages", "Times", "Km", "Miles",
+        "Steps", "Glasses", "Cups", "Calories", "Litres", "Ml",
+        "Words", "Lessons", "Exercises", "Kg", "Lbs", "Minutes", "Hours"
+    ).distinct()
     private val frequencies = listOf("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 
     companion object {
@@ -121,10 +123,12 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             }
         }
 
-        // Observe quantity
+        // Observe quantity changes
         lifecycleScope.launch {
             viewModel.quantity.collect { quantity ->
-                binding.tvQuantity.text = quantity.toString()
+                if (binding.etQuantity.text.toString() != quantity.toString()) {
+                    binding.etQuantity.setText(quantity.toString())
+                }
             }
         }
 
@@ -199,10 +203,15 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             showCategorySelector()
         }
 
-        // Quantity selector
-        binding.btnQuantitySelector.setOnClickListener {
-            showQuantitySelector()
-        }
+        // Quantity is now an EditText
+        binding.etQuantity.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                val quantity = s.toString().toIntOrNull() ?: 0
+                viewModel.updateQuantity(quantity)
+            }
+        })
 
         // Measurement selector
         binding.btnMeasurementSelector.setOnClickListener {
@@ -229,27 +238,6 @@ class ViewHabitDetailActivity : AppCompatActivity() {
         // Start CategoryActivity for result
         val intent = Intent(this, CategoryActivity::class.java)
         startActivityForResult(intent, REQUEST_CODE_CATEGORY)
-    }
-
-    private fun showQuantitySelector() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_number_picker, null)
-        val numberPicker = dialogView.findViewById<NumberPicker>(R.id.numberPicker).apply {
-            minValue = 1
-            maxValue = 999
-            value = viewModel.quantity.value
-            wrapSelectorWheel = false
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Select Quantity")
-            .setView(dialogView)
-            .setPositiveButton("OK") { _, _ ->
-                val quantity = numberPicker.value
-                binding.tvQuantity.text = quantity.toString()
-                viewModel.updateQuantity(quantity)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
     }
 
     private fun showMeasurementSelector() {
@@ -300,10 +288,13 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                 TimePickerDialog(
                     this,
                     { _, endHour, endMinute ->
-                        val timeRange = String.format(
-                            "%02d:%02d - %02d:%02d",
-                            startHour, startMinute, endHour, endMinute
-                        )
+                        val timeRange = java.util.Locale.getDefault().let { locale ->
+                            String.format(
+                                locale,
+                                "%02d:%02d - %02d:%02d",
+                                startHour, startMinute, endHour, endMinute
+                            )
+                        }
                         binding.tvTime.text = timeRange
                         viewModel.updateTime(timeRange)
                     },
@@ -323,7 +314,7 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             viewModel.title.value 
         }
         // TODO: Navigate to FocusTimerActivity with habitName
-        showError("Focus Timer not implemented yet")
+        showError("Focus Timer not implemented yet for: $habitName")
     }
 
     private fun showDeleteConfirmationDialog() {
@@ -353,22 +344,12 @@ class ViewHabitDetailActivity : AppCompatActivity() {
             return
         }
 
-        // Update title in ViewModel
+        // Update the habit title in ViewModel before saving
         viewModel.updateTitle(habitTitle)
 
-        // Save the habit
-        viewModel.saveHabit()
-    }
+        // Quantity was updated via text listener
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_CATEGORY && resultCode == RESULT_OK) {
-            val categoryId = data?.getStringExtra(com.example.habittracker.ui.habit.add.CreateHabitActivity.EXTRA_CATEGORY_ID)
-            if (categoryId != null) {
-                viewModel.updateCategoryId(categoryId)
-                viewModel.loadCategory(categoryId)
-            }
-        }
+        viewModel.saveHabit()
     }
 
     private fun showSuccess(message: String) {

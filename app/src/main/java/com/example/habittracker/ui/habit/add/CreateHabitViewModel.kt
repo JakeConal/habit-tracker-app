@@ -138,14 +138,12 @@ class CreateHabitViewModel : ViewModel() {
                     return@launch
                 }
 
-                // Create habit description from selected options
-                val description = buildHabitDescription()
-
                 // Create habit object with Firebase structure
                 val habit = Habit(
                     userId = currentUserId,
                     name = _title.value,
-                    description = description,
+                    quantity = _quantity.value,
+                    unit = _measurement.value,
                     frequency = _frequency.value,
                     isCompleted = false,
                     createdAt = System.currentTimeMillis(),
@@ -174,19 +172,10 @@ class CreateHabitViewModel : ViewModel() {
 
     /**
      * Build a descriptive text from selected options
-     * Uses Category object from repository as single source of truth
+     * NOTE: This method is deprecated as we now store fields separately.
      */
     private fun buildHabitDescription(): String {
-        val categoryName = _category.value?.title ?: "Uncategorized"
-        return buildString {
-            append("Category: $categoryName")
-            append(" • ")
-            append("Goal: ${_quantity.value} ${_measurement.value}")
-            append(" • ")
-            append("Frequency: ${_frequency.value.joinToString(", ")}")
-            append(" • ")
-            append("Time: ${_time.value}")
-        }
+        return ""
     }
 
     /**

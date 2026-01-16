@@ -10,7 +10,8 @@ data class Habit(
     val id: String = "", // Changed from Long to String for Firestore compatibility
     val userId: String = "", // User ID who owns this habit
     val name: String = "",
-    val description: String = "",
+    val quantity: Int = 0,
+    val unit: String = "",
     val frequency: List<String> = listOf("Daily"), // List of days or frequencies like ["Monday", "Wednesday"] or ["Daily"]
     val isCompleted: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
@@ -29,7 +30,8 @@ data class Habit(
                     id = document.id,
                     userId = document.getString("userId") ?: "",
                     name = document.getString("name") ?: "",
-                    description = document.getString("description") ?: "",
+                    quantity = document.getLong("quantity")?.toInt() ?: 0,
+                    unit = document.getString("unit") ?: "",
                     frequency = document.get("frequency") as? List<String> ?: listOf("Daily"),
                     isCompleted = document.getBoolean("isCompleted") ?: false,
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
@@ -49,7 +51,8 @@ data class Habit(
         return mapOf(
             "userId" to userId,
             "name" to name,
-            "description" to description,
+            "quantity" to quantity,
+            "unit" to unit,
             "frequency" to frequency,
             "isCompleted" to isCompleted,
             "createdAt" to createdAt,

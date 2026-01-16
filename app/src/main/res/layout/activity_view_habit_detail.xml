@@ -204,33 +204,20 @@
                         android:textColor="#364153"
                         android:textSize="@dimen/text_lg" />
 
-                    <LinearLayout
-                        android:id="@+id/btnQuantitySelector"
+                    <EditText
+                        android:id="@+id/etQuantity"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:background="@drawable/bg_input_field"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="17dp">
-
-                        <TextView
-                            android:id="@+id/tvQuantity"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif"
-                            android:text="@string/default_quantity"
-                            android:textColor="#364153"
-                            android:textSize="@dimen/text_lg" />
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:contentDescription="@string/app_name"
-                            android:src="@drawable/ic_chevron_down" />
-                    </LinearLayout>
+                        android:fontFamily="sans-serif"
+                        android:hint="30"
+                        android:importantForAutofill="no"
+                        android:inputType="number"
+                        android:paddingHorizontal="17dp"
+                        android:paddingVertical="13dp"
+                        android:textColor="#364153"
+                        android:textColorHint="#6A7282"
+                        android:textSize="@dimen/text_lg" />
                 </LinearLayout>
 
                 <!-- Measurement -->
