@@ -132,6 +132,7 @@
     <string name="settings_coming_soon">Settings will be available soon</string>
     
     <!-- Friends Feature -->
+    <string name="add_friend">Add friend</string>
     <string name="find_friends_hint">Find friends by name/email...</string>
     <string name="requests">Requests</string>
     <string name="mutual_friends_format">%d mutual friends</string>

@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_gradient"
-    tools:context=".ui.settings.ProfileFragment">
+    tools:context=".ui.social.profile.ProfileFragment">
 
     <!-- Header -->
     <RelativeLayout
@@ -67,7 +67,6 @@
         app:cardCornerRadius="24dp"
         app:cardElevation="0dp"
         app:cardBackgroundColor="@android:color/transparent"
-        android:background="@drawable/bg_profile_card"
         app:strokeWidth="0dp"
         app:layout_constraintTop_toBottomOf="@id/headerLayout"
         app:layout_constraintStart_toStartOf="parent"
@@ -98,17 +97,6 @@
                             android:contentDescription="@string/profile_avatar"
                             app:shapeAppearanceOverlay="@style/CircleImageView"
                             tools:src="@tools:sample/avatars" />
-
-                        <!-- Verification Badge -->
-                        <ImageView
-                            android:id="@+id/ivVerifiedBadge"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="bottom|end"
-                            android:src="@drawable/ic_verified_badge"
-                            android:background="@drawable/bg_edit_button"
-                            android:contentDescription="@string/verified_badge" />
-
                     </FrameLayout>
 
                     <!-- User Info -->

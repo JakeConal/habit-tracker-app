@@ -17,7 +17,6 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentFriendProfileBinding
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
-import com.example.habittracker.ui.social.friend.FriendListAdapter // Added import
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
@@ -226,22 +225,16 @@ class FriendProfileFragment : Fragment() {
         when (status) {
             FriendProfileViewModel.FriendshipStatus.NOT_FRIEND -> {
                 binding.btnAddFriend.visibility = View.VISIBLE
-                binding.btnAddFriend.text = "Add Friend"
                 binding.btnAddFriend.isEnabled = true
                 binding.btnAddFriend.alpha = 1.0f
             }
             FriendProfileViewModel.FriendshipStatus.PENDING -> {
                 binding.btnAddFriend.visibility = View.VISIBLE
-                binding.btnAddFriend.text = "Request Sent"
                 binding.btnAddFriend.isEnabled = false
-                binding.btnAddFriend.alpha = 0.7f
+                binding.btnAddFriend.alpha = 1.0f
             }
             FriendProfileViewModel.FriendshipStatus.FRIEND -> {
-                binding.btnAddFriend.visibility = View.VISIBLE
-                binding.btnAddFriend.text = "Friends"
-                binding.btnAddFriend.isEnabled = false
-                binding.btnAddFriend.alpha = 0.7f
-                // Alternatively, could show "Unfriend" button
+                binding.btnAddFriend.visibility = View.GONE
             }
             FriendProfileViewModel.FriendshipStatus.SELF -> {
                 binding.btnAddFriend.visibility = View.GONE

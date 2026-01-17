@@ -1,22 +1,17 @@
 package com.example.habittracker.ui.social.profile
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.PopupMenu
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentProfileBinding
-import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.launch
 
 /**
@@ -143,7 +138,7 @@ class ProfileFragment : Fragment() {
 
         // Edit profile button
         binding.btnEditProfile.setOnClickListener {
-            // TODO: Navigate to edit profile screen or show dialog
+            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
 
         // Tab buttons

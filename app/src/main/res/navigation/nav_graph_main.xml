@@ -56,7 +56,11 @@
         <action
             android:id="@+id/action_profileFragment_to_settingsFragment"
             app:destination="@id/nav_settings" />
-            
+
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/nav_edit_profile" />
+
     </fragment>
 
     <!-- Settings Fragment -->
