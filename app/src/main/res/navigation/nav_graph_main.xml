@@ -16,7 +16,11 @@
         android:id="@+id/nav_register"
         android:name="com.example.habittracker.ui.auth.register.RegisterFragment"
         android:label="Register"
-        tools:layout="@layout/fragment_register" />
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_nav_register_to_nav_terms"
+            app:destination="@id/nav_terms" />
+    </fragment>
 
     <!-- Home/Dashboard Fragment -->
     <fragment
@@ -157,7 +161,7 @@
         android:id="@+id/nav_terms"
         android:name="com.example.habittracker.ui.setting.subsettings.TermsFragment"
         android:label="Terms of Use"
-        tools:layout="@layout/fragment_placeholder_setting" />
+        tools:layout="@layout/fragment_terms" />
 
     <fragment
         android:id="@+id/nav_support"

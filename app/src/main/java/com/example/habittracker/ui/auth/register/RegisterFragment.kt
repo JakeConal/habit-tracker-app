@@ -103,7 +103,7 @@ class RegisterFragment : Fragment() {
         }
 
         binding.tvTermsPrivacy.setOnClickListener {
-            Toast.makeText(requireContext(), "Terms and Privacy Policy", Toast.LENGTH_SHORT).show()
+            findNavController().navigate(R.id.action_nav_register_to_nav_terms)
         }
     }
 

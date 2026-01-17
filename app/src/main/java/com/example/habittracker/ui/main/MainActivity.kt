@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -194,23 +195,35 @@ class MainActivity : AppCompatActivity() {
             .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         navController = navHostFragment.navController
 
+        // Check if user is already logged in to skip login screen
+        if (AuthRepository.getInstance().isUserLoggedIn()) {
+            val navGraph = navController.navInflater.inflate(R.navigation.nav_graph_main)
+            navGraph.setStartDestination(R.id.nav_home)
+            navController.graph = navGraph
+        }
+
         // Hide bottom navigation and FAB on authentication screens and create/select screens
         navController.addOnDestinationChangedListener { _, destination, _ ->
+            val layoutParams = binding.navHostFragment.layoutParams as ConstraintLayout.LayoutParams
             when (destination.id) {
                 R.id.nav_login, 
                 R.id.nav_register,
                 R.id.nav_create_habit,
                 R.id.nav_create_category,
                 R.id.nav_view_habit,
-                R.id.nav_focus_timer -> {
-                    binding.bottomNavigation.visibility = View.GONE
-                    binding.fabAdd.visibility = View.GONE
+                R.id.nav_focus_timer,
+                R.id.nav_terms -> {
+                    binding.bottomNavigationContainer.visibility = View.GONE
+                    layoutParams.bottomToTop = -1
+                    layoutParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
                 }
                 else -> {
-                    binding.bottomNavigation.visibility = View.VISIBLE
-                    binding.fabAdd.visibility = View.VISIBLE
+                    binding.bottomNavigationContainer.visibility = View.VISIBLE
+                    layoutParams.bottomToTop = R.id.bottomNavigationContainer
+                    layoutParams.bottomToBottom = -1
                 }
             }
+            binding.navHostFragment.layoutParams = layoutParams
         }
     }
 
