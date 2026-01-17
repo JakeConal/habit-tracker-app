@@ -52,17 +52,27 @@ class AuthRepository private constructor() {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user
             if (firebaseUser != null) {
-                val user = User(
-                    id = firebaseUser.uid,
-                    name = firebaseUser.displayName ?: email.substringBefore("@"),
-                    avatarUrl = firebaseUser.photoUrl?.toString(),
-                    email = firebaseUser.email,
-                    lastLoginAt = System.currentTimeMillis()
-                )
-                // Update user info in Firestore
-                userRepository.createOrUpdateUser(user)
-                seedDefaultCategoriesForUser(user.id)
-                Result.success(user)
+                // Check if user already exists in Firestore
+                val existingUser = userRepository.getUserById(firebaseUser.uid)
+
+                if (existingUser != null) {
+                    // User exists, update last login time and return existing profile
+                    userRepository.updateLastLogin(firebaseUser.uid)
+                    val updatedUser = existingUser.copy(lastLoginAt = System.currentTimeMillis())
+                    Result.success(updatedUser)
+                } else {
+                    // Profile doesn't exist in Firestore, create it
+                    val user = User(
+                        id = firebaseUser.uid,
+                        name = firebaseUser.displayName ?: email.substringBefore("@"),
+                        avatarUrl = firebaseUser.photoUrl?.toString(),
+                        email = firebaseUser.email,
+                        lastLoginAt = System.currentTimeMillis()
+                    )
+                    userRepository.createOrUpdateUser(user)
+                    seedDefaultCategoriesForUser(user.id)
+                    Result.success(user)
+                }
             } else {
                 Result.failure(Exception("Sign in failed: User is null"))
             }
@@ -151,17 +161,26 @@ class AuthRepository private constructor() {
             val result = auth.signInAnonymously().await()
             val firebaseUser = result.user
             if (firebaseUser != null) {
-                val user = User(
-                    id = firebaseUser.uid,
-                    name = "Guest User",
-                    avatarUrl = null,
-                    createdAt = System.currentTimeMillis(),
-                    lastLoginAt = System.currentTimeMillis()
-                )
-                // Create user profile in Firestore
-                userRepository.createOrUpdateUser(user)
-                seedDefaultCategoriesForUser(user.id)
-                Result.success(user)
+                // Check if user already exists in Firestore
+                val existingUser = userRepository.getUserById(firebaseUser.uid)
+
+                if (existingUser != null) {
+                    userRepository.updateLastLogin(firebaseUser.uid)
+                    val updatedUser = existingUser.copy(lastLoginAt = System.currentTimeMillis())
+                    Result.success(updatedUser)
+                } else {
+                    val user = User(
+                        id = firebaseUser.uid,
+                        name = "Guest User",
+                        avatarUrl = null,
+                        createdAt = System.currentTimeMillis(),
+                        lastLoginAt = System.currentTimeMillis()
+                    )
+                    // Create user profile in Firestore
+                    userRepository.createOrUpdateUser(user)
+                    seedDefaultCategoriesForUser(user.id)
+                    Result.success(user)
+                }
             } else {
                 Result.failure(Exception("Anonymous sign in failed: User is null"))
             }
