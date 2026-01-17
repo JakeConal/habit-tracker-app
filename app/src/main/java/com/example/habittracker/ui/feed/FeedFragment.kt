@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Post
@@ -27,6 +28,7 @@ class FeedFragment : Fragment() {
     private lateinit var rvFeed: RecyclerView
     private lateinit var postAdapter: PostAdapter
     private lateinit var cardCreatePost: MaterialCardView
+    private lateinit var swipeRefreshFeed: SwipeRefreshLayout
 
     private val createPostLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -89,8 +91,13 @@ class FeedFragment : Fragment() {
 
     private fun setupViews(view: View) {
         cardCreatePost = view.findViewById(R.id.cardCreatePost)
+        swipeRefreshFeed = view.findViewById(R.id.swipeRefreshFeed)
 
         updateUserAvatar()
+
+        swipeRefreshFeed.setOnRefreshListener {
+            refreshPosts()
+        }
 
         cardCreatePost.setOnClickListener {
             openCreatePostActivity()
@@ -351,15 +358,19 @@ class FeedFragment : Fragment() {
     }
 
     private fun refreshPosts() {
+        swipeRefreshFeed.isRefreshing = true
         lifecycleScope.launch {
             val result = PostRepository.getInstance().getAllPosts()
 
             result.onSuccess { dataPosts ->
                 val filteredPosts = dataPosts.filter { !it.hiddenBy.contains(currentUserId) }
                 postAdapter.submitList(filteredPosts)
+                swipeRefreshFeed.isRefreshing = false
             }.onFailure { e ->
                 // Handle error
                 e.printStackTrace()
+                swipeRefreshFeed.isRefreshing = false
+                Toast.makeText(context, "Failed to refresh feed", Toast.LENGTH_SHORT).show()
             }
         }
     }

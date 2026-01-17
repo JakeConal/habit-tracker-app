@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.User
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 class LeaderboardFragment : Fragment() {
 
     private lateinit var rvLeaderboard: RecyclerView
+    private lateinit var swipeRefreshLeaderboard: SwipeRefreshLayout
     private lateinit var adapter: LeaderboardAdapter
     private val viewModel: LeaderboardViewModel by viewModels()
 
@@ -40,9 +42,14 @@ class LeaderboardFragment : Fragment() {
 
     private fun setupRecyclerView(view: View) {
         rvLeaderboard = view.findViewById(R.id.rv_leaderboard)
+        swipeRefreshLeaderboard = view.findViewById(R.id.swipeRefreshLeaderboard)
         adapter = LeaderboardAdapter()
         rvLeaderboard.layoutManager = LinearLayoutManager(requireContext())
         rvLeaderboard.adapter = adapter
+
+        swipeRefreshLeaderboard.setOnRefreshListener {
+            viewModel.loadTopUsers()
+        }
     }
 
     private fun observeViewModel(view: View) {
@@ -57,6 +64,12 @@ class LeaderboardFragment : Fragment() {
         val thirdAvatar = view.findViewById<ImageView>(R.id.iv_third_avatar)
         val thirdName = view.findViewById<TextView>(R.id.tv_third_name)
         val thirdPoints = view.findViewById<TextView>(R.id.tv_third_points)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.isLoading.collectLatest { isLoading ->
+                swipeRefreshLeaderboard.isRefreshing = isLoading
+            }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.topUsers.collectLatest { topUsers ->
