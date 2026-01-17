@@ -37,16 +37,19 @@ class LeaderboardAdapter : RecyclerView.Adapter<LeaderboardAdapter.ViewHolder>()
         private val ivAvatar: ImageView = itemView.findViewById(R.id.iv_avatar)
         private val tvName: TextView = itemView.findViewById(R.id.tv_name)
         private val tvPoints: TextView = itemView.findViewById(R.id.tv_points)
+        private val tvScore: TextView = itemView.findViewById(R.id.tv_score)
 
         fun bind(user: User) {
             tvRank.text = user.rank.toString()
             tvName.text = user.name
             tvPoints.text = "${user.points} pts"
+            tvScore.text = "${user.points} pts"
 
             // Load avatar
             if (user.avatarUrl != null) {
                 Glide.with(itemView.context)
                     .load(user.avatarUrl)
+                    .circleCrop()
                     .placeholder(R.drawable.ic_person)
                     .into(ivAvatar)
             } else {

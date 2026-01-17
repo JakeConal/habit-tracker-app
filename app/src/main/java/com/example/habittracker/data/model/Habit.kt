@@ -26,7 +26,8 @@ data class Habit(
     val challengeId: String? = null,
     val challengeImageUrl: String? = null,
     val challengeDescription: String? = null,
-    val challengeDurationDays: Int? = null
+    val challengeDurationDays: Int? = null,
+    val isChallengeRewarded: Boolean = false
 ) {
     companion object {
         const val COLLECTION_NAME = "habits"
@@ -55,7 +56,8 @@ data class Habit(
                     challengeId = document.getString("challengeId"),
                     challengeImageUrl = document.getString("challengeImageUrl"),
                     challengeDescription = document.getString("challengeDescription"),
-                    challengeDurationDays = document.getLong("challengeDurationDays")?.toInt()
+                    challengeDurationDays = document.getLong("challengeDurationDays")?.toInt(),
+                    isChallengeRewarded = document.getBoolean("isChallengeRewarded") ?: false
                 )
             } catch (e: Exception) {
                 null
@@ -80,7 +82,8 @@ data class Habit(
             "shortBreak" to shortBreak,
             "longBreak" to longBreak,
             "totalSessions" to totalSessions,
-            "isChallengeHabit" to isChallengeHabit
+            "isChallengeHabit" to isChallengeHabit,
+            "isChallengeRewarded" to isChallengeRewarded
         )
 
         challengeId?.let { map["challengeId"] = it }

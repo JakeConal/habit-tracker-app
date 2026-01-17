@@ -204,9 +204,12 @@ class HomeFragment : Fragment() {
 
     private fun updateHabits(habitsList: List<Habit>, categoriesList: List<com.example.habittracker.data.model.Category>) {
         val filteredHabits = selectedDay?.let { day ->
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             habitsList.filter { habit ->
                 val fullDayName = getFullDayName(day.dayName)
-                habit.frequency.contains("Daily") || habit.frequency.contains(fullDayName)
+                val habitDate = sdf.format(Date(habit.createdAt))
+                val isAfterOrCreate = day.fullDate >= habitDate
+                isAfterOrCreate && (habit.frequency.contains("Daily") || habit.frequency.contains(fullDayName))
             }
         } ?: habitsList
 

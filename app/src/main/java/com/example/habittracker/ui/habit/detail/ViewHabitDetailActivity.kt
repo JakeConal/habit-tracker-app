@@ -120,6 +120,9 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                         binding.layoutFrequency.visibility = android.view.View.GONE
                         binding.btnSaveHeader.visibility = android.view.View.GONE
 
+                        // Ensure Pomodoro section is visible if it's a challenge habit
+                        binding.layoutPomodoroSection.visibility = android.view.View.VISIBLE
+
                         binding.tvChallengeDescription.text = it.challengeDescription
 
                         if (!it.challengeImageUrl.isNullOrEmpty()) {
@@ -135,6 +138,7 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                         binding.layoutQuantityMeasurement.visibility = android.view.View.VISIBLE
                         binding.layoutFrequency.visibility = android.view.View.VISIBLE
                         binding.btnSaveHeader.visibility = android.view.View.VISIBLE
+                        binding.layoutPomodoroSection.visibility = android.view.View.VISIBLE
                     }
 
                     updateActionButton(it.completedDates.contains(DateUtils.getCurrentDateString()), it.isPomodoroRequired)

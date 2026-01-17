@@ -8,6 +8,7 @@ import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.CategoryRepository
+import com.example.habittracker.data.repository.ChallengeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +27,7 @@ class HomeViewModel : ViewModel() {
     private val habitRepository = HabitRepository.getInstance()
     private val firestoreUserRepository = FirestoreUserRepository.getInstance()
     private val categoryRepository = CategoryRepository.getInstance()
+    private val challengeRepository = ChallengeRepository()
 
     // UI State - Habits
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
@@ -73,9 +75,18 @@ class HomeViewModel : ViewModel() {
                     // Load user's habits from Firestore
                     val habitsList = habitRepository.getHabitsForUser(userId)
 
+                    // Check and reward ended challenges
+                    checkAndRewardChallenges(habitsList, user)
+
+                    // Refresh habits list after rewarding (habits might have been updated)
+                    val updatedHabitsList = if (habitsList.any { it.isChallengeHabit && !it.isChallengeRewarded })
+                        habitRepository.getHabitsForUser(userId)
+                    else
+                        habitsList
+
                     // Filter out expired challenge habits
                     val currentTime = System.currentTimeMillis()
-                    val filteredHabits = habitsList.filter { habit ->
+                    val filteredHabits = updatedHabitsList.filter { habit ->
                         if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
                             val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
                             val expiryTime = habit.createdAt + durationMillis
@@ -108,12 +119,25 @@ class HomeViewModel : ViewModel() {
             try {
                 _isLoading.value = true
                 val userId = currentUserId
+                val user = _currentUser.value ?: (if (userId != null) firestoreUserRepository.getUserById(userId) else null)
+
                 if (userId != null) {
                     val habitsList = habitRepository.getHabitsForUser(userId)
 
+                    // Check and reward ended challenges
+                    if (user != null) {
+                        checkAndRewardChallenges(habitsList, user)
+                    }
+
+                    // Refresh habits list after rewarding
+                    val updatedHabitsList = if (habitsList.any { it.isChallengeHabit && !it.isChallengeRewarded })
+                        habitRepository.getHabitsForUser(userId)
+                    else
+                        habitsList
+
                     // Filter out expired challenge habits
                     val currentTime = System.currentTimeMillis()
-                    val filteredHabits = habitsList.filter { habit ->
+                    val filteredHabits = updatedHabitsList.filter { habit ->
                         if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
                             val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
                             val expiryTime = habit.createdAt + durationMillis
@@ -191,14 +215,74 @@ class HomeViewModel : ViewModel() {
     }
 
     /**
+     * Check and reward ended challenge habits
+     */
+    private suspend fun checkAndRewardChallenges(habitsList: List<Habit>, user: User?) {
+        if (user == null) return
+
+        val currentTime = System.currentTimeMillis()
+        var totalPointsToAdd = 0
+        val habitsToUpdate = mutableListOf<Habit>()
+
+        for (habit in habitsList) {
+            if (habit.isChallengeHabit && !habit.isChallengeRewarded && habit.challengeDurationDays != null) {
+                val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
+                val expiryTime = habit.createdAt + durationMillis
+
+                if (currentTime > expiryTime) {
+                    // Challenge has ended
+                    val totalDays = habit.challengeDurationDays
+                    val completedDays = habit.completedDates.size
+                    val percentage = (completedDays.toDouble() / totalDays.toDouble()) * 100
+
+                    // Fetch challenge to get reward points
+                    val rewardPoints = habit.challengeId?.let { chId ->
+                        challengeRepository.getChallengeById(chId)?.reward
+                    } ?: 0
+
+                    val pointsToAdd = if (rewardPoints > 0) {
+                        ((percentage / 100.0) * rewardPoints).toInt()
+                    } else {
+                        percentage.toInt() // Fallback to percentage number as points
+                    }
+
+                    totalPointsToAdd += pointsToAdd
+                    habitsToUpdate.add(habit.copy(isChallengeRewarded = true))
+                }
+            }
+        }
+
+        if (habitsToUpdate.isNotEmpty()) {
+            // Update habits in Firestore
+            for (updatedHabit in habitsToUpdate) {
+                habitRepository.updateHabit(updatedHabit)
+            }
+
+            // Update user points
+            if (totalPointsToAdd > 0) {
+                val newTotalPoints = user.points + totalPointsToAdd
+                firestoreUserRepository.updateUserPoints(user.id, newTotalPoints)
+
+                // Refresh local user state
+                val updatedUser = firestoreUserRepository.getUserById(user.id)
+                _currentUser.value = updatedUser
+
+                _error.emit("Congratulations! You earned $totalPointsToAdd points from completed challenges!")
+            }
+        }
+    }
+
+    /**
      * Update user points
      */
     fun updateUserPoints(points: Int) {
         viewModelScope.launch {
             try {
-                val userId = currentUserId
+                val user = _currentUser.value
+                val userId = user?.id ?: currentUserId
                 if (userId != null) {
-                    firestoreUserRepository.updateUserPoints(userId, points)
+                    val currentPoints = user?.points ?: 0
+                    firestoreUserRepository.updateUserPoints(userId, currentPoints + points)
                     // Reload user info
                     val updatedUser = firestoreUserRepository.getUserById(userId)
                     _currentUser.value = updatedUser

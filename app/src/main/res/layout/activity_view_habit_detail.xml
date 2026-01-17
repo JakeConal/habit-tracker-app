@@ -124,7 +124,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_lg"
                 android:visibility="gone"
-                app:cardBackgroundColor="#CCFFFFFF"
+                app:cardBackgroundColor="#B3FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp"
@@ -370,6 +370,7 @@
 
             <!-- Pomodoro Settings -->
             <LinearLayout
+                android:id="@+id/layoutPomodoroSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/spacing_md"
