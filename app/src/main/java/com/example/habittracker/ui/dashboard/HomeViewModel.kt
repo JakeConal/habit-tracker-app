@@ -53,13 +53,10 @@ class HomeViewModel : ViewModel() {
         get() = authRepository.getCurrentUser()?.uid
 
     init {
-        loadUserAndHabits()
+        loadCurrentUser()
     }
 
-    /**
-     * Load current user info and their habits from Firestore
-     */
-    fun loadUserAndHabits() {
+    private fun loadCurrentUser() {
         viewModelScope.launch {
             try {
                 _isLoading.value = true

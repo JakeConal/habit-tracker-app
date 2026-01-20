@@ -35,6 +35,19 @@ class PostRepository private constructor() {
 
     // --- Post Functions ---
 
+    suspend fun getPostById(postId: String): Post? {
+        return try {
+            val document = db.collection(Post.COLLECTION_NAME).document(postId).get().await()
+            if (document.exists()) {
+                Post.fromDocument(document)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
     suspend fun createPost(context: Context, post: Post, imageUri: Uri?): Result<Boolean> {
         return try {

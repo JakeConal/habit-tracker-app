@@ -197,24 +197,6 @@ class FeedFragment : Fragment() {
                     hidePost(post)
                     true
                 }
-                // "Share to Feed" -> {
-                //     openCreatePostForSharing(post)
-                //     true
-                // }
-                // "Share Externally" -> {
-                //     // Update share count in backend
-                //     lifecycleScope.launch {
-                //         PostRepository.getInstance().sharePost(post.id)
-                //     }
-
-                //     val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                //         type = "text/plain"
-                //         putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
-                //         putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
-                //     }
-                //     startActivity(Intent.createChooser(shareIntent, "Share post via"))
-                //     true
-                // }
                 else -> false
             }
         }
