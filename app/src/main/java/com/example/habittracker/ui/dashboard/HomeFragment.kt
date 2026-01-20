@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -16,8 +18,14 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.api.QuoteApiService
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.databinding.FragmentHomeBinding
+import com.example.habittracker.databinding.LayoutNotificationDropdownBinding
 import com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity
+import com.example.habittracker.ui.notification.NotificationDropdownAdapter
+import com.example.habittracker.ui.notification.NotificationViewModel
+import com.example.habittracker.ui.feed.CommentsActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
@@ -36,10 +44,14 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     
     private val viewModel: HomeViewModel by viewModels()
-    
+    private val notificationViewModel: NotificationViewModel by activityViewModels()
+
     private lateinit var habitsAdapter: HabitsAdapter
     private lateinit var calendarAdapter: CalendarAdapter
     private var selectedDay: CalendarDay? = null
+
+    private var notificationPopupWindow: PopupWindow? = null
+    private lateinit var notificationAdapter: NotificationDropdownAdapter
 
     private val retrofit by lazy {
         Retrofit.Builder()
@@ -66,8 +78,90 @@ class HomeFragment : Fragment() {
         setupView()
         setupCalendar()
         setupHabits()
+        setupNotificationAdapter()
         setupClickListeners()
         observeData()
+    }
+
+    private fun setupNotificationAdapter() {
+        notificationAdapter = NotificationDropdownAdapter { notification ->
+            // Handle notification click
+            notificationViewModel.markNotificationAsRead(notification.id)
+            notificationPopupWindow?.dismiss()
+
+            // Navigate to post
+            if (notification.postId.isNotEmpty()) {
+                navigateToPost(notification.postId)
+            }
+        }
+    }
+
+    private fun navigateToPost(postId: String) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val post = PostRepository.getInstance().getPostById(postId)
+            if (post != null) {
+                val intent = android.content.Intent(requireContext(), CommentsActivity::class.java).apply {
+                    putExtra(CommentsActivity.EXTRA_POST_ID, post.id)
+                    putExtra(CommentsActivity.EXTRA_POST_USER_ID, post.userId)
+                    putExtra(CommentsActivity.EXTRA_AUTHOR_NAME, post.authorName)
+                    putExtra(CommentsActivity.EXTRA_AUTHOR_AVATAR, post.authorAvatarUrl)
+                    putExtra(CommentsActivity.EXTRA_TIMESTAMP, post.timestamp)
+                    putExtra(CommentsActivity.EXTRA_CONTENT, post.content)
+                    putExtra(CommentsActivity.EXTRA_IMAGE_URL, post.imageUrl)
+                    putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
+                    putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
+                    // We can't know if liked here without more info, but CommentsActivity usually handles it or we can pass false
+                    putExtra(CommentsActivity.EXTRA_IS_LIKED, post.likedBy.contains(AuthRepository.getInstance().getCurrentUser()?.uid))
+                }
+                startActivity(intent)
+            } else {
+                Toast.makeText(requireContext(), "Post not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showNotificationDropdown(anchorView: View) {
+        val context = requireContext()
+        val inflater = LayoutInflater.from(context)
+
+        val dropdownBinding = LayoutNotificationDropdownBinding.inflate(inflater)
+
+        dropdownBinding.rvNotifications.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = notificationAdapter
+        }
+
+        // Initially show only 5 or all based on state
+        updateNotificationList(dropdownBinding)
+
+        dropdownBinding.btnSeeMore.setOnClickListener {
+            notificationViewModel.setShowAllNotifications(true)
+            updateNotificationList(dropdownBinding)
+        }
+
+        notificationPopupWindow = PopupWindow(
+            dropdownBinding.root,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            true
+        ).apply {
+            elevation = 10f
+            setBackgroundDrawable(null)
+            showAsDropDown(anchorView, 0, 10, android.view.Gravity.END)
+        }
+    }
+
+    private fun updateNotificationList(dropdownBinding: LayoutNotificationDropdownBinding) {
+        val notifications = notificationViewModel.notifications.value
+        val showAll = notificationViewModel.showAllNotifications.value
+
+        if (notifications.size > 5 && !showAll) {
+            notificationAdapter.submitList(notifications.take(5))
+            dropdownBinding.btnSeeMore.visibility = View.VISIBLE
+        } else {
+            notificationAdapter.submitList(notifications)
+            dropdownBinding.btnSeeMore.visibility = View.GONE
+        }
     }
 
     private fun setupView() {
@@ -197,6 +291,18 @@ class HomeFragment : Fragment() {
             viewModel.error.collect { errorMessage ->
                 errorMessage?.let {
                     showError(it)
+                }
+            }
+        }
+
+        // Observe notifications for badge or updating the open dropdown
+        viewLifecycleOwner.lifecycleScope.launch {
+            notificationViewModel.notifications.collect { notifications ->
+                // Update popup if it's showing
+                notificationPopupWindow?.let { popup ->
+                    if (popup.isShowing) {
+                        notificationAdapter.submitList(notifications)
+                    }
                 }
             }
         }
@@ -344,6 +450,10 @@ class HomeFragment : Fragment() {
         // Navigate to Daily Quote screen when quote card is clicked
         binding.quoteCard.setOnClickListener {
             findNavController().navigate(R.id.nav_daily_quote)
+        }
+
+        binding.btnNotification.setOnClickListener {
+            showNotificationDropdown(it)
         }
     }
 

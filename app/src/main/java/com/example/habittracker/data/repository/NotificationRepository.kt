@@ -36,9 +36,9 @@ class NotificationRepository {
     }
 
     fun getNotifications(userId: String): Flow<List<Notification>> = callbackFlow {
+        // Tạm thời bỏ orderBy để tránh lỗi thiếu index gây crash
         val query = db.collection("notifications")
             .whereEqualTo("recipientId", userId)
-            .orderBy("timestamp", Query.Direction.DESCENDING)
 
         val listenerRegistration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
@@ -47,7 +47,9 @@ class NotificationRepository {
             }
 
             if (snapshot != null) {
+                // Sắp xếp trong bộ nhớ để đảm bảo tính ổn định mà không cần index phức tạp
                 val notifications = snapshot.toObjects(Notification::class.java)
+                    .sortedByDescending { it.timestamp }
                 trySend(notifications)
             }
         }
@@ -84,5 +86,16 @@ class NotificationRepository {
         }
 
         awaitClose { listenerRegistration.remove() }
+    }
+
+    suspend fun markAsRead(notificationId: String): Result<Boolean> {
+        return try {
+            db.collection("notifications").document(notificationId)
+                .update("read", true).await()
+            Result.success(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
     }
 }

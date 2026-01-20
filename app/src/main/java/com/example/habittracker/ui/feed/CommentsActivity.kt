@@ -531,8 +531,12 @@ class CommentsActivity : AppCompatActivity() {
                 commentAdapter.submitList(comments.toList())
                 commentAdapter.notifyItemChanged(parentIndex) // Force update for nested RV usually needs more work but ListAdapter should handle diff if object changed
 
+                // Call Repo
                 lifecycleScope.launch {
-                    val result = PostRepository.getInstance().toggleLikeReply(postId, parentComment.id, reply.id, currentUserId)
+                    val senderName = UserPreferences.getUserName(this@CommentsActivity)
+                    val senderAvatar = UserPreferences.getUserAvatar(this@CommentsActivity)
+
+                    val result = PostRepository.getInstance().toggleLikeReply(postId, parentComment.id, reply.id, currentUserId, senderName, senderAvatar)
                     if (result.isFailure) {
                         // Revert
                         if (parentIndex < comments.size) {
@@ -583,8 +587,12 @@ class CommentsActivity : AppCompatActivity() {
                 commentAdapter.submitList(comments.toList())
                 commentAdapter.notifyItemChanged(parentIndex)
 
+                // Call Repo
                 lifecycleScope.launch {
-                    val result = PostRepository.getInstance().toggleDislikeReply(postId, parentComment.id, reply.id, currentUserId)
+                    val senderName = UserPreferences.getUserName(this@CommentsActivity)
+                    val senderAvatar = UserPreferences.getUserAvatar(this@CommentsActivity)
+
+                    val result = PostRepository.getInstance().toggleDislikeReply(postId, parentComment.id, reply.id, currentUserId, senderName, senderAvatar)
                     if (result.isFailure) {
                          // Revert
                         if (parentIndex < comments.size) {
