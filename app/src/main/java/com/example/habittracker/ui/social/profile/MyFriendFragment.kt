@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentMyFriendBinding
 import com.example.habittracker.ui.social.friend.FriendListAdapter
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 
 class MyFriendFragment : Fragment() {
@@ -41,7 +42,7 @@ class MyFriendFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        val currentUserId = com.example.habittracker.utils.UserPreferences.getUserId(requireContext())
+        val currentUserId = UserPreferences.getUserId(requireContext())
         friendListAdapter = FriendListAdapter(
             currentUserId = currentUserId,
             showUnfriendAction = true,

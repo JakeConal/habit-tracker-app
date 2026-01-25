@@ -16,7 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.databinding.ActivityCreatePostBinding
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import com.example.habittracker.R
 import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.ui.common.ImagePreviewActivity

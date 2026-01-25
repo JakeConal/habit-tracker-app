@@ -17,7 +17,7 @@ import com.example.habittracker.databinding.FragmentLoginBinding
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import kotlinx.coroutines.launch
 
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 
 class LoginFragment : Fragment() {
 

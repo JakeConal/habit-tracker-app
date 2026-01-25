@@ -31,7 +31,7 @@ import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.NotificationRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.databinding.ActivityMainBinding
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 

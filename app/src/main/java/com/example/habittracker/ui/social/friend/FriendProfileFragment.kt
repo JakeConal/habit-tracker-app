@@ -17,7 +17,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentFriendProfileBinding
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.ui.feed.PostAdapter
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 
 /**

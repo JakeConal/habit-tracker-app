@@ -11,6 +11,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentSettingsBinding
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 
 /**
@@ -116,7 +117,7 @@ class SettingsFragment : Fragment() {
         com.example.habittracker.data.repository.AuthRepository.getInstance().signOut()
         
         // Clear local preferences
-        com.example.habittracker.utils.UserPreferences.clearUserData(requireContext())
+        UserPreferences.clearUserData(requireContext())
         
         // Navigate to login and clear backstack
         val navOptions = androidx.navigation.NavOptions.Builder()
@@ -146,7 +147,7 @@ class SettingsFragment : Fragment() {
                 android.widget.Toast.makeText(requireContext(), R.string.delete_account_success, android.widget.Toast.LENGTH_SHORT).show()
                 
                 // Clear local preferences
-                com.example.habittracker.utils.UserPreferences.clearUserData(requireContext())
+                UserPreferences.clearUserData(requireContext())
                 
                 // Navigate to login and clear backstack
                 val navOptions = androidx.navigation.NavOptions.Builder()

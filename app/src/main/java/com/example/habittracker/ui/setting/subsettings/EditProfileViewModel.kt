@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.FirestoreUserRepository
-import com.example.habittracker.utils.ImageUploadHelper
+import com.example.habittracker.util.ImageUploadHelper
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
