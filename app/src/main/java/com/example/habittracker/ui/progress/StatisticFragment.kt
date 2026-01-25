@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.habittracker.R
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.databinding.FragmentStatisticBinding
 import com.example.habittracker.databinding.LayoutNotificationDropdownBinding
@@ -156,9 +157,9 @@ class StatisticFragment : Fragment() {
     private fun setupTabLayout() {
         TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "All habits"
-                1 -> "Calendar"
-                2 -> "Statistics"
+                0 -> getString(R.string.all_habits)
+                1 -> getString(R.string.calendar)
+                2 -> getString(R.string.statistics)
                 else -> throw IllegalArgumentException("Invalid position: $position")
             }
         }.attach()
