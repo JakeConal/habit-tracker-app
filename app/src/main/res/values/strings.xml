@@ -71,6 +71,15 @@
     <string name="daily">Daily</string>
     <string name="total_habits_completed_week">Total habits completed this week: %d</string>
     <string name="weekly_completion_rate">Weekly completion rate: %d%%</string>
+    <string name="day_singular">Day</string>
+    <string name="day_plural">Days</string>
+    <string name="streak_day_format">%d %s</string>
+
+    <!-- Plurals for days -->
+    <plurals name="days">
+        <item quantity="one">%d Day</item>
+        <item quantity="other">%d Days</item>
+    </plurals>
 
     <!-- Feed Screen -->
     <string name="time_ago_format">%s ago</string>

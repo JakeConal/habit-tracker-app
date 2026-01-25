@@ -53,10 +53,16 @@ class CalendarTabFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.calendarData.collect { data ->
                 data?.let {
-                    binding.tvCurrentStreak.text =
-                        "${it.currentStreak} Day${if (it.currentStreak != 1) "s" else ""}"
-                    binding.tvBestStreak.text =
-                        "${it.bestStreak} Day${if (it.bestStreak != 1) "s" else ""}"
+                    binding.tvCurrentStreak.text = resources.getQuantityString(
+                        R.plurals.days,
+                        it.currentStreak,
+                        it.currentStreak
+                    )
+                    binding.tvBestStreak.text = resources.getQuantityString(
+                        R.plurals.days,
+                        it.bestStreak,
+                        it.bestStreak
+                    )
                     loadCalendarData()
                 }
             }
