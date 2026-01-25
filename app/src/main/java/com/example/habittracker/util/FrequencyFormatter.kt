@@ -41,7 +41,7 @@ object FrequencyFormatter {
         
         // Check for special cases
         when {
-            sortedDays.size == 7 && sortedDays.containsAll(WEEK_ORDER) -> return "Everyday"
+            sortedDays.size == 7 && sortedDays.containsAll(WEEK_ORDER) -> return "Daily"
             sortedDays.size == 5 && sortedDays.containsAll(WEEK_ORDER.subList(0, 5)) -> return "Weekdays"
             sortedDays.size == 2 && sortedDays.containsAll(WEEK_ORDER.subList(5, 7)) -> return "Weekends"
         }

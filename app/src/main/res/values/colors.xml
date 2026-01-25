@@ -41,7 +41,7 @@
     <color name="tab_indicator">#8EC5FF</color>
     
     <!-- Habit status colors -->
-    <color name="habit_completed">#05DF72</color>
+    <color name="habit_completed">#4ADE80</color>
     <color name="habit_completed_bg">#B37BF1A8</color>
     
     <!-- Calendar colors -->

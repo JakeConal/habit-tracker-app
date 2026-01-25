@@ -6,13 +6,12 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ItemWeeklyDayBinding
+import com.example.habittracker.ui.progress.DayStatus
 
 data class WeeklyDayData(
     val dayNumber: String,
     val dayName: String,
-    val isCompleted: Boolean,
-    val isMissed: Boolean,
-    val isUpcoming: Boolean
+    val status: DayStatus
 )
 
 class WeeklyDayAdapter : RecyclerView.Adapter<WeeklyDayAdapter.WeeklyDayViewHolder>() {
@@ -43,24 +42,36 @@ class WeeklyDayAdapter : RecyclerView.Adapter<WeeklyDayAdapter.WeeklyDayViewHold
 
             val context = binding.root.context
 
-            when {
-                day.isCompleted -> {
+            when (day.status) {
+                DayStatus.COMPLETED -> {
                     // Green background for completed
-                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.calendar_day_completed_bg))
-                    binding.dayCard.strokeColor = ContextCompat.getColor(context, R.color.calendar_day_completed_stroke)
-                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.primary_blue))
+                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.habit_completed))
+                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
-                day.isMissed -> {
-                    // Yellow/orange background for missed
-                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.calendar_day_missed_bg))
-                    binding.dayCard.strokeColor = ContextCompat.getColor(context, R.color.calendar_day_missed_stroke)
-                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.primary_blue))
+                DayStatus.MISSED -> {
+                    // Red background for missed
+                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.destructive_red_light))
+                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
-                day.isUpcoming -> {
-                    // Gray background for upcoming/future days
-                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.calendar_day_upcoming_bg))
-                    binding.dayCard.strokeColor = ContextCompat.getColor(context, R.color.calendar_day_upcoming_stroke)
-                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
+                DayStatus.NOT_HABIT_DAY -> {
+                    // Dim white/gray background for non-habit days (trắng xám mờ)
+                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.gray_100))
+                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.gray_400))
+                    binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.gray_300))
+                }
+                DayStatus.HABIT_DAY -> {
+                    // White background for habit days
+                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.primary_blue))
+                    binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
+                }
+                DayStatus.TODAY_PENDING -> {
+                    // Orange background for today's pending habit (màu cam)
+                    binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.icon_bg_orange))
+                    binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
+                    binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
             }
         }

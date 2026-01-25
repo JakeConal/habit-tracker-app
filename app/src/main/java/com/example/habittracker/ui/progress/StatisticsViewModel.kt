@@ -8,6 +8,7 @@ import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.CategoryRepository
 import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.util.DateUtils
+import com.example.habittracker.util.FrequencyFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +32,9 @@ data class HabitStatistics(
 enum class DayStatus {
     COMPLETED,
     MISSED,
-    UPCOMING
+    NOT_HABIT_DAY,
+    HABIT_DAY,
+    TODAY_PENDING
 }
 
 data class WeeklyChartData(
@@ -86,7 +89,19 @@ class StatisticsViewModel : ViewModel() {
                 val userId = authRepository.getCurrentUser()?.uid ?: return@launch
 
                 // Load habits and categories
-                val habits = habitRepository.getHabitsForUser(userId)
+                val allHabits = habitRepository.getHabitsForUser(userId)
+                val currentTime = System.currentTimeMillis()
+
+                // Filter out expired challenge habits
+                val habits = allHabits.filter { habit ->
+                    if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
+                        val expiryTime = habit.createdAt + (habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000)
+                        currentTime <= expiryTime
+                    } else {
+                        true
+                    }
+                }
+
                 _habits.value = habits
 
                 val categories = categoryRepository.getCategoriesForUser(userId)
@@ -118,7 +133,9 @@ class StatisticsViewModel : ViewModel() {
 
             // Calculate weekly days status
             val weeklyDays = getWeeklyDaysForHabit(habit)
-            val daily = habit.frequency.size == 7
+
+            // Format frequency using FrequencyFormatter for range-based summary
+            val frequencyText = FrequencyFormatter.formatFrequency(habit.frequency)
 
             HabitStatistics(
                 habitId = habit.id,
@@ -126,7 +143,7 @@ class StatisticsViewModel : ViewModel() {
                 completionRate = completionRate.coerceIn(0f, 100f),
                 iconRes = category?.icon?.resId ?: com.example.habittracker.R.drawable.ic_other,
                 iconBgRes = category?.color?.resId ?: com.example.habittracker.R.drawable.bg_category_icon_pink_light,
-                frequency = if (daily) "Daily" else habit.frequency.joinToString(", "),
+                frequency = frequencyText,
                 totalCompletions = actualCompletions,
                 expectedCompletions = expectedCompletions,
                 weeklyDays = weeklyDays
@@ -151,10 +168,13 @@ class StatisticsViewModel : ViewModel() {
             val isCompleted = habit.completedDates.contains(dateStr)
             val shouldDoHabit = shouldHabitBeDoneOnDay(habit, calendar)
             val isFuture = dateStr > today
+            val isToday = dateStr == today
 
             val status = when {
                 isCompleted -> DayStatus.COMPLETED
-                isFuture || !shouldDoHabit -> DayStatus.UPCOMING
+                !shouldDoHabit -> DayStatus.NOT_HABIT_DAY
+                isToday && !isCompleted -> DayStatus.TODAY_PENDING
+                isFuture -> DayStatus.HABIT_DAY
                 else -> DayStatus.MISSED
             }
 

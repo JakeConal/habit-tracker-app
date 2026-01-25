@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.habittracker.R
 import com.example.habittracker.databinding.ItemHabitStatBinding
+import com.example.habittracker.databinding.ItemHabitStatLegendBinding
 import com.example.habittracker.ui.progress.DayStatus
 
 data class HabitStatItem(
@@ -21,9 +22,14 @@ data class HabitStatItem(
 
 class HabitStatAdapter(
     private val onHabitClick: (String) -> Unit = {}
-) : RecyclerView.Adapter<HabitStatAdapter.HabitStatViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val items = mutableListOf<HabitStatItem>()
+
+    companion object {
+        private const val TYPE_LEGEND = 0
+        private const val TYPE_HABIT = 1
+    }
 
     fun setItems(newItems: List<HabitStatItem>) {
         items.clear()
@@ -31,16 +37,30 @@ class HabitStatAdapter(
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitStatViewHolder {
-        val binding = ItemHabitStatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return HabitStatViewHolder(binding, onHabitClick)
+    override fun getItemViewType(position: Int): Int {
+        return if (position == 0) TYPE_LEGEND else TYPE_HABIT
     }
 
-    override fun onBindViewHolder(holder: HabitStatViewHolder, position: Int) {
-        holder.bind(items[position])
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == TYPE_LEGEND) {
+            val binding = ItemHabitStatLegendBinding.inflate(inflater, parent, false)
+            LegendViewHolder(binding)
+        } else {
+            val binding = ItemHabitStatBinding.inflate(inflater, parent, false)
+            HabitStatViewHolder(binding, onHabitClick)
+        }
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is HabitStatViewHolder) {
+            holder.bind(items[position - 1])
+        }
+    }
+
+    override fun getItemCount(): Int = if (items.isEmpty()) 0 else items.size + 1
+
+    class LegendViewHolder(binding: ItemHabitStatLegendBinding) : RecyclerView.ViewHolder(binding.root)
 
     class HabitStatViewHolder(
         private val binding: ItemHabitStatBinding,
@@ -59,14 +79,14 @@ class HabitStatAdapter(
                 onHabitClick(item.habitId)
             }
 
-            // Show badge only for Daily habits
-            if (item.badgeText.contains("Daily", ignoreCase = true)) {
-                binding.badgeCard.visibility = android.view.View.VISIBLE
-                binding.tvBadge.text = binding.root.context.getString(R.string.daily)
-                binding.badgeCard.setBackgroundResource(item.badgeBgRes)
+            // Show badge for all habits
+            binding.badgeCard.visibility = android.view.View.VISIBLE
+            binding.tvBadge.text = if (item.badgeText.contains("Daily", ignoreCase = true)) {
+                binding.root.context.getString(R.string.daily)
             } else {
-                binding.badgeCard.visibility = android.view.View.GONE
+                item.badgeText
             }
+            binding.badgeCard.setBackgroundResource(item.badgeBgRes)
 
             // Setup weekly days RecyclerView
             if (!::weeklyDayAdapter.isInitialized) {
@@ -81,16 +101,14 @@ class HabitStatAdapter(
             val weeklyDayData = item.weeklyDays.mapIndexed { index, (dateStr, status) ->
                 val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
                 val dayNumber = dateStr.split("-").last()
-                
+
                 WeeklyDayData(
                     dayNumber = dayNumber,
                     dayName = dayNames[index],
-                    isCompleted = status == DayStatus.COMPLETED,
-                    isMissed = status == DayStatus.MISSED,
-                    isUpcoming = status == DayStatus.UPCOMING
+                    status = status
                 )
             }
-            
+
             weeklyDayAdapter.setDays(weeklyDayData)
         }
     }

@@ -15,8 +15,8 @@
         app:cardBackgroundColor="#F5F5F5"
         app:cardCornerRadius="14dp"
         app:cardElevation="0dp"
-        app:strokeColor="#E5E5E5"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        app:strokeColor="#E5E5E5">
 
         <TextView
             android:id="@+id/tvDayNumber"
