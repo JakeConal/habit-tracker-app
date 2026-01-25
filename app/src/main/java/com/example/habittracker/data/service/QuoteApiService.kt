@@ -1,4 +1,4 @@
-package com.example.habittracker.data.api
+package com.example.habittracker.data.service
 
 import com.example.habittracker.data.model.QuoteResponse
 import retrofit2.Response
