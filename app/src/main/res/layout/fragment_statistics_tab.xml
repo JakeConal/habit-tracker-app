@@ -65,6 +65,16 @@
                         android:textColor="@color/primary_blue"
                         android:fontFamily="sans-serif-medium" />
                 </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvHabitScoreDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/habit_score_description"
+                    android:textSize="14sp"
+                    android:textColor="@color/secondary_gray"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="16dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -144,10 +154,14 @@
                     </LinearLayout>
 
                     <!-- Chart Area with Grid -->
-                    <RelativeLayout
+                    <FrameLayout
                         android:layout_width="0dp"
                         android:layout_height="200dp"
                         android:layout_weight="1">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
 
                         <!-- Grid Lines -->
                         <LinearLayout
@@ -194,12 +208,15 @@
                             android:weightSum="7">
 
                     <LinearLayout
+                        android:id="@+id/barContainerSun"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barSun"
@@ -220,12 +237,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerMon"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barMon"
@@ -246,12 +266,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerTue"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barTue"
@@ -272,12 +295,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerWed"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barWed"
@@ -298,12 +324,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerThu"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barThu"
@@ -324,12 +353,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerFri"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barFri"
@@ -350,12 +382,15 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerSat"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
                             android:id="@+id/barSat"
@@ -377,6 +412,15 @@
 
                         </LinearLayout>
                     </RelativeLayout>
+
+                    <!-- Tooltip Container -->
+                    <FrameLayout
+                        android:id="@+id/tooltipContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
+
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- Legend -->

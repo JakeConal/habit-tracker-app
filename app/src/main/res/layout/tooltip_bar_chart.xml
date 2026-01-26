@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/primary_blue">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:minWidth="120dp">
+
+        <TextView
+            android:id="@+id/tvTooltipCompleted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Completed 5/10"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/tvTooltipCompletionRate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Completion rate 50%"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            android:fontFamily="sans-serif"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

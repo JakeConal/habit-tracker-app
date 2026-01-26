@@ -1,9 +1,12 @@
 package com.example.habittracker.ui.progress.tabs
 
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +20,8 @@ class StatisticsTabFragment : Fragment() {
     private var _binding: FragmentStatisticsTabBinding? = null
     private val binding get() = _binding!!
     private val viewModel: StatisticsViewModel by activityViewModels()
+    private var currentWeekData: List<com.example.habittracker.ui.progress.WeeklyChartData> = emptyList()
+    private var currentTooltipView: View? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +34,7 @@ class StatisticsTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupBarClickListeners()
         observeData()
     }
 
@@ -49,6 +55,7 @@ class StatisticsTabFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.weeklyChartData.collect { weekData ->
+                currentWeekData = weekData
                 updateWeeklyChart(weekData)
                 updateLegend(weekData)
             }
@@ -160,8 +167,90 @@ class StatisticsTabFragment : Fragment() {
         binding.tvWeeklyCompletionRate.text = getString(R.string.weekly_completion_rate, avgCompletionRate)
     }
 
+    private fun setupBarClickListeners() {
+        val barContainers = listOf(
+            binding.barContainerSun,
+            binding.barContainerMon,
+            binding.barContainerTue,
+            binding.barContainerWed,
+            binding.barContainerThu,
+            binding.barContainerFri,
+            binding.barContainerSat
+        )
+
+        barContainers.forEachIndexed { index, container ->
+            container.setOnClickListener {
+                if (index < currentWeekData.size) {
+                    showTooltip(container, currentWeekData[index])
+                }
+            }
+        }
+
+        // Hide tooltip when clicking outside
+        binding.tooltipContainer.setOnClickListener {
+            hideTooltip()
+        }
+    }
+
+    private fun showTooltip(anchorView: View, data: com.example.habittracker.ui.progress.WeeklyChartData) {
+        // Hide existing tooltip if any
+        hideTooltip()
+
+        // Inflate tooltip layout
+        val tooltipView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.tooltip_bar_chart, binding.tooltipContainer, false)
+
+        // Set tooltip data
+        val tvCompleted = tooltipView.findViewById<TextView>(R.id.tvTooltipCompleted)
+        val tvCompletionRate = tooltipView.findViewById<TextView>(R.id.tvTooltipCompletionRate)
+
+        tvCompleted.text = getString(R.string.completed_habits_format, data.completionCount, data.totalHabits)
+        tvCompletionRate.text = getString(R.string.completion_rate_format, data.completionRate.toInt())
+
+        // Calculate tooltip position
+        val anchorLocation = IntArray(2)
+        anchorView.getLocationInWindow(anchorLocation)
+
+        val containerLocation = IntArray(2)
+        binding.tooltipContainer.getLocationInWindow(containerLocation)
+
+        // Measure tooltip to get its size
+        tooltipView.measure(
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        )
+
+        val tooltipWidth = tooltipView.measuredWidth
+        val tooltipHeight = tooltipView.measuredHeight
+
+        // Position tooltip above the bar, centered
+        val x = anchorLocation[0] - containerLocation[0] + (anchorView.width / 2) - (tooltipWidth / 2)
+        val y = anchorLocation[1] - containerLocation[1] - tooltipHeight - 16 // 16dp margin
+
+        // Add tooltip to container
+        val layoutParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.WRAP_CONTENT,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        )
+        layoutParams.leftMargin = x.coerceAtLeast(0) // Keep within bounds with 8dp padding
+        layoutParams.topMargin = y.coerceAtLeast(0)
+        layoutParams.gravity = Gravity.TOP or Gravity.START
+
+        binding.tooltipContainer.addView(tooltipView, layoutParams)
+        binding.tooltipContainer.visibility = View.VISIBLE
+
+        currentTooltipView = tooltipView
+    }
+
+    private fun hideTooltip() {
+        binding.tooltipContainer.removeAllViews()
+        binding.tooltipContainer.visibility = View.GONE
+        currentTooltipView = null
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        hideTooltip()
         _binding = null
     }
 
