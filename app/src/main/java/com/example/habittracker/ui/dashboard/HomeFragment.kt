@@ -110,8 +110,17 @@ class HomeFragment : Fragment() {
                     putExtra(CommentsActivity.EXTRA_IMAGE_URL, post.imageUrl)
                     putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
                     putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
-                    // We can't know if liked here without more info, but CommentsActivity usually handles it or we can pass false
                     putExtra(CommentsActivity.EXTRA_IS_LIKED, post.likedBy.contains(AuthRepository.getInstance().getCurrentUser()?.uid))
+
+                    // Add shared post data for full view
+                    if (!post.originalPostId.isNullOrEmpty()) {
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_POST_ID, post.originalPostId)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_USER_ID, post.originalUserId)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_NAME, post.originalAuthorName)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_AVATAR, post.originalAuthorAvatarUrl)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_CONTENT, post.originalContent)
+                        putExtra(CommentsActivity.EXTRA_ORIGINAL_IMAGE_URL, post.originalImageUrl)
+                    }
                 }
                 startActivity(intent)
             } else {

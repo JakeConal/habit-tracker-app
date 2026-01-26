@@ -119,7 +119,6 @@ class MyPostFragment : Fragment() {
                     when (menuItem.title) {
                         "Delete" -> {
                             // TODO: Call delete in ViewModel
-                            Toast.makeText(requireContext(), "Delete clicked", Toast.LENGTH_SHORT).show()
                             true
                         }
                         "Share" -> {

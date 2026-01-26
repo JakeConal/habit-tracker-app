@@ -107,8 +107,6 @@ class MyFriendFragment : Fragment() {
             viewModel.error.collect { error ->
                 error?.let {
                     Toast.makeText(requireContext(), it, Toast.LENGTH_SHORT).show()
-                    // Create a clearError in VM or just leave it
-                    // viewModel.clearError() 
                 }
             }
         }

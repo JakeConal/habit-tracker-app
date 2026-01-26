@@ -160,7 +160,6 @@ class CreatePostActivity : AppCompatActivity() {
         }
         lifecycleScope.launch {
             viewModel.postCreatedEvent.collect {
-                Toast.makeText(this@CreatePostActivity, "Post created successfully!", Toast.LENGTH_SHORT).show()
                 setResult(RESULT_OK)
                 finish()
             }

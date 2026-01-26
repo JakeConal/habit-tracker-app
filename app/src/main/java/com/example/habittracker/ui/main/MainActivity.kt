@@ -30,7 +30,9 @@ import com.example.habittracker.data.model.Notification
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.NotificationRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
+import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.databinding.ActivityMainBinding
+import com.example.habittracker.ui.feed.CommentsActivity
 import com.example.habittracker.utils.UserPreferences
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
@@ -80,6 +82,56 @@ class MainActivity : AppCompatActivity() {
         }
 
         setupNotificationListener()
+
+        // Handle navigation from notification if present in starting intent
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val postId = intent?.getStringExtra("postId")
+        if (!postId.isNullOrEmpty()) {
+            navigateToPost(postId)
+        }
+    }
+
+    private fun navigateToPost(postId: String) {
+        lifecycleScope.launch {
+            try {
+                val post = PostRepository.getInstance().getPostById(postId)
+                if (post != null) {
+                    val intent = Intent(this@MainActivity, CommentsActivity::class.java).apply {
+                        putExtra(CommentsActivity.EXTRA_POST_ID, post.id)
+                        putExtra(CommentsActivity.EXTRA_POST_USER_ID, post.userId)
+                        putExtra(CommentsActivity.EXTRA_AUTHOR_NAME, post.authorName)
+                        putExtra(CommentsActivity.EXTRA_AUTHOR_AVATAR, post.authorAvatarUrl)
+                        putExtra(CommentsActivity.EXTRA_TIMESTAMP, post.timestamp)
+                        putExtra(CommentsActivity.EXTRA_CONTENT, post.content)
+                        putExtra(CommentsActivity.EXTRA_IMAGE_URL, post.imageUrl)
+                        putExtra(CommentsActivity.EXTRA_LIKES_COUNT, post.likeCount)
+                        putExtra(CommentsActivity.EXTRA_COMMENTS_COUNT, post.commentCount)
+                        putExtra(CommentsActivity.EXTRA_IS_LIKED, post.likedBy.contains(AuthRepository.getInstance().getCurrentUser()?.uid))
+
+                        if (!post.originalPostId.isNullOrEmpty()) {
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_POST_ID, post.originalPostId)
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_USER_ID, post.originalUserId)
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_NAME, post.originalAuthorName)
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_AUTHOR_AVATAR, post.originalAuthorAvatarUrl)
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_CONTENT, post.originalContent)
+                            putExtra(CommentsActivity.EXTRA_ORIGINAL_IMAGE_URL, post.originalImageUrl)
+                        }
+                    }
+                    startActivity(intent)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 
     private fun updateFcmToken() {
@@ -122,7 +174,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showInAppNotification(notification: Notification) {
-        // Show Snackbar for immediate In-App feedback
         val text = when(notification.type) {
             Notification.NotificationType.LIKE_POST -> "${notification.senderName} liked your post"
             Notification.NotificationType.COMMENT_POST -> "${notification.senderName} commented on your post"
@@ -133,24 +184,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         try {
-
-            com.google.android.material.snackbar.Snackbar.make(binding.root, text, com.google.android.material.snackbar.Snackbar.LENGTH_LONG)
-                .setAnchorView(binding.fabAdd) // Avoid covering FAB
-                .show()
-
-            // Trigger system notification
-            triggerSystemNotification(text, text)
+            // Trigger system notification - title is generic to avoid duplication
+            triggerSystemNotification("Habit Tracker", text, notification.postId)
         } catch (e: Exception) {
             e.printStackTrace()
         }
     }
 
-    private fun triggerSystemNotification(title: String, messageBody: String) {
-        val intent = Intent(this, MainActivity::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+    private fun triggerSystemNotification(title: String, messageBody: String, postId: String? = null) {
+        val intent = Intent(this, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+            if (postId != null) {
+                putExtra("postId", postId)
+            }
+        }
+
         val pendingIntent = PendingIntent.getActivity(
-            this, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_ONE_SHOT
+            this, System.currentTimeMillis().toInt(), intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
         val channelId = "habit_tracker_default_channel"

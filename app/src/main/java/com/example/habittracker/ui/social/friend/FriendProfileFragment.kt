@@ -63,10 +63,10 @@ class FriendProfileFragment : Fragment() {
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
             onLikeClick = { _ ->
-                Toast.makeText(requireContext(), "Like feature coming soon!", Toast.LENGTH_SHORT).show()
+                // Interaction handled silently
             },
             onCommentClick = { _ ->
-                Toast.makeText(requireContext(), "Comment feature coming soon!", Toast.LENGTH_SHORT).show()
+                // Interaction handled silently
             },
             onAuthorClick = { userId ->
                 if (userId == currentUserId) {
@@ -79,6 +79,14 @@ class FriendProfileFragment : Fragment() {
                 }
             },
             onShareClick = { post ->
+                // Call repository to increment share count and notify owner
+                lifecycleScope.launch {
+                    val senderName = UserPreferences.getUserName(requireContext())
+                    val senderAvatar = UserPreferences.getUserAvatar(requireContext())
+                    com.example.habittracker.data.repository.PostRepository.getInstance()
+                        .sharePost(post.id, senderName, senderAvatar)
+                }
+
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
                     putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")

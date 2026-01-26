@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +21,7 @@ import com.example.habittracker.utils.UserPreferences
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 import android.widget.ImageView
+import android.widget.Toast
 
 class FeedFragment : Fragment() {
 
@@ -216,12 +216,11 @@ class FeedFragment : Fragment() {
             if (result.isSuccess) {
                 val currentList = postAdapter.currentList.toMutableList()
                 val index = currentList.indexOfFirst { it.id == post.id }
-                if (index != -1) {
-                    currentList.removeAt(index)
-                    postAdapter.submitList(currentList)
-                    Toast.makeText(context, "Post hidden", Toast.LENGTH_SHORT).show()
-                }
-            } else {
+                 if (index != -1) {
+                     currentList.removeAt(index)
+                     postAdapter.submitList(currentList)
+                 }
+             } else {
                  Toast.makeText(context, "Failed to hide post", Toast.LENGTH_SHORT).show()
             }
         }
@@ -233,12 +232,11 @@ class FeedFragment : Fragment() {
              if (result.isSuccess) {
                  val currentList = postAdapter.currentList.toMutableList()
                  val index = currentList.indexOfFirst { it.id == post.id }
-                 if (index != -1) {
-                     currentList.removeAt(index)
-                     postAdapter.submitList(currentList)
-                     Toast.makeText(context, "Post deleted", Toast.LENGTH_SHORT).show()
-                 }
-             } else {
+                  if (index != -1) {
+                      currentList.removeAt(index)
+                      postAdapter.submitList(currentList)
+                  }
+              } else {
                  Toast.makeText(context, "Failed to delete post", Toast.LENGTH_SHORT).show()
              }
         }

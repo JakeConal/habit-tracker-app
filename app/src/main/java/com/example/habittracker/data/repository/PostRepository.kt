@@ -660,8 +660,8 @@ class PostRepository private constructor() {
 
             val currentUserId = auth.currentUser?.uid ?: return
 
-            // Allow self-notification for testing if needed
-            // if (recipientId == currentUserId && type != Notification.NotificationType.LIKE_POST) return
+            // Only notify and save to database if the interaction is from a different user
+            if (recipientId == currentUserId) return
 
             // Check if recipient has enabled notifications
             val recipientDoc = db.collection(com.example.habittracker.data.model.User.COLLECTION_NAME).document(recipientId).get().await()

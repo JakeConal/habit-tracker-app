@@ -144,10 +144,10 @@ class SettingsFragment : Fragment() {
             
             if (result.isSuccess) {
                 android.widget.Toast.makeText(requireContext(), R.string.delete_account_success, android.widget.Toast.LENGTH_SHORT).show()
-                
+
                 // Clear local preferences
                 com.example.habittracker.utils.UserPreferences.clearUserData(requireContext())
-                
+
                 // Navigate to login and clear backstack
                 val navOptions = androidx.navigation.NavOptions.Builder()
                     .setPopUpTo(R.id.nav_graph_main, true)
@@ -164,4 +164,3 @@ class SettingsFragment : Fragment() {
         _binding = null
     }
 }
-

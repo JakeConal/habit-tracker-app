@@ -27,11 +27,7 @@ import com.example.habittracker.ui.common.ImagePreviewActivity
 import com.example.habittracker.utils.UserPreferences
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import androidx.core.app.NotificationCompat
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
-import android.app.PendingIntent
 
 class CommentsActivity : AppCompatActivity() {
 
@@ -364,7 +360,6 @@ class CommentsActivity : AppCompatActivity() {
                          comments.remove(comment)
                          commentAdapter.submitList(comments.toList())
                          updateCommentCountUI()
-                         Toast.makeText(this@CommentsActivity, "Comment deleted", Toast.LENGTH_SHORT).show()
                      } else {
                          Toast.makeText(this@CommentsActivity, "Failed to delete comment", Toast.LENGTH_SHORT).show()
                      }
@@ -393,7 +388,6 @@ class CommentsActivity : AppCompatActivity() {
                              commentAdapter.submitList(comments.toList())
                              commentAdapter.notifyItemChanged(parentIndex)
                          }
-                         Toast.makeText(this@CommentsActivity, "Reply deleted", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(this@CommentsActivity, "Failed to delete reply", Toast.LENGTH_SHORT).show()
                     }
@@ -721,8 +715,6 @@ class CommentsActivity : AppCompatActivity() {
                         // List update is handled by SnapshotListener
                         cancelReplyMode()
                         binding.etComment.text?.clear()
-                        Toast.makeText(this@CommentsActivity, "Reply sent!", Toast.LENGTH_SHORT).show()
-                        sendLocalNotification("Comment Reply", "You replied: $commentText")
                     } else {
                         Toast.makeText(this@CommentsActivity, "Failed to send reply: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -741,8 +733,6 @@ class CommentsActivity : AppCompatActivity() {
                     if (result.isSuccess) {
                         // List update is handled by SnapshotListener
                         binding.etComment.text?.clear()
-                        Toast.makeText(this@CommentsActivity, "Comment sent!", Toast.LENGTH_SHORT).show()
-                        sendLocalNotification("New Comment", "You commented: $commentText")
                     } else {
                         Toast.makeText(this@CommentsActivity, "Failed to send comment: ${result.exceptionOrNull()?.message}", Toast.LENGTH_SHORT).show()
                     }
@@ -757,54 +747,6 @@ class CommentsActivity : AppCompatActivity() {
     }
 
 
-    private fun sendLocalNotification(title: String, message: String) {
-        val channelId = "habit_tracker_comments"
-        val notificationId = System.currentTimeMillis().toInt()
-
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Comments",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val intent = android.content.Intent(this, CommentsActivity::class.java).apply {
-            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-            // Re-open this post if clicked (simplified for now, ideally pass post ID)
-            if (post != null) {
-                putExtra(EXTRA_POST_ID, post?.id)
-                putExtra(EXTRA_POST_USER_ID, post?.userId)
-                 putExtra(EXTRA_AUTHOR_NAME, post?.authorName)
-                 // Add other extras if needed to fully restore state
-            }
-        }
-
-        val pendingIntent = PendingIntent.getActivity(
-            this,
-            notificationId,
-            intent,
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
-        )
-
-        val builder = NotificationCompat.Builder(this, channelId)
-            .setSmallIcon(R.mipmap.ic_launcher) // Ensure this resource exists or use R.drawable.ic_notification if available
-            .setContentTitle(title)
-            .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-
-        try {
-            notificationManager.notify(notificationId, builder.build())
-        } catch (e: SecurityException) {
-            // Android 13+ requires POST_NOTIFICATIONS permission
-            e.printStackTrace()
-        }
-    }
 
     private fun returnResult() {
         val resultIntent = android.content.Intent().apply {
