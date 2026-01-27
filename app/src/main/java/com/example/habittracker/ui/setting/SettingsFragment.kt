@@ -75,7 +75,6 @@ class SettingsFragment : Fragment() {
             2 -> navigateToResetPassword()
             3 -> navigateToNotificationSettings()
             4 -> navigateToTerms()
-            5 -> navigateToReviewChallenge()
             6 -> handleLogout()
             7 -> handleDeleteAccount()
         }
@@ -95,10 +94,6 @@ class SettingsFragment : Fragment() {
     
     private fun navigateToTerms() {
         findNavController().navigate(R.id.action_settingsFragment_to_termsFragment)
-    }
-    
-    private fun navigateToReviewChallenge() {
-        findNavController().navigate(R.id.action_settingsFragment_to_reviewChallengeFragment)
     }
     
     private fun handleLogout() {

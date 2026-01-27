@@ -103,12 +103,25 @@
                             android:id="@+id/tvChallengeTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="12dp"
+                            android:layout_marginBottom="4dp"
                             android:textColor="@color/primary_blue"
                             android:textSize="24sp"
                             android:textStyle="bold"
                             android:fontFamily="sans-serif-medium"
                             tools:text="Sleep Hygiene Challenge" />
+
+                        <!-- Vote Progress -->
+                        <TextView
+                            android:id="@+id/tvVoteProgress"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:textColor="@color/accent_pink"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"
+                            tools:text="Votes: 450/1000"
+                            tools:visibility="visible" />
 
                         <!-- Duration Badge -->
                         <com.google.android.material.chip.Chip
@@ -251,6 +264,22 @@
                     </LinearLayout>
 
                 </com.google.android.material.card.MaterialCardView>
+
+                <!-- Share to Feed Button for Pending Challenges -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnShareToFeed"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginBottom="16dp"
+                    android:text="Share to Feed for Votes"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:backgroundTint="@color/accent_pink"
+                    android:visibility="gone"
+                    app:cornerRadius="14dp"
+                    app:elevation="0dp" />
 
                 <!-- Join Now Button with full width and proper spacing -->
                 <com.google.android.material.button.MaterialButton

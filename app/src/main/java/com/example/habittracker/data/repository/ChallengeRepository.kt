@@ -3,6 +3,10 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeStatus
+import com.example.habittracker.data.model.Post
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FieldValue
+import kotlinx.coroutines.tasks.await
 
 class ChallengeRepository {
     private val collectionName = "challenges"
@@ -11,51 +15,104 @@ class ChallengeRepository {
     // Get all approved challenges
     suspend fun getAllChallenges(): List<Challenge> {
         return try {
-            FirestoreManager.getCollection(collectionName) { doc ->
+            val list = FirestoreManager.getCollection(collectionName) { doc ->
                 Challenge.fromDocument(doc)
-            }.filterNotNull().filter { it.status == ChallengeStatus.APPROVED }
+            }
+            list.filter { it.status == ChallengeStatus.APPROVED }
         } catch (e: Exception) {
             println("Error getting all challenges: ${e.message}")
             emptyList()
         }
     }
 
-    // Get all pending challenges for admin review
-    suspend fun getPendingChallenges(): List<Challenge> {
+    // Get all challenges including PENDING if the user is the creator
+    suspend fun getAllVisibleChallenges(userId: String): List<Challenge> {
         return try {
-            FirestoreManager.getCollection(collectionName) { doc ->
+            val list = FirestoreManager.getCollection(collectionName) { doc ->
                 Challenge.fromDocument(doc)
-            }.filterNotNull().filter { it.status == ChallengeStatus.PENDING }
+            }
+            list.filter {
+                it.status == ChallengeStatus.APPROVED || (it.status == ChallengeStatus.PENDING && it.creatorId == userId)
+            }
         } catch (e: Exception) {
-            println("Error getting pending challenges: ${e.message}")
+            println("Error getting visible challenges: ${e.message}")
             emptyList()
         }
     }
 
-    // Approve a challenge
-    suspend fun approveChallenge(challengeId: String): Boolean {
+    // Vote for a challenge through a post
+    suspend fun voteForChallenge(challengeId: String, postId: String, userId: String): Boolean {
         return try {
-            FirestoreManager.updateDocument(
-                collectionName,
-                challengeId,
-                mapOf("status" to ChallengeStatus.APPROVED.name)
-            )
-        } catch (e: Exception) {
-            println("Error approving challenge: ${e.message}")
-            false
-        }
-    }
+            val challenge = getChallengeById(challengeId) ?: return false
 
-    // Reject a challenge
-    suspend fun rejectChallenge(challengeId: String): Boolean {
-        return try {
-            FirestoreManager.updateDocument(
-                collectionName,
-                challengeId,
-                mapOf("status" to ChallengeStatus.REJECTED.name)
+            // Check if user already voted for this challenge (Global check)
+            if (challenge.votedBy.contains(userId)) return false
+
+            val postRepository = PostRepository.getInstance()
+            val post = postRepository.getPostById(postId) ?: return false
+
+            val newPostVotes = post.voteCount + 1
+            val newPostVotedBy = post.votedBy + userId
+
+            // Update Post (the one clicked)
+            val postUpdated = FirestoreManager.updateDocument(
+                "posts",
+                postId,
+                mapOf(
+                    "voteCount" to newPostVotes,
+                    "votedBy" to newPostVotedBy
+                )
             )
+
+            if (postUpdated) {
+                // Also update the user's votedChallengeIds (Global state for UI sync)
+                FirestoreManager.updateDocument(
+                    "users",
+                    userId,
+                    mapOf("votedChallengeIds" to FieldValue.arrayUnion(challengeId))
+                )
+
+                // Update ALL posts with this challengeId to ensure everything stays in sync
+                try {
+                    val db = FirebaseFirestore.getInstance()
+                    val querySnapshot = db.collection("posts")
+                        .whereEqualTo("challengeId", challengeId)
+                        .get()
+                        .await()
+
+                    val batch = db.batch()
+                    for (doc in querySnapshot.documents) {
+                        val p = Post.fromDocument(doc)
+                        if (p != null && !p.votedBy.contains(userId)) {
+                            batch.update(doc.reference, mapOf(
+                                "voteCount" to (p.voteCount + 1),
+                                "votedBy" to FieldValue.arrayUnion(userId)
+                            ))
+                        }
+                    }
+                    batch.commit().await()
+                } catch (e: Exception) {
+                    println("Error syncing all challenge posts: ${e.message}")
+                }
+
+                val newChallengeVotes = challenge.votes + 1
+                val newChallengeVotedBy = challenge.votedBy + userId
+                val updates = mutableMapOf<String, Any>(
+                    "votes" to newChallengeVotes,
+                    "votedBy" to newChallengeVotedBy
+                )
+
+                // Check if reached 1000 votes
+                if (newChallengeVotes >= 1000 && challenge.status == ChallengeStatus.PENDING) {
+                    updates["status"] = ChallengeStatus.APPROVED.name
+                }
+
+                FirestoreManager.updateDocument(collectionName, challengeId, updates)
+            } else {
+                false
+            }
         } catch (e: Exception) {
-            println("Error rejecting challenge: ${e.message}")
+            println("Error voting for challenge: ${e.message}")
             false
         }
     }
@@ -63,7 +120,7 @@ class ChallengeRepository {
     // Get all challenges with join status for a specific user
     suspend fun getAllChallengesWithUserStatus(userId: String): List<ChallengeWithStatus> {
         return try {
-            val challenges = getAllChallenges()
+            val challenges = getAllVisibleChallenges(userId)
             challenges.map { challenge ->
                 val isJoined = userChallengeRepository.hasUserJoinedChallenge(userId, challenge.id)
                 ChallengeWithStatus(

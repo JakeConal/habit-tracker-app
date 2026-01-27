@@ -14,7 +14,9 @@ data class Challenge(
     val creatorId: String = "", // ID của user tạo challenge
     val createdAt: Long = System.currentTimeMillis(),
     val participantCount: Int = 0, // Số lượng user đã tham gia
-    val status: ChallengeStatus = ChallengeStatus.PENDING
+    val status: ChallengeStatus = ChallengeStatus.PENDING,
+    val votes: Int = 0, // Số lượng vote cho challenge
+    val votedBy: List<String> = emptyList() // List IDs of users who voted
 ) {
     companion object {
         const val COLLECTION_NAME = "challenges"
@@ -34,7 +36,13 @@ data class Challenge(
                     creatorId = document.getString("creatorId") ?: "",
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),
                     participantCount = document.getLong("participantCount")?.toInt() ?: 0,
-                    status = ChallengeStatus.valueOf(document.getString("status") ?: "PENDING")
+                    status = try {
+                        ChallengeStatus.valueOf(document.getString("status") ?: "PENDING")
+                    } catch (e: Exception) {
+                        ChallengeStatus.PENDING
+                    },
+                    votes = document.getLong("votes")?.toInt() ?: 0,
+                    votedBy = (document.get("votedBy") as? List<String>) ?: emptyList()
                 )
             } catch (e: Exception) {
                 null
@@ -43,7 +51,7 @@ data class Challenge(
     }
 
     // Convert Challenge object to Map for Firestore
-    fun toMap(): Map<String, Any> {
+    fun toMap(): Map<String, Any?> {
         return mapOf(
             "title" to title,
             "description" to description,
@@ -55,7 +63,9 @@ data class Challenge(
             "creatorId" to creatorId,
             "createdAt" to createdAt,
             "participantCount" to participantCount,
-            "status" to status.name
+            "status" to status.name,
+            "votes" to votes,
+            "votedBy" to votedBy
         )
     }
 }

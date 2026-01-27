@@ -13,7 +13,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.repository.ChallengeRepository
-import com.example.habittracker.data.repository.UserChallengeRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -23,7 +22,6 @@ class ChallengesFragment : Fragment() {
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var challengeAdapter: ChallengeAdapter
     private val challengeRepository = ChallengeRepository()
-    private val userChallengeRepository = UserChallengeRepository()
     private val auth = FirebaseAuth.getInstance()
 
     override fun onCreateView(
@@ -62,18 +60,21 @@ class ChallengesFragment : Fragment() {
                 if (currentUserId != null) {
                     // Load challenges with user's join status
                     val challengesWithStatus = challengeRepository.getAllChallengesWithUserStatus(currentUserId)
-                    // Convert to Challenge objects with isJoined status for adapter
-                    val challenges = challengesWithStatus.map { cwp ->
-                        cwp.challenge.copy(
-                            // Note: Challenge model no longer has isJoined, this is for UI display
-                            // We'll handle this in the adapter separately
-                        )
+
+                    // Sort: Pending first, then Approved
+                    val sortedChallengesWithStatus = challengesWithStatus.sortedBy {
+                        if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
                     }
-                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), challengesWithStatus, { challenge ->
-                        onChallengeClicked(challenge)
-                    }, {
-                        onCreateChallengeClicked()
-                    })
+
+                    // Convert to Challenge objects for adapter
+                    val challenges = sortedChallengesWithStatus.map { it.challenge }
+
+                    challengeAdapter = ChallengeAdapter(
+                        challenges.toTypedArray(),
+                        sortedChallengesWithStatus,
+                        { challenge -> onChallengeClicked(challenge) },
+                        { onCreateChallengeClicked() }
+                    )
                     recyclerViewChallenges.adapter = challengeAdapter
                 } else {
                     // Fallback if user not authenticated
@@ -115,6 +116,8 @@ class ChallengesFragment : Fragment() {
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_CREATOR_ID, challenge.creatorId)
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_CREATED_AT, challenge.createdAt)
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_PARTICIPANT_COUNT, challenge.participantCount)
+            putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_STATUS, challenge.status.name)
+            putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_VOTES, challenge.votes)
         }
         startActivity(intent)
     }

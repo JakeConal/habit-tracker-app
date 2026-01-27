@@ -146,6 +146,37 @@
                     android:visibility="gone"
                     app:shapeAppearanceOverlay="@style/RoundedImageStyle"
                     tools:visibility="visible" />
+
+                <!-- Challenge Share Info -->
+                <LinearLayout
+                    android:id="@+id/layoutChallengeShare"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginTop="8dp">
+
+                    <TextView
+                        android:id="@+id/tvChallengeShareTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textStyle="bold"
+                        android:textColor="@color/accent_pink"
+                        android:textSize="14sp"
+                        tools:text="🏆 Sleep Hygiene Challenge" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnVoteChallenge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Vote (0)"
+                        android:textSize="12sp"
+                        android:paddingHorizontal="12dp"
+                        android:backgroundTint="@color/accent_pink"
+                        app:cornerRadius="8dp" />
+                </LinearLayout>
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

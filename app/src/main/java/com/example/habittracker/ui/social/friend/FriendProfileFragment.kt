@@ -61,42 +61,33 @@ class FriendProfileFragment : Fragment() {
         // Posts Adapter
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
-            currentUserId = currentUserId,
-            onLikeClick = { _ ->
-                // Interaction handled silently
-            },
-            onCommentClick = { _ ->
-                // Interaction handled silently
-            },
-            onAuthorClick = { userId ->
-                if (userId == currentUserId) {
-                    findNavController().navigate(R.id.nav_profile)
-                } else if (userId != friendId) {
-                    val bundle = Bundle().apply {
-                        putString("friendId", userId)
-                    }
-                    findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
-                }
-            },
-            onShareClick = { post ->
-                // Call repository to increment share count and notify owner
+            currentUserId,
+            emptyList(), // Friend profile doesn't strictly need current user's voted ids if we rely on post metadata, or we could fetch them
+            { _ -> }, // onLikeClick
+            { _ -> }, // onCommentClick
+            { post -> // onShareClick
                 lifecycleScope.launch {
                     val senderName = UserPreferences.getUserName(requireContext())
                     val senderAvatar = UserPreferences.getUserAvatar(requireContext())
                     com.example.habittracker.data.repository.PostRepository.getInstance()
                         .sharePost(post.id, senderName, senderAvatar)
                 }
-
                 val shareIntent = Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_SUBJECT, "Check out this habit update!")
                     putExtra(Intent.EXTRA_TEXT, "${post.content}\n\nShared from Habit Tracker App")
                 }
                 startActivity(Intent.createChooser(shareIntent, "Share post via"))
             },
-            onMoreOptionsClick = { post: Post, anchorView: View ->
-                // Share logic...
-            }
+            { userId -> // onAuthorClick
+                if (userId == currentUserId) {
+                    findNavController().navigate(R.id.nav_profile)
+                } else if (userId != friendId) {
+                    val bundle = Bundle().apply { putString("friendId", userId) }
+                    findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
+                }
+            },
+            { post -> voteForChallenge(post) }, // onVoteClick
+            { _, _ -> } // onMoreOptionsClick
         )
 
         binding.rvPosts.apply {
@@ -107,20 +98,17 @@ class FriendProfileFragment : Fragment() {
 
         // Friends Adapter
         friendListAdapter = FriendListAdapter(
-            currentUserId = currentUserId,
-            showUnfriendAction = false,
-            onSearchQueryChanged = {}, // No search here
-            onAcceptRequest = {},
-            onRejectRequest = {},
-            onViewProfile = { friend ->
-                // Navigate to this friend's profile from the list
-                 val bundle = Bundle().apply {
-                    putString("friendId", friend.id)
-                }
-                findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
+            currentUserId,
+            false, // showUnfriendAction
+            {}, // onSearchQueryChanged
+            {}, // onAcceptRequest
+            {}, // onRejectRequest
+            { friend -> // onViewProfile
+                 val bundle = Bundle().apply { putString("friendId", friend.id) }
+                 findNavController().navigate(R.id.action_global_to_friend_profile, bundle)
             },
-            onUnfriend = { _ -> }, // Cannot unfriend unrelated people from here
-            onAddFriend = { _ -> }
+            { _ -> }, // onUnfriend
+            { _ -> } // onAddFriend
         )
 
         binding.rvFriends.apply {
@@ -290,6 +278,27 @@ class FriendProfileFragment : Fragment() {
                     binding.rvPosts.visibility = View.GONE
                     binding.rvFriends.visibility = View.VISIBLE
                 }
+            }
+        }
+    }
+
+    private fun voteForChallenge(post: Post) {
+        val challengeId = post.challengeId ?: return
+        val currentUserId = UserPreferences.getUserId(requireContext())
+        lifecycleScope.launch {
+            try {
+                val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
+                val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
+                if (success) {
+                    Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
+                    // The viewmodel might need a refresh method or we just re-load friend profile
+                    val friendId = arguments?.getString("friendId") ?: ""
+                    viewModel.loadFriendProfile(friendId)
+                } else {
+                    Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

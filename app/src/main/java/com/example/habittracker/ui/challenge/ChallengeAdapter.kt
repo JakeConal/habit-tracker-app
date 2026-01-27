@@ -9,6 +9,7 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.BadgeColor
 import com.example.habittracker.data.model.Challenge
+import com.example.habittracker.data.model.ChallengeStatus
 import com.example.habittracker.data.repository.ChallengeWithStatus
 import com.google.android.material.imageview.ShapeableImageView
 
@@ -69,7 +70,7 @@ class ChallengeAdapter (
     }
 
     private fun bindChallengeViewHolder(holder: ViewHolder, position: Int) {
-        val challenge = challengeList[position] // No offset needed since create item is at the end
+        val challenge = challengeList[position - 1] // Offset by 1 for Create item at top
         // Look up join status by challenge ID instead of position
         val isJoined = statusMap[challenge.id]?.isJoined ?: false
 
@@ -92,13 +93,23 @@ class ChallengeAdapter (
         holder.challengeTitle.text = challenge.title
         holder.challengeDesc.text = challenge.description
 
-        // Show join status if indicator view exists
-        holder.joinedIndicator?.apply {
-            if (isJoined) {
-                text = "Joined"
+        // Dim if pending
+        if (challenge.status == ChallengeStatus.PENDING) {
+            holder.itemView.alpha = 0.5f
+            holder.joinedIndicator?.apply {
+                text = holder.itemView.context.getString(R.string.pending)
                 visibility = View.VISIBLE
-            } else {
-                visibility = View.GONE
+            }
+        } else {
+            holder.itemView.alpha = 1.0f
+            // Show join status if indicator view exists
+            holder.joinedIndicator?.apply {
+                if (isJoined) {
+                    text = holder.itemView.context.getString(R.string.joined)
+                    visibility = View.VISIBLE
+                } else {
+                    visibility = View.GONE
+                }
             }
         }
 
@@ -117,7 +128,7 @@ class ChallengeAdapter (
     override fun getItemCount(): Int = challengeList.size + 1 // +1 for create challenge item
 
     override fun getItemViewType(position: Int): Int {
-        return if (position == challengeList.size) {
+        return if (position == 0) {
             VIEW_TYPE_CREATE
         } else {
             VIEW_TYPE_CHALLENGE

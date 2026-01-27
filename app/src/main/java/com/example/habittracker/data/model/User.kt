@@ -14,6 +14,7 @@ data class User(
     val joinedChallengeIds: List<String> = emptyList(), // Danh sách ID của challenge đã tham gia
     val notificationsEnabled: Boolean = true, // Whether the user wants to receive notifications
     val fcmToken: String? = null,
+    val votedChallengeIds: List<String> = emptyList(), // Danh sách ID challenge đã vote
     val role: String = ROLE_USER
 ) {
     companion object {
@@ -35,6 +36,7 @@ data class User(
                 val joinedChallengeIds = (document.get("joinedChallengeIds") as? List<String>) ?: emptyList()
                 val notificationsEnabled = document.getBoolean("notificationsEnabled") ?: true
                 val fcmToken = document.getString("fcmToken")
+                val votedChallengeIds = (document.get("votedChallengeIds") as? List<String>) ?: emptyList()
                 val role = document.getString("role") ?: ROLE_USER
 
                 User(
@@ -49,6 +51,7 @@ data class User(
                     joinedChallengeIds = joinedChallengeIds,
                     notificationsEnabled = notificationsEnabled,
                     fcmToken = fcmToken,
+                    votedChallengeIds = votedChallengeIds,
                     role = role
                 )
             } catch (e: Exception) {
@@ -59,18 +62,19 @@ data class User(
     }
 
     // Convert User object to Map for Firestore
-    fun toMap(): Map<String, Any> {
+    fun toMap(): Map<String, Any?> {
         return mapOf(
             "name" to name,
-            "avatarUrl" to (avatarUrl ?: ""),
+            "avatarUrl" to avatarUrl,
             "points" to points,
             "rank" to rank,
-            "email" to (email ?: ""),
+            "email" to email,
             "createdAt" to createdAt,
-            "fcmToken" to (fcmToken ?: ""),
             "lastLoginAt" to lastLoginAt,
             "joinedChallengeIds" to joinedChallengeIds,
             "notificationsEnabled" to notificationsEnabled,
+            "fcmToken" to fcmToken,
+            "votedChallengeIds" to votedChallengeIds,
             "role" to role
         )
     }

@@ -51,7 +51,7 @@ class PostRepository private constructor() {
 
     suspend fun createPost(context: Context, post: Post, imageUri: Uri?): Result<Boolean> {
         return try {
-            val imageUrl = if (imageUri != null) {
+            val uploadedImageUrl = if (imageUri != null) {
                 // Use SupabaseStorageRepository to upload image
                 val supabaseStorage = SupabaseStorageRepository()
                 supabaseStorage.uploadImage(
@@ -65,14 +65,17 @@ class PostRepository private constructor() {
 
             val postRef = db.collection("posts").document()
 
+            // Merge uploaded image with existing post image (reshare case)
+            val finalImageUrl = uploadedImageUrl ?: post.imageUrl
+
             val newPost = post.copy(
                 id = postRef.id,
-                imageUrl = imageUrl,
+                imageUrl = finalImageUrl,
                 shareCount = 0 // Ensure starts at 0
             )
 
             // Save the post
-            postRef.set(newPost).await()
+            postRef.set(newPost.toMap()).await()
 
             // If this is a shared post (internal share), increment share count of original post
             if (!post.originalPostId.isNullOrEmpty()) {
@@ -95,6 +98,19 @@ class PostRepository private constructor() {
         } catch (e: Exception) {
             e.printStackTrace()
             Result.failure(e)
+        }
+    }
+
+    // Simpler createPost method
+    suspend fun createPost(post: Post): String? {
+        return try {
+            val postRef = db.collection("posts").document()
+            val newPost = post.copy(id = postRef.id)
+            postRef.set(newPost.toMap()).await()
+            postRef.id
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 
@@ -351,7 +367,13 @@ class PostRepository private constructor() {
                 originalAuthorName = originalPost.originalAuthorName ?: originalPost.authorName,
                 originalAuthorAvatarUrl = originalPost.originalAuthorAvatarUrl ?: originalPost.authorAvatarUrl,
                 originalContent = originalPost.originalContent ?: originalPost.content,
-                originalImageUrl = originalPost.originalImageUrl ?: originalPost.imageUrl
+                originalImageUrl = originalPost.originalImageUrl ?: originalPost.imageUrl,
+
+                // Synchronize challenge info
+                challengeId = originalPost.challengeId,
+                challengeTitle = originalPost.challengeTitle,
+                voteCount = originalPost.voteCount,
+                votedBy = originalPost.votedBy
             )
 
             postRef.set(sharedPost.toMap()).await()

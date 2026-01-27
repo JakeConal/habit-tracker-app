@@ -67,6 +67,7 @@ class MyPostFragment : Fragment() {
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
+            votedChallengeIds = viewModel.votedChallengeIds.value,
             onLikeClick = { post ->
                 val senderName = UserPreferences.getUserName(requireContext())
                 val senderAvatar = UserPreferences.getUserAvatar(requireContext())
@@ -105,11 +106,8 @@ class MyPostFragment : Fragment() {
                 }
                 startActivity(intent)
             },
-            onAuthorClick = { _ ->
-                // Since this is the user's own profile, clicking the author doesn't need to do much.
-                // But for consistency, let's just make sure it's handled.
-                // User is already on their profile.
-            },
+            onAuthorClick = { _ -> },
+            onVoteClick = { post -> voteForChallenge(post) },
             onMoreOptionsClick = { post: Post, anchorView: View ->
                 val popupMenu = PopupMenu(requireContext(), anchorView)
                 popupMenu.menu.add("Delete")
@@ -169,6 +167,31 @@ class MyPostFragment : Fragment() {
                 if (!errorMsg.isNullOrEmpty()) {
                     Toast.makeText(requireContext(), "Error: $errorMsg", Toast.LENGTH_SHORT).show()
                 }
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.votedChallengeIds.collect { votedIds ->
+                postAdapter.updateVotedChallengeIds(votedIds)
+            }
+        }
+    }
+
+    private fun voteForChallenge(post: Post) {
+        val challengeId = post.challengeId ?: return
+        val currentUserId = UserPreferences.getUserId(requireContext())
+        lifecycleScope.launch {
+            try {
+                val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
+                val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
+                if (success) {
+                    Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
+                    viewModel.refreshPosts() // Refresh profile data
+                } else {
+                    Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }

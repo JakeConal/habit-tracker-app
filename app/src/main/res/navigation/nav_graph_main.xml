@@ -109,10 +109,6 @@
         <action
             android:id="@+id/action_settingsFragment_to_resetPasswordFragment"
             app:destination="@id/nav_reset_password" />
-
-        <action
-            android:id="@+id/action_settingsFragment_to_reviewChallengeFragment"
-            app:destination="@id/nav_review_challenge" />
     </fragment>
 
     <!-- Sub-Settings Fragments -->
@@ -248,12 +244,6 @@
             
     </fragment>
 
-    <!-- Review Challenge Fragment -->
-    <fragment
-        android:id="@+id/nav_review_challenge"
-        android:name="com.example.habittracker.ui.setting.subsettings.ReviewChallengeFragment"
-        android:label="Review Challenge"
-        tools:layout="@layout/fragment_review_challenge" />
 
     <!-- Global Actions -->
     <action

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -29,6 +30,7 @@ class FeedFragment : Fragment() {
     private lateinit var postAdapter: PostAdapter
     private lateinit var cardCreatePost: MaterialCardView
     private lateinit var swipeRefreshFeed: SwipeRefreshLayout
+    private val viewModel: FeedViewModel by viewModels()
 
     private val createPostLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -70,6 +72,7 @@ class FeedFragment : Fragment() {
 
         setupViews(view)
         setupRecyclerView(view)
+        observeViewModel()
         refreshPosts()
     }
 
@@ -140,8 +143,11 @@ class FeedFragment : Fragment() {
 
     private fun setupRecyclerView(view: View) {
         rvFeed = view.findViewById(R.id.rvFeed)
+        val currentUserId = UserPreferences.getUserId(requireContext())
+
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
+            votedChallengeIds = viewModel.votedChallengeIds.value,
             onLikeClick = { post ->
                 // Toggle like status
                 toggleLike(post)
@@ -163,6 +169,9 @@ class FeedFragment : Fragment() {
             onShareClick = { post ->
                 // Open share to feed
                 openCreatePostForSharing(post)
+            },
+            onVoteClick = { post ->
+                voteForChallenge(post)
             },
             onMoreOptionsClick = { post, anchorView ->
                 showPostOptions(post, anchorView)
@@ -351,6 +360,38 @@ class FeedFragment : Fragment() {
                 e.printStackTrace()
                 swipeRefreshFeed.isRefreshing = false
                 Toast.makeText(context, "Failed to refresh feed", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun voteForChallenge(post: Post) {
+        val challengeId = post.challengeId ?: return
+        lifecycleScope.launch {
+            try {
+                val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
+                val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
+                if (success) {
+                    Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
+                    refreshPosts()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            viewModel.posts.collect { posts ->
+                postAdapter.submitList(posts)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.votedChallengeIds.collect { votedIds ->
+                postAdapter.updateVotedChallengeIds(votedIds)
             }
         }
     }

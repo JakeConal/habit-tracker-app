@@ -24,7 +24,12 @@ data class Post(
     val originalAuthorName: String? = null,
     val originalAuthorAvatarUrl: String? = null,
     val originalContent: String? = null,
-    val originalImageUrl: String? = null
+    val originalImageUrl: String? = null,
+    // Challenge post fields
+    val challengeId: String? = null,
+    val challengeTitle: String? = null,
+    val voteCount: Int = 0,
+    val votedBy: List<String> = emptyList()
 ) : Parcelable {
     companion object {
         const val COLLECTION_NAME = "posts"
@@ -50,7 +55,11 @@ data class Post(
                     originalAuthorName = document.getString("originalAuthorName"),
                     originalAuthorAvatarUrl = document.getString("originalAuthorAvatarUrl"),
                     originalContent = document.getString("originalContent"),
-                    originalImageUrl = document.getString("originalImageUrl")
+                    originalImageUrl = document.getString("originalImageUrl"),
+                    challengeId = document.getString("challengeId"),
+                    challengeTitle = document.getString("challengeTitle"),
+                    voteCount = document.getLong("voteCount")?.toInt() ?: 0,
+                    votedBy = (document.get("votedBy") as? List<String>) ?: emptyList()
                 )
             } catch (e: Exception) {
                 null
@@ -77,7 +86,11 @@ data class Post(
             "originalAuthorName" to originalAuthorName,
             "originalAuthorAvatarUrl" to originalAuthorAvatarUrl,
             "originalContent" to originalContent,
-            "originalImageUrl" to originalImageUrl
+            "originalImageUrl" to originalImageUrl,
+            "challengeId" to challengeId,
+            "challengeTitle" to challengeTitle,
+            "voteCount" to voteCount,
+            "votedBy" to votedBy
         )
     }
 }

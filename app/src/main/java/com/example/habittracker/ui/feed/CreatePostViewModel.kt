@@ -75,12 +75,18 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                     authorAvatarUrl = userAvatar.ifEmpty { null },
                     content = content,
                     timestamp = System.currentTimeMillis(),
+                    imageUrl = null, // IMPORTANT: Don't copy original image here. Standard shares use originalImageUrl.
                     originalPostId = targetOriginalId,
                     originalUserId = targetOriginalUserId,
                     originalAuthorName = targetOriginalAuthor,
                     originalAuthorAvatarUrl = targetOriginalAvatar,
                     originalContent = targetOriginalContent,
-                    originalImageUrl = targetOriginalImageUrl
+                    originalImageUrl = targetOriginalImageUrl,
+                    // Preserve challenge info if sharing a challenge post
+                    challengeId = sharedPost?.challengeId,
+                    challengeTitle = sharedPost?.challengeTitle,
+                    voteCount = sharedPost?.voteCount ?: 0,
+                    votedBy = sharedPost?.votedBy ?: emptyList()
                 )
 
                 val result = postRepository.createPost(context, newPost, imageUri)

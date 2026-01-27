@@ -11,9 +11,14 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeDuration
+import com.example.habittracker.data.model.ChallengeStatus
 import com.example.habittracker.data.model.Habit
+import com.example.habittracker.data.model.Post
+import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.ChallengeRepository
+import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.HabitRepository
+import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.data.repository.UserChallengeRepository
 import com.example.habittracker.ui.main.MainActivity
 import com.google.android.material.button.MaterialButton
@@ -30,12 +35,16 @@ class ChallengeDetailActivity : AppCompatActivity() {
     private lateinit var chipDuration: Chip
     private lateinit var tvKeyResults: TextView
     private lateinit var tvRewardPoints: TextView
+    private lateinit var tvVoteProgress: TextView
     private lateinit var btnJoinNow: MaterialButton
+    private lateinit var btnShareToFeed: MaterialButton
 
     private var challenge: Challenge? = null
     private var isUserJoined: Boolean = false
     private val userChallengeRepository = UserChallengeRepository()
     private val challengeRepository = ChallengeRepository()
+    private val postRepository = PostRepository.getInstance()
+    private val userRepository = FirestoreUserRepository.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,7 +73,9 @@ class ChallengeDetailActivity : AppCompatActivity() {
         chipDuration = findViewById(R.id.chipDuration)
         tvKeyResults = findViewById(R.id.tvKeyResults)
         tvRewardPoints = findViewById(R.id.tvRewardPoints)
+        tvVoteProgress = findViewById(R.id.tvVoteProgress)
         btnJoinNow = findViewById(R.id.btnJoinNow)
+        btnShareToFeed = findViewById(R.id.btnShareToFeed)
     }
 
     private fun loadChallengeData() {
@@ -72,7 +83,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
         val durationStr = intent.getStringExtra(EXTRA_CHALLENGE_DURATION) ?: "SEVEN_DAYS"
         val duration = try {
             ChallengeDuration.valueOf(durationStr)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             ChallengeDuration.SEVEN_DAYS
         }
 
@@ -87,16 +98,25 @@ class ChallengeDetailActivity : AppCompatActivity() {
             reward = intent.getIntExtra(EXTRA_CHALLENGE_REWARD, 0),
             creatorId = intent.getStringExtra(EXTRA_CHALLENGE_CREATOR_ID) ?: "",
             createdAt = intent.getLongExtra(EXTRA_CHALLENGE_CREATED_AT, System.currentTimeMillis()),
-            participantCount = intent.getIntExtra(EXTRA_CHALLENGE_PARTICIPANT_COUNT, 0)
+            participantCount = intent.getIntExtra(EXTRA_CHALLENGE_PARTICIPANT_COUNT, 0),
+            status = try {
+                ChallengeStatus.valueOf(intent.getStringExtra(EXTRA_CHALLENGE_STATUS) ?: "PENDING")
+            } catch (e: Exception) {
+                ChallengeStatus.PENDING
+            },
+            votes = intent.getIntExtra(EXTRA_CHALLENGE_VOTES, 0)
         )
 
         // Populate UI with challenge data
         tvChallengeTitle.text = challenge?.title
         tvChallengeDetail.text = challenge?.detail
 
+        // Handle Status and Visibility
+        updateUiBasedOnStatus()
+
         // Load image using Glide
         challenge?.let {
-            if (!it.imgURL.isNullOrEmpty()) {
+            if (it.imgURL.isNotEmpty()) {
                 Glide.with(this)
                     .load(it.imgURL)
                     .placeholder(R.drawable.placeholder_challenge)
@@ -117,7 +137,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
         // Display reward points
         challenge?.let {
-            tvRewardPoints.text = "Complete this challenge to earn ${it.reward} points"
+            tvRewardPoints.text = getString(R.string.reward_points_message, it.reward)
         }
 
         // Check if current user has joined this challenge
@@ -153,7 +173,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
     private fun updateJoinButton() {
         if (isUserJoined) {
-            btnJoinNow.text = "Already Joined"
+            btnJoinNow.text = getString(R.string.already_joined)
             btnJoinNow.isEnabled = false
         } else {
             btnJoinNow.text = getString(R.string.join_now)
@@ -170,6 +190,10 @@ class ChallengeDetailActivity : AppCompatActivity() {
             if (!isUserJoined) {
                 joinChallenge()
             }
+        }
+
+        btnShareToFeed.setOnClickListener {
+            shareChallengeToFeed()
         }
     }
 
@@ -234,6 +258,64 @@ class ChallengeDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateUiBasedOnStatus() {
+        val currentUserId = auth.currentUser?.uid
+        challenge?.let { c ->
+            if (c.status == ChallengeStatus.PENDING) {
+                tvVoteProgress.visibility = android.view.View.VISIBLE
+                tvVoteProgress.text = "Votes: ${c.votes}/1000"
+                btnJoinNow.visibility = android.view.View.GONE
+
+                // Only creator can share for votes
+                if (c.creatorId == currentUserId) {
+                    btnShareToFeed.visibility = android.view.View.VISIBLE
+                } else {
+                    btnShareToFeed.visibility = android.view.View.GONE
+                }
+            } else {
+                tvVoteProgress.visibility = android.view.View.GONE
+                btnShareToFeed.visibility = android.view.View.GONE
+                btnJoinNow.visibility = android.view.View.VISIBLE
+            }
+        }
+    }
+
+    private fun shareChallengeToFeed() {
+        val currentUserId = auth.currentUser?.uid ?: return
+        val c = challenge ?: return
+
+        lifecycleScope.launch {
+            try {
+                // Fetch the latest challenge data from server before sharing
+                val latestChallenge = challengeRepository.getChallengeById(c.id) ?: c
+
+                val user = userRepository.getUserById(currentUserId)
+                val post = Post(
+                    userId = currentUserId,
+                    authorName = user?.name ?: "User",
+                    authorAvatarUrl = user?.avatarUrl,
+                    content = "Check out my new challenge: ${latestChallenge.title}! Vote for it to go live!",
+                    challengeId = latestChallenge.id,
+                    challengeTitle = latestChallenge.title,
+                    imageUrl = latestChallenge.imgURL, // Use challenge image for post
+                    voteCount = latestChallenge.votes,
+                    votedBy = latestChallenge.votedBy
+                )
+
+                val postId = postRepository.createPost(post)
+                if (postId != null) {
+                    Toast.makeText(this@ChallengeDetailActivity, "Shared to feed for votes!", Toast.LENGTH_SHORT).show()
+                    btnShareToFeed.isEnabled = false
+                    btnShareToFeed.text = "Shared"
+                } else {
+                    Toast.makeText(this@ChallengeDetailActivity, "Failed to share", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@ChallengeDetailActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
         if (hasFocus) {
@@ -253,6 +335,8 @@ class ChallengeDetailActivity : AppCompatActivity() {
         const val EXTRA_CHALLENGE_CREATOR_ID = "extra_challenge_creator_id"
         const val EXTRA_CHALLENGE_CREATED_AT = "extra_challenge_created_at"
         const val EXTRA_CHALLENGE_PARTICIPANT_COUNT = "extra_challenge_participant_count"
+        const val EXTRA_CHALLENGE_STATUS = "extra_challenge_status"
+        const val EXTRA_CHALLENGE_VOTES = "extra_challenge_votes"
         const val EXTRA_HIDE_JOIN_BUTTON = "extra_hide_join_button"
     }
 }

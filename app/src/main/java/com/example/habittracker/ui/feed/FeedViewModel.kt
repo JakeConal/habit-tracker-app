@@ -19,8 +19,22 @@ class FeedViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _votedChallengeIds = MutableStateFlow<List<String>>(emptyList())
+    val votedChallengeIds: StateFlow<List<String>> = _votedChallengeIds.asStateFlow()
+
     init {
         fetchPosts()
+        fetchVotedChallenges()
+    }
+
+    fun fetchVotedChallenges() {
+        viewModelScope.launch {
+            val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val user = com.example.habittracker.data.repository.FirestoreUserRepository.getInstance().getUserById(currentUserId)
+            user?.let {
+                _votedChallengeIds.value = it.votedChallengeIds
+            }
+        }
     }
 
     fun fetchPosts() {

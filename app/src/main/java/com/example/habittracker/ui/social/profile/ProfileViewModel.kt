@@ -55,6 +55,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private val _userAvatarUrl = MutableStateFlow(UserPreferences.getUserAvatar(application))
     val userAvatarUrl: StateFlow<String> = _userAvatarUrl.asStateFlow()
 
+    private val _votedChallengeIds = MutableStateFlow<List<String>>(emptyList())
+    val votedChallengeIds: StateFlow<List<String>> = _votedChallengeIds.asStateFlow()
+
     // Tab selection state
     enum class ProfileTab {
         MY_POST,
@@ -103,6 +106,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             userRepository.getCurrentUser()
         }
+
+        loadUserData() // Call this to load votedChallengeIds and other data
+
         val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
         val userId = auth.currentUser?.uid ?: UserPreferences.getUserId(application)
 
@@ -124,6 +130,25 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     _userEmail.value = it.email ?: _userEmail.value
                     _userAvatarUrl.value = it.avatarUrl ?: _userAvatarUrl.value
                 }
+            }
+        }
+    }
+
+    private fun loadUserData() {
+        val userId = currentUserId
+        if (userId.isEmpty()) return
+
+        viewModelScope.launch {
+            val user = userRepository.getUserById(userId)
+            user?.let {
+                _userName.value = it.name
+                _userEmail.value = it.email ?: ""
+                _userAvatarUrl.value = it.avatarUrl ?: ""
+                _votedChallengeIds.value = it.votedChallengeIds
+
+                // Save to preferences for consistency
+                UserPreferences.saveUserName(getApplication(), it.name)
+                UserPreferences.saveUserAvatar(getApplication(), it.avatarUrl ?: "")
             }
         }
     }

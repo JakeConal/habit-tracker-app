@@ -292,4 +292,14 @@
     <string name="frequency_label">Frequency</string>
     <string name="default_frequency">Daily</string>
     <string name="pomodoro_required">Pomodoro Required</string>
+    <string name="reward_points_message">Complete this challenge to earn %1$d points</string>
+    <string name="already_joined">Already Joined</string>
+    <string name="shared">Shared</string>
+    <string name="shared_feed_message">Shared to feed for votes!</string>
+    <string name="vote_count_format">Vote (%1$d)</string>
+    <string name="shared_post_format">%1$s shared the post of %2$s</string>
+    <string name="challenge_title_format">🏆 %1$s</string>
+    <string name="voted">Voted</string>
+    <string name="pending">Pending</string>
+    <string name="joined">Joined</string>
 </resources>
