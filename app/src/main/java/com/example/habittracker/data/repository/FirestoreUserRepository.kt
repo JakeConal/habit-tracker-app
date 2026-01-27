@@ -4,7 +4,9 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.User
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -291,7 +293,7 @@ class FirestoreUserRepository private constructor() {
         return try {
             val db = FirebaseFirestore.getInstance()
             val snapshot = db.collection(User.COLLECTION_NAME)
-                .orderBy("points", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .orderBy("points", Query.Direction.DESCENDING)
                 .limit(limit)
                 .get()
                 .await()
@@ -300,6 +302,30 @@ class FirestoreUserRepository private constructor() {
         } catch (e: Exception) {
             println("Error getting top users: ${e.message}")
             emptyList()
+        }
+    }
+
+    /**
+     * Get top users for leaderboard with pagination
+     */
+    suspend fun getTopUsersPaginated(pageSize: Long, lastDocument: DocumentSnapshot?): Result<Pair<List<User>, DocumentSnapshot?>> {
+        return try {
+            val db = FirebaseFirestore.getInstance()
+            var query = db.collection(User.COLLECTION_NAME)
+                .orderBy("points", Query.Direction.DESCENDING)
+                .limit(pageSize)
+
+            if (lastDocument != null) {
+                query = query.startAfter(lastDocument)
+            }
+
+            val snapshot = query.get().await()
+            val users = snapshot.documents.mapNotNull { User.fromDocument(it) }
+            val lastVisible = if (snapshot.documents.isNotEmpty()) snapshot.documents.last() else null
+
+            Result.success(Pair(users, lastVisible))
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

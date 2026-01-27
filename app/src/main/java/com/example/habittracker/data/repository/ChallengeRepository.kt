@@ -3,8 +3,10 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeStatus
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
 
 class ChallengeRepository {
@@ -36,6 +38,40 @@ class ChallengeRepository {
         } catch (e: Exception) {
             println("Error getting visible challenges: ${e.message}")
             emptyList()
+        }
+    }
+
+    // Paginated visible challenges
+    suspend fun getVisibleChallengesPaginated(userId: String, pageSize: Long, lastDocument: DocumentSnapshot?): Result<Triple<List<Challenge>, DocumentSnapshot?, Boolean>> {
+        return try {
+            val db = FirebaseFirestore.getInstance()
+
+            // Fetch documents
+            var query = db.collection(collectionName)
+                .limit(pageSize * 3) // Fetch a larger chunk to ensure we have enough after filtering
+
+            if (lastDocument != null) {
+                query = query.startAfter(lastDocument)
+            }
+
+            val snapshot = query.get().await()
+            val fetchedDocs = snapshot.documents
+            val allFetched = fetchedDocs.mapNotNull { Challenge.fromDocument(it) }
+
+            // Client-side filtering for visibility
+            val visibleChallenges = allFetched.filter {
+                it.status == ChallengeStatus.APPROVED || (it.status == ChallengeStatus.PENDING && it.creatorId == userId)
+            }.sortedByDescending { it.createdAt } // Sort client-side
+            .take(pageSize.toInt())
+
+            val lastVisible = if (fetchedDocs.isNotEmpty()) fetchedDocs.last() else null
+            val hasMoreInQuery = fetchedDocs.size >= (pageSize * 3)
+
+            // We return a Triple: (VisibleItems, LastVisibleDoc, MightHaveMoreDocs)
+            Result.success(Triple(visibleChallenges, lastVisible, hasMoreInQuery))
+        } catch (e: Exception) {
+            println("Error in getVisibleChallengesPaginated: ${e.message}")
+            Result.failure(e)
         }
     }
 

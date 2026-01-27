@@ -179,8 +179,23 @@ class FeedFragment : Fragment() {
         )
 
         rvFeed.apply {
-            layoutManager = LinearLayoutManager(context)
+            val linearLayoutManager = LinearLayoutManager(context)
+            layoutManager = linearLayoutManager
             adapter = postAdapter
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val totalItemCount = linearLayoutManager.itemCount
+                    val lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition()
+
+                    if (!viewModel.isLoading.value && viewModel.hasMoreData &&
+                        totalItemCount <= (lastVisibleItem + 2)) {
+                        viewModel.fetchPosts(isRefresh = false)
+                    }
+                }
+            })
         }
     }
 
@@ -319,7 +334,11 @@ class FeedFragment : Fragment() {
         commentsLauncher.launch(intent)
     }
 
-    private fun updatePostInList(postId: String?, newCommentCount: Int, newLikeCount: Int, isLiked: Boolean) {
+    private fun refreshPosts() {
+        viewModel.fetchPosts(isRefresh = true)
+    }
+
+    private fun updatePostInList(postId: String?, commentCount: Int, likeCount: Int, isLiked: Boolean) {
         if (postId == null) return
 
         val currentList = postAdapter.currentList.toMutableList()
@@ -336,31 +355,12 @@ class FeedFragment : Fragment() {
             }
 
             val updatedPost = currentList[index].copy(
-                commentCount = newCommentCount,
-                likeCount = newLikeCount,
+                commentCount = commentCount,
+                likeCount = likeCount,
                 likedBy = newLikedBy
-                // comments field doesn't exist in Post
             )
             currentList[index] = updatedPost
             postAdapter.submitList(currentList)
-        }
-    }
-
-    private fun refreshPosts() {
-        swipeRefreshFeed.isRefreshing = true
-        lifecycleScope.launch {
-            val result = PostRepository.getInstance().getAllPosts()
-
-            result.onSuccess { dataPosts ->
-                val filteredPosts = dataPosts.filter { !it.hiddenBy.contains(currentUserId) }
-                postAdapter.submitList(filteredPosts)
-                swipeRefreshFeed.isRefreshing = false
-            }.onFailure { e ->
-                // Handle error
-                e.printStackTrace()
-                swipeRefreshFeed.isRefreshing = false
-                Toast.makeText(context, "Failed to refresh feed", Toast.LENGTH_SHORT).show()
-            }
         }
     }
 
@@ -387,6 +387,12 @@ class FeedFragment : Fragment() {
         lifecycleScope.launch {
             viewModel.posts.collect { posts ->
                 postAdapter.submitList(posts)
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.isLoading.collect { isLoading ->
+                swipeRefreshFeed.isRefreshing = isLoading
             }
         }
 

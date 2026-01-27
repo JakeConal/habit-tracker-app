@@ -8,6 +8,7 @@ import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.remote.fcm.NotificationSender
 import com.example.habittracker.data.supabase.SupabaseStorageRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
@@ -123,6 +124,27 @@ class PostRepository private constructor() {
                 .await()
             val posts = snapshot.documents.mapNotNull { Post.fromDocument(it) }
             Result.success(posts)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // Paginated feed
+    suspend fun getPostsPaginated(pageSize: Long, lastDocument: DocumentSnapshot?): Result<Pair<List<Post>, DocumentSnapshot?>> {
+        return try {
+            var query = db.collection("posts")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .limit(pageSize)
+
+            if (lastDocument != null) {
+                query = query.startAfter(lastDocument)
+            }
+
+            val snapshot = query.get().await()
+            val posts = snapshot.documents.mapNotNull { Post.fromDocument(it) }
+            val lastVisible = if (snapshot.documents.isNotEmpty()) snapshot.documents.last() else null
+
+            Result.success(Pair(posts, lastVisible))
         } catch (e: Exception) {
             Result.failure(e)
         }

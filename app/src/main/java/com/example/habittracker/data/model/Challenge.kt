@@ -24,6 +24,19 @@ data class Challenge(
         // Convert Firestore DocumentSnapshot to Challenge object
         fun fromDocument(document: DocumentSnapshot): Challenge? {
             return try {
+                val durationStr = document.getString("duration") ?: "SEVEN_DAYS"
+                val duration = try {
+                    ChallengeDuration.valueOf(durationStr)
+                } catch (e: Exception) {
+                    // Fallback for legacy data or mismatched names
+                    when (durationStr) {
+                        "7 Days Challenge" -> ChallengeDuration.SEVEN_DAYS
+                        "30 Days Challenge" -> ChallengeDuration.THIRTY_DAYS
+                        "100 Days Challenge" -> ChallengeDuration.HUNDRED_DAYS
+                        else -> ChallengeDuration.SEVEN_DAYS
+                    }
+                }
+
                 Challenge(
                     id = document.id,
                     title = document.getString("title") ?: "",
@@ -31,7 +44,7 @@ data class Challenge(
                     detail = document.getString("detail") ?: "",
                     keyResults = document.getString("keyResults") ?: "",
                     imgURL = document.getString("imgURL") ?: "",
-                    duration = ChallengeDuration.valueOf(document.getString("duration") ?: "SEVEN_DAYS"),
+                    duration = duration,
                     reward = document.getLong("reward")?.toInt() ?: 0,
                     creatorId = document.getString("creatorId") ?: "",
                     createdAt = document.getLong("createdAt") ?: System.currentTimeMillis(),

@@ -14,8 +14,8 @@ import com.example.habittracker.data.repository.ChallengeWithStatus
 import com.google.android.material.imageview.ShapeableImageView
 
 class ChallengeAdapter (
-    private val challengeList: Array<Challenge>,
-    private val challengeStatusList: List<ChallengeWithStatus> = emptyList(),
+    private var challengeList: Array<Challenge>,
+    private var challengeStatusList: List<ChallengeWithStatus> = emptyList(),
     private val onChallengeClick: ((Challenge) -> Unit)? = null,
     private val onCreateChallengeClick: (() -> Unit)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -25,8 +25,15 @@ class ChallengeAdapter (
         private const val VIEW_TYPE_CREATE = 1
     }
 
-    // Create a map for faster lookup by challenge ID
-    private val statusMap = challengeStatusList.associateBy { it.challenge.id }
+    // Use a private property for statusMap so it can be updated
+    private var statusMap = challengeStatusList.associateBy { it.challenge.id }
+
+    fun updateData(newChallenges: Array<Challenge>, newStatuses: List<ChallengeWithStatus>) {
+        this.challengeList = newChallenges
+        this.challengeStatusList = newStatuses
+        this.statusMap = newStatuses.associateBy { it.challenge.id }
+        notifyDataSetChanged()
+    }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val challengeImg = itemView.findViewById<ShapeableImageView>(R.id.ivChallengeImage)

@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,7 +22,7 @@ class ChallengesFragment : Fragment() {
     private lateinit var recyclerViewChallenges: RecyclerView
     private lateinit var swipeRefresh: SwipeRefreshLayout
     private lateinit var challengeAdapter: ChallengeAdapter
-    private val challengeRepository = ChallengeRepository()
+    private val viewModel: ChallengeViewModel by viewModels()
     private val auth = FirebaseAuth.getInstance()
 
     override fun onCreateView(
@@ -36,6 +37,7 @@ class ChallengesFragment : Fragment() {
 
         setupSwipeRefresh(view)
         setupRecyclerView(view)
+        observeViewModel()
         loadData()
     }
 
@@ -54,42 +56,36 @@ class ChallengesFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
-            try {
-                val currentUserId = auth.currentUser?.uid
-                if (currentUserId != null) {
-                    // Load challenges with user's join status
-                    val challengesWithStatus = challengeRepository.getAllChallengesWithUserStatus(currentUserId)
+        viewModel.loadChallenges(isRefresh = true)
+    }
 
-                    // Sort: Pending first, then Approved
-                    val sortedChallengesWithStatus = challengesWithStatus.sortedBy {
-                        if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
-                    }
+    private fun observeViewModel() {
+        viewModel.challengesWithStatus.observe(viewLifecycleOwner) { list ->
+            // Sort: Pending first, then Approved
+            val sortedList = list.sortedBy {
+                if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
+            }
 
-                    // Convert to Challenge objects for adapter
-                    val challenges = sortedChallengesWithStatus.map { it.challenge }
+            if (::challengeAdapter.isInitialized) {
+                challengeAdapter.updateData(sortedList.map { it.challenge }.toTypedArray(), sortedList)
+            } else {
+                challengeAdapter = ChallengeAdapter(
+                    sortedList.map { it.challenge }.toTypedArray(),
+                    sortedList,
+                    { challenge -> onChallengeClicked(challenge) },
+                    { onCreateChallengeClicked() }
+                )
+                recyclerViewChallenges.adapter = challengeAdapter
+            }
+        }
 
-                    challengeAdapter = ChallengeAdapter(
-                        challenges.toTypedArray(),
-                        sortedChallengesWithStatus,
-                        { challenge -> onChallengeClicked(challenge) },
-                        { onCreateChallengeClicked() }
-                    )
-                    recyclerViewChallenges.adapter = challengeAdapter
-                } else {
-                    // Fallback if user not authenticated
-                    val challenges = challengeRepository.getAllChallenges()
-                    challengeAdapter = ChallengeAdapter(challenges.toTypedArray(), emptyList(), { challenge ->
-                        onChallengeClicked(challenge)
-                    }, {
-                        onCreateChallengeClicked()
-                    })
-                    recyclerViewChallenges.adapter = challengeAdapter
-                }
-            } catch (e: Exception) {
-                println("Error loading challenges: ${e.message}")
-            } finally {
-                swipeRefresh.isRefreshing = false
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            swipeRefresh.isRefreshing = isLoading
+        }
+
+        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
+            if (!message.isNullOrEmpty()) {
+                android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -98,8 +94,23 @@ class ChallengesFragment : Fragment() {
         recyclerViewChallenges = view.findViewById(R.id.recyclerViewChallenges)
 
         recyclerViewChallenges.apply {
-            layoutManager = LinearLayoutManager(requireContext())
+            val linearLayoutManager = LinearLayoutManager(requireContext())
+            layoutManager = linearLayoutManager
             setHasFixedSize(true)
+
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    super.onScrolled(recyclerView, dx, dy)
+
+                    val totalItemCount = linearLayoutManager.itemCount
+                    val lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition()
+
+                    if (viewModel.isLoading.value != true && viewModel.hasMoreData &&
+                        totalItemCount <= (lastVisibleItem + 2)) {
+                        viewModel.loadChallenges(isRefresh = false)
+                    }
+                }
+            })
         }
     }
 

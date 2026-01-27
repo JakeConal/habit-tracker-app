@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
-import com.example.habittracker.data.model.User
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -44,12 +43,27 @@ class LeaderboardFragment : Fragment() {
         rvLeaderboard = view.findViewById(R.id.rv_leaderboard)
         swipeRefreshLeaderboard = view.findViewById(R.id.swipeRefreshLeaderboard)
         adapter = LeaderboardAdapter()
-        rvLeaderboard.layoutManager = LinearLayoutManager(requireContext())
+        val linearLayoutManager = LinearLayoutManager(requireContext())
+        rvLeaderboard.layoutManager = linearLayoutManager
         rvLeaderboard.adapter = adapter
 
         swipeRefreshLeaderboard.setOnRefreshListener {
-            viewModel.loadTopUsers()
+            viewModel.loadTopUsers(isRefresh = true)
         }
+
+        rvLeaderboard.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                val totalItemCount = linearLayoutManager.itemCount
+                val lastVisibleItem = linearLayoutManager.findLastVisibleItemPosition()
+
+                if (!viewModel.isLoading.value && viewModel.hasMoreData &&
+                    totalItemCount <= (lastVisibleItem + 5)) {
+                    viewModel.loadTopUsers(isRefresh = false)
+                }
+            }
+        })
     }
 
     private fun observeViewModel(view: View) {
@@ -77,17 +91,17 @@ class LeaderboardFragment : Fragment() {
                     // Update top 3
                     if (topUsers.size >= 1) {
                         firstName.text = topUsers[0].name
-                        firstPoints.text = "${topUsers[0].points} pts"
+                        firstPoints.text = getString(R.string.points_format, topUsers[0].points)
                         loadAvatar(firstAvatar, topUsers[0].avatarUrl)
                     }
                     if (topUsers.size >= 2) {
                         secondName.text = topUsers[1].name
-                        secondPoints.text = "${topUsers[1].points} pts"
+                        secondPoints.text = getString(R.string.points_format, topUsers[1].points)
                         loadAvatar(secondAvatar, topUsers[1].avatarUrl)
                     }
                     if (topUsers.size >= 3) {
                         thirdName.text = topUsers[2].name
-                        thirdPoints.text = "${topUsers[2].points} pts"
+                        thirdPoints.text = getString(R.string.points_format, topUsers[2].points)
                         loadAvatar(thirdAvatar, topUsers[2].avatarUrl)
                     }
 
