@@ -67,7 +67,6 @@ class MyPostFragment : Fragment() {
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
             currentUserId = currentUserId,
-            votedChallengeIds = viewModel.votedChallengeIds.value,
             onLikeClick = { post ->
                 val senderName = UserPreferences.getUserName(requireContext())
                 val senderAvatar = UserPreferences.getUserAvatar(requireContext())
@@ -130,7 +129,8 @@ class MyPostFragment : Fragment() {
                     }
                 }
                 popupMenu.show()
-            }
+            },
+            votedChallengeIds = viewModel.votedChallengeIds.value
         )
 
         binding.rvPosts.apply {

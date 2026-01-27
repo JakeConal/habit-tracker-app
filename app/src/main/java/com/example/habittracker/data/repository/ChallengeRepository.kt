@@ -3,7 +3,6 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeStatus
-import com.example.habittracker.data.model.Post
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import kotlinx.coroutines.tasks.await
@@ -49,18 +48,14 @@ class ChallengeRepository {
             if (challenge.votedBy.contains(userId)) return false
 
             val postRepository = PostRepository.getInstance()
-            val post = postRepository.getPostById(postId) ?: return false
 
-            val newPostVotes = post.voteCount + 1
-            val newPostVotedBy = post.votedBy + userId
-
-            // Update Post (the one clicked)
+            // Atomic Update for Post (the one clicked)
             val postUpdated = FirestoreManager.updateDocument(
                 "posts",
                 postId,
                 mapOf(
-                    "voteCount" to newPostVotes,
-                    "votedBy" to newPostVotedBy
+                    "voteCount" to FieldValue.increment(1),
+                    "votedBy" to FieldValue.arrayUnion(userId)
                 )
             )
 
@@ -82,13 +77,9 @@ class ChallengeRepository {
 
                     val batch = db.batch()
                     for (doc in querySnapshot.documents) {
-                        val p = Post.fromDocument(doc)
-                        if (p != null && !p.votedBy.contains(userId)) {
-                            batch.update(doc.reference, mapOf(
-                                "voteCount" to (p.voteCount + 1),
-                                "votedBy" to FieldValue.arrayUnion(userId)
-                            ))
-                        }
+                        // Use atomic updates in batch
+                        batch.update(doc.reference, "voteCount", FieldValue.increment(1))
+                        batch.update(doc.reference, "votedBy", FieldValue.arrayUnion(userId))
                     }
                     batch.commit().await()
                 } catch (e: Exception) {
@@ -96,10 +87,9 @@ class ChallengeRepository {
                 }
 
                 val newChallengeVotes = challenge.votes + 1
-                val newChallengeVotedBy = challenge.votedBy + userId
                 val updates = mutableMapOf<String, Any>(
-                    "votes" to newChallengeVotes,
-                    "votedBy" to newChallengeVotedBy
+                    "votes" to FieldValue.increment(1),
+                    "votedBy" to FieldValue.arrayUnion(userId)
                 )
 
                 // Check if reached 1000 votes

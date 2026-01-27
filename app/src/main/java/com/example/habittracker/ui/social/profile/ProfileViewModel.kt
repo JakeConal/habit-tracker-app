@@ -356,6 +356,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun refreshPosts() {
+        loadUserData()
         fetchUserPosts(currentUserId)
     }
 

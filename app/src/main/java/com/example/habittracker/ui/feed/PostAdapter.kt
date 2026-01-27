@@ -20,13 +20,13 @@ import java.util.Locale
 
 class PostAdapter(
     private val currentUserId: String,
-    private var votedChallengeIds: List<String> = emptyList(),
     private val onLikeClick: (Post) -> Unit,
     private val onCommentClick: (Post) -> Unit,
     private val onShareClick: (Post) -> Unit,
     private val onAuthorClick: (String) -> Unit,
     private val onVoteClick: (Post) -> Unit,
-    private val onMoreOptionsClick: (Post, View) -> Unit
+    private val onMoreOptionsClick: (Post, View) -> Unit,
+    private var votedChallengeIds: List<String> = emptyList()
 ) : ListAdapter<Post, PostAdapter.PostViewHolder>(PostDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PostViewHolder {
@@ -102,10 +102,10 @@ class PostAdapter(
 
                 btnVoteChallenge?.apply {
                     if (isVoted) {
-                        text = itemView.context.getString(R.string.voted)
+                        setText(R.string.voted)
                         isEnabled = false
                     } else {
-                        text = itemView.context.getString(R.string.vote_count_format, post.voteCount)
+                        setText(itemView.context.getString(R.string.vote_count_format, post.voteCount))
                         isEnabled = true
                     }
                     setOnClickListener { onVoteClick(post) }
@@ -157,7 +157,8 @@ class PostAdapter(
                 }
 
                 // If user attached a NEW image to their share, show it OUTSIDE the card
-                if (!post.imageUrl.isNullOrEmpty()) {
+                // Added check to prevent double image if imageUrl is same as originalImageUrl
+                if (!post.imageUrl.isNullOrEmpty() && post.imageUrl != post.originalImageUrl) {
                     ivPostImage.visibility = View.VISIBLE
                     Glide.with(itemView.context).load(post.imageUrl).centerCrop().into(ivPostImage)
                 }

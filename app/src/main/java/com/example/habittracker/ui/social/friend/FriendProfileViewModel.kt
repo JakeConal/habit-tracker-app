@@ -60,14 +60,17 @@ class FriendProfileViewModel : ViewModel() {
     private val _emptyStateMessage = MutableStateFlow("")
     val emptyStateMessage: StateFlow<String> = _emptyStateMessage.asStateFlow()
 
-    private var currentFriendId: String = ""
+    private val _votedChallengeIds = MutableStateFlow<List<String>>(emptyList())
+    val votedChallengeIds: StateFlow<List<String>> = _votedChallengeIds.asStateFlow()
+
+    private var currentFriendId: String? = null
 
     /**
      * Load friend profile data by ID
      */
     fun loadFriendProfile(friendId: String) {
         currentFriendId = friendId
-        
+        fetchVotedChallenges()
         viewModelScope.launch {
             val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
             
@@ -125,6 +128,16 @@ class FriendProfileViewModel : ViewModel() {
         }
     }
 
+    private fun fetchVotedChallenges() {
+        viewModelScope.launch {
+            val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
+            val user = com.example.habittracker.data.repository.FirestoreUserRepository.getInstance().getUserById(currentUserId)
+            user?.let {
+                _votedChallengeIds.value = it.votedChallengeIds
+            }
+        }
+    }
+
     /**
      * Switch between tabs
      */
@@ -152,12 +165,35 @@ class FriendProfileViewModel : ViewModel() {
      * Send friend request to current profile user
      */
     fun sendFriendRequest() {
-        if (currentFriendId.isEmpty() || _friendshipStatus.value != FriendshipStatus.NOT_FRIEND) return
-        
+        if (currentFriendId.isNullOrEmpty() || _friendshipStatus.value != FriendshipStatus.NOT_FRIEND) return
+
         viewModelScope.launch {
-            val result = friendRepository.sendFriendRequest(currentFriendId)
+            val result = friendRepository.sendFriendRequest(currentFriendId!!)
             if (result) {
                 _friendshipStatus.value = FriendshipStatus.PENDING
+            }
+        }
+    }
+
+    fun voteForChallenge(post: Post) {
+        val challengeId = post.challengeId ?: return
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
+                val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
+                if (success) {
+                    fetchVotedChallenges()
+                    // Refresh posts to see updated vote count
+                    currentFriendId?.let { friendId ->
+                        postRepository.getPostsByUser(friendId).onSuccess { userPosts ->
+                            _posts.value = userPosts
+                            updateEmptyState()
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

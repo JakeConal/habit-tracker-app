@@ -62,7 +62,6 @@ class FriendProfileFragment : Fragment() {
         val currentUserId = UserPreferences.getUserId(requireContext())
         postAdapter = PostAdapter(
             currentUserId,
-            emptyList(), // Friend profile doesn't strictly need current user's voted ids if we rely on post metadata, or we could fetch them
             { _ -> }, // onLikeClick
             { _ -> }, // onCommentClick
             { post -> // onShareClick
@@ -87,7 +86,8 @@ class FriendProfileFragment : Fragment() {
                 }
             },
             { post -> voteForChallenge(post) }, // onVoteClick
-            { _, _ -> } // onMoreOptionsClick
+            { _, _ -> }, // onMoreOptionsClick
+            emptyList() // votedChallengeIds
         )
 
         binding.rvPosts.apply {
@@ -202,6 +202,13 @@ class FriendProfileFragment : Fragment() {
                 updateFriendshipUI(status)
             }
         }
+
+        // Observe voted challenges
+        lifecycleScope.launch {
+            viewModel.votedChallengeIds.collect { votedIds ->
+                postAdapter.updateVotedChallengeIds(votedIds)
+            }
+        }
     }
 
     private fun loadAvatar(avatarUrl: String) {
@@ -283,24 +290,7 @@ class FriendProfileFragment : Fragment() {
     }
 
     private fun voteForChallenge(post: Post) {
-        val challengeId = post.challengeId ?: return
-        val currentUserId = UserPreferences.getUserId(requireContext())
-        lifecycleScope.launch {
-            try {
-                val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
-                val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
-                if (success) {
-                    Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
-                    // The viewmodel might need a refresh method or we just re-load friend profile
-                    val friendId = arguments?.getString("friendId") ?: ""
-                    viewModel.loadFriendProfile(friendId)
-                } else {
-                    Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
+        viewModel.voteForChallenge(post)
     }
 
     override fun onDestroyView() {

@@ -69,6 +69,24 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                 val targetOriginalContent = if (sharedPost?.originalPostId != null) sharedPost.originalContent else sharedPost?.content
                 val targetOriginalImageUrl = if (sharedPost?.originalPostId != null) sharedPost.originalImageUrl else sharedPost?.imageUrl
 
+                var latestVoteCount = sharedPost?.voteCount ?: 0
+                var latestVotedBy = sharedPost?.votedBy ?: emptyList()
+
+                // If it's a challenge post, fetch latest global stats from Challenge model
+                val challengeId = sharedPost?.challengeId
+                if (!challengeId.isNullOrEmpty()) {
+                    try {
+                        val challengeRepo = com.example.habittracker.data.repository.ChallengeRepository()
+                        val challenge = challengeRepo.getChallengeById(challengeId)
+                        if (challenge != null) {
+                            latestVoteCount = challenge.votes
+                            latestVotedBy = challenge.votedBy
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+
                 val newPost = Post(
                     userId = currentUserId,
                     authorName = userName,
@@ -85,8 +103,8 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                     // Preserve challenge info if sharing a challenge post
                     challengeId = sharedPost?.challengeId,
                     challengeTitle = sharedPost?.challengeTitle,
-                    voteCount = sharedPost?.voteCount ?: 0,
-                    votedBy = sharedPost?.votedBy ?: emptyList()
+                    voteCount = latestVoteCount,
+                    votedBy = latestVotedBy
                 )
 
                 val result = postRepository.createPost(context, newPost, imageUri)
