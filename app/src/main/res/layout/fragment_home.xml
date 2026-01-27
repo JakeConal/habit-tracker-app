@@ -88,18 +88,39 @@
             android:textSize="18sp"
             android:visibility="gone" />
 
-        <ImageButton
-            android:id="@+id/btnNotification"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <FrameLayout
+            android:id="@+id/layoutNotification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:background="@drawable/bg_notification_button"
-            android:contentDescription="Notifications"
-            android:elevation="1dp"
-            android:padding="10dp"
-            android:scaleType="fitCenter"
-            android:src="@mipmap/ic_notification" />
+            android:layout_centerVertical="true">
+
+            <ImageButton
+                android:id="@+id/btnNotification"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_notification_button"
+                android:contentDescription="Notifications"
+                android:elevation="1dp"
+                android:padding="10dp"
+                android:scaleType="fitCenter"
+                android:src="@mipmap/ic_notification" />
+
+            <TextView
+                android:id="@+id/tvNotificationBadge"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="top|end"
+                android:background="@drawable/bg_notification_badge"
+                android:elevation="2dp"
+                android:gravity="center"
+                android:textColor="@color/white"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="3"
+                tools:visibility="visible" />
+        </FrameLayout>
 
     </RelativeLayout>
 

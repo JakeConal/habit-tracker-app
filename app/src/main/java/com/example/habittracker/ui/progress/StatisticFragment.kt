@@ -101,6 +101,7 @@ class StatisticFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnNotification.setOnClickListener {
+            notificationViewModel.markAllAsRead()
             showNotificationDropdown(it)
         }
     }
@@ -112,6 +113,18 @@ class StatisticFragment : Fragment() {
                     if (popup.isShowing) {
                         notificationAdapter.submitList(notifications)
                     }
+                }
+            }
+        }
+
+        // Observe unread count for badge
+        viewLifecycleOwner.lifecycleScope.launch {
+            notificationViewModel.unreadCount.collect { count ->
+                if (count > 0) {
+                    binding.tvNotificationBadge.visibility = View.VISIBLE
+                    binding.tvNotificationBadge.text = if (count > 99) "99+" else count.toString()
+                } else {
+                    binding.tvNotificationBadge.visibility = View.GONE
                 }
             }
         }

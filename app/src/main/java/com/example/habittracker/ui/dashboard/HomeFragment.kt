@@ -315,6 +315,18 @@ class HomeFragment : Fragment() {
                 }
             }
         }
+
+        // Observe unread count for badge
+        viewLifecycleOwner.lifecycleScope.launch {
+            notificationViewModel.unreadCount.collect { count ->
+                if (count > 0) {
+                    binding.tvNotificationBadge.visibility = View.VISIBLE
+                    binding.tvNotificationBadge.text = if (count > 99) "99+" else count.toString()
+                } else {
+                    binding.tvNotificationBadge.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun updateHabits(habitsList: List<Habit>, categoriesList: List<com.example.habittracker.data.model.Category>) {
@@ -462,6 +474,7 @@ class HomeFragment : Fragment() {
         }
 
         binding.btnNotification.setOnClickListener {
+            notificationViewModel.markAllAsRead()
             showNotificationDropdown(it)
         }
     }

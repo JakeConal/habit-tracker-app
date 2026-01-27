@@ -93,6 +93,16 @@ class MainActivity : AppCompatActivity() {
         handleIntent(intent)
     }
 
+    override fun onResume() {
+        super.onResume()
+        hideSystemUI(this)
+
+        // Ensure token is fresh when user returns to app
+        if (AuthRepository.getInstance().isUserLoggedIn()) {
+            updateFcmToken()
+        }
+    }
+
     private fun handleIntent(intent: Intent?) {
         val postId = intent?.getStringExtra("postId")
         if (!postId.isNullOrEmpty()) {

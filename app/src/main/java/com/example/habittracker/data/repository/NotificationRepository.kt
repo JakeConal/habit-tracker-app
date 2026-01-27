@@ -98,4 +98,24 @@ class NotificationRepository {
             Result.failure(e)
         }
     }
+
+    suspend fun markAllAsRead(userId: String): Result<Boolean> {
+        return try {
+            val unreadNotifications = db.collection("notifications")
+                .whereEqualTo("recipientId", userId)
+                .whereEqualTo("read", false)
+                .get()
+                .await()
+
+            val batch = db.batch()
+            for (document in unreadNotifications.documents) {
+                batch.update(document.reference, "read", true)
+            }
+            batch.commit().await()
+            Result.success(true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Result.failure(e)
+        }
+    }
 }

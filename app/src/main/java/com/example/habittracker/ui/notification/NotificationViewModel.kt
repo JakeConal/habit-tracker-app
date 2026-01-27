@@ -17,6 +17,9 @@ class NotificationViewModel : ViewModel() {
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
     val notifications: StateFlow<List<Notification>> = _notifications.asStateFlow()
 
+    private val _unreadCount = MutableStateFlow(0)
+    val unreadCount: StateFlow<Int> = _unreadCount.asStateFlow()
+
     private val _showAllNotifications = MutableStateFlow(false)
     val showAllNotifications: StateFlow<Boolean> = _showAllNotifications.asStateFlow()
 
@@ -28,8 +31,9 @@ class NotificationViewModel : ViewModel() {
         val userId = authRepository.getCurrentUser()?.uid ?: return
         viewModelScope.launch {
             try {
-                notificationRepository.getNotifications(userId).collect {
-                    _notifications.value = it
+                notificationRepository.getNotifications(userId).collect { list ->
+                    _notifications.value = list
+                    _unreadCount.value = list.count { !it.read }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("NotificationViewModel", "Error loading notifications: ${e.message}")
@@ -44,6 +48,13 @@ class NotificationViewModel : ViewModel() {
     fun markNotificationAsRead(notificationId: String) {
         viewModelScope.launch {
             notificationRepository.markAsRead(notificationId)
+        }
+    }
+
+    fun markAllAsRead() {
+        val userId = authRepository.getCurrentUser()?.uid ?: return
+        viewModelScope.launch {
+            notificationRepository.markAllAsRead(userId)
         }
     }
 }
