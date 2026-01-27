@@ -24,8 +24,7 @@ import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.ui.common.ImagePreviewActivity
-import com.example.habittracker.utils.UserPreferences
-import kotlinx.coroutines.flow.collect
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 import android.content.Context
 

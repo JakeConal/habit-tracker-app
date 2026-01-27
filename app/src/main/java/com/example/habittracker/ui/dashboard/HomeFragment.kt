@@ -16,7 +16,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.habittracker.R
-import com.example.habittracker.data.api.QuoteApiService
+import com.example.habittracker.data.service.QuoteApiService
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.PostRepository

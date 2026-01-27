@@ -9,7 +9,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.databinding.FragmentNotificationSettingsBinding
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 
 class NotificationSettingsFragment : Fragment() {

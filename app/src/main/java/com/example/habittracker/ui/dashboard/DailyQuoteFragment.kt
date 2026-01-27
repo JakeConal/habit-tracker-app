@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import android.widget.Toast
-import com.example.habittracker.data.api.QuoteApiService
+import com.example.habittracker.data.service.QuoteApiService
 import com.example.habittracker.databinding.FragmentDailyQuoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

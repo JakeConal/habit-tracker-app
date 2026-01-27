@@ -9,7 +9,7 @@ import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.FriendRepository
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

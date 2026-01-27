@@ -5,10 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentCalendarTabBinding
+import com.example.habittracker.ui.progress.StatisticsViewModel
 import com.example.habittracker.ui.progress.adapter.CalendarDay
 import com.example.habittracker.ui.progress.adapter.CalendarDayAdapter
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -18,11 +23,8 @@ class CalendarTabFragment : Fragment() {
     private var _binding: FragmentCalendarTabBinding? = null
     private val binding get() = _binding!!
     private lateinit var adapter: CalendarDayAdapter
-    private val calendar = Calendar.getInstance().apply {
-        // Set to August 2024 for mockup
-        set(Calendar.YEAR, 2024)
-        set(Calendar.MONTH, Calendar.AUGUST)
-    }
+    private val viewModel: StatisticsViewModel by activityViewModels()
+    private val calendar = Calendar.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,9 +38,35 @@ class CalendarTabFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupCalendar()
-        setupStreakData()
+        observeData()
         loadCalendarData()
         updateMonthYearDisplay()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload data when tab becomes visible
+        viewModel.loadAllData()
+    }
+
+    private fun observeData() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.calendarData.collect { data ->
+                data?.let {
+                    binding.tvCurrentStreak.text = resources.getQuantityString(
+                        R.plurals.days,
+                        it.currentStreak,
+                        it.currentStreak
+                    )
+                    binding.tvBestStreak.text = resources.getQuantityString(
+                        R.plurals.days,
+                        it.bestStreak,
+                        it.bestStreak
+                    )
+                    loadCalendarData()
+                }
+            }
+        }
     }
 
     private fun setupCalendar() {
@@ -68,13 +96,9 @@ class CalendarTabFragment : Fragment() {
         binding.tvMonthYear.text = monthYear
     }
 
-    private fun setupStreakData() {
-        binding.tvCurrentStreak.text = "1 Day"
-        binding.tvBestStreak.text = "156 Days"
-    }
-
     private fun loadCalendarData() {
         val days = mutableListOf<CalendarDay>()
+        val habits = viewModel.habits.value
 
         // Get first day of the month and calculate offset
         val firstDayOfMonth = calendar.clone() as Calendar
@@ -87,61 +111,123 @@ class CalendarTabFragment : Fragment() {
         val daysInPrevMonth = prevMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
 
         for (i in dayOfWeek - 1 downTo 0) {
-            days.add(CalendarDay(
-                day = (daysInPrevMonth - i).toString(),
-                isCurrentMonth = false,
-                isSelected = false,
-                backgroundColor = null
-            ))
+            days.add(
+                CalendarDay(
+                    day = (daysInPrevMonth - i).toString(),
+                    isCurrentMonth = false,
+                    isSelected = false,
+                    backgroundColor = null
+                )
+            )
         }
 
-        // Mock day colors for August 2024 display (hardcoded for mockup)
-        val dayColors = mapOf(
-            1 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            2 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            3 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            4 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            5 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            6 to com.example.habittracker.R.drawable.bg_calendar_day_selected_orange,
-            7 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            8 to com.example.habittracker.R.drawable.bg_calendar_day_selected_orange,
-            9 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            10 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            11 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            12 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            13 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            14 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            15 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            16 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            17 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green,
-            18 to com.example.habittracker.R.drawable.bg_calendar_day_selected_orange,
-            19 to com.example.habittracker.R.drawable.bg_calendar_day_selected_green
-        )
-
-        // Add current month days
+        // Add current month days with real data
         val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         for (day in 1..daysInMonth) {
-            days.add(CalendarDay(
-                day = day.toString(),
-                isCurrentMonth = true,
-                isSelected = day == 1, // For mockup, highlight day 1
-                backgroundColor = dayColors[day]
-            ))
+            val dayCalendar = calendar.clone() as Calendar
+            dayCalendar.set(Calendar.DAY_OF_MONTH, day)
+            val dateStr = dateFormat.format(dayCalendar.time)
+
+            // Count completions and misses for this day
+            var completedCount = 0
+            var missedCount = 0
+            var totalScheduledHabits = 0
+
+            habits.forEach { habit ->
+                val shouldDoHabit = shouldHabitBeDoneOnDay(habit, dayCalendar)
+                if (shouldDoHabit && !isDateInFuture(dateStr)) {
+                    totalScheduledHabits++
+                    if (habit.completedDates.contains(dateStr)) {
+                        completedCount++
+                    } else {
+                        missedCount++
+                    }
+                }
+            }
+
+            val backgroundColor = when {
+                totalScheduledHabits == 0 -> null
+                completedCount == totalScheduledHabits -> R.drawable.bg_calendar_day_selected_green
+                missedCount > 0 && completedCount > 0 -> R.drawable.bg_calendar_day_selected_orange
+                missedCount == totalScheduledHabits -> R.drawable.bg_calendar_day_selected_red
+                else -> null
+            }
+
+            days.add(
+                CalendarDay(
+                    day = day.toString(),
+                    isCurrentMonth = true,
+                    isSelected = false,
+                    backgroundColor = backgroundColor
+                )
+            )
         }
 
         // Add next month days to fill the grid (complete weeks)
         val remainingSlots = 42 - days.size // 6 rows * 7 days
         for (day in 1..remainingSlots) {
-            days.add(CalendarDay(
-                day = day.toString(),
-                isCurrentMonth = false,
-                isSelected = false,
-                backgroundColor = null
-            ))
+            days.add(
+                CalendarDay(
+                    day = day.toString(),
+                    isCurrentMonth = false,
+                    isSelected = false,
+                    backgroundColor = null
+                )
+            )
         }
 
         adapter.setItems(days)
+    }
+
+    private fun shouldHabitBeDoneOnDay(
+        habit: com.example.habittracker.data.model.Habit,
+        calendar: Calendar
+    ): Boolean {
+        // Check if the habit was created before or on this day
+        val habitCreatedDate = Calendar.getInstance().apply {
+            timeInMillis = habit.createdAt
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+
+        val checkDate = calendar.clone() as Calendar
+        checkDate.set(Calendar.HOUR_OF_DAY, 0)
+        checkDate.set(Calendar.MINUTE, 0)
+        checkDate.set(Calendar.SECOND, 0)
+        checkDate.set(Calendar.MILLISECOND, 0)
+
+        // Habit must be created on or before the check date
+        if (checkDate.before(habitCreatedDate)) {
+            return false
+        }
+
+        // Check if habit should be done on this day based on frequency
+        if (habit.frequency.contains("Daily")) {
+            return true
+        }
+
+        val dayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> ""
+        }
+
+        return habit.frequency.contains(dayOfWeek)
+    }
+
+    private fun isDateInFuture(dateStr: String): Boolean {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val today = dateFormat.format(Calendar.getInstance().time)
+        return dateStr > today
     }
 
     override fun onDestroyView() {

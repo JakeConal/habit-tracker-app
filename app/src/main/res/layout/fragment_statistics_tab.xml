@@ -65,6 +65,16 @@
                         android:textColor="@color/primary_blue"
                         android:fontFamily="sans-serif-medium" />
                 </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvHabitScoreDescription"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/habit_score_description"
+                    android:textSize="14sp"
+                    android:textColor="@color/secondary_gray"
+                    android:fontFamily="sans-serif"
+                    android:layout_marginTop="16dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -97,22 +107,119 @@
                     android:fontFamily="sans-serif-medium"
                     android:layout_marginBottom="16dp" />
 
+                <!-- Chart with Y-axis and Grid -->
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:orientation="horizontal"
-                    android:gravity="bottom"
-                    android:weightSum="7">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Y-axis Labels -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="200dp"
+                        android:orientation="vertical"
+                        android:gravity="end"
+                        android:layout_marginEnd="8dp">
+
+                        <TextView
+                            android:id="@+id/tvYAxisMax"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:text="10"
+                            android:textSize="10sp"
+                            android:textColor="@color/secondary_gray"
+                            android:gravity="top" />
+
+                        <TextView
+                            android:id="@+id/tvYAxisMid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:text="5"
+                            android:textSize="10sp"
+                            android:textColor="@color/secondary_gray"
+                            android:gravity="center_vertical" />
+
+                        <TextView
+                            android:id="@+id/tvYAxisMin"
+                            android:layout_width="wrap_content"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:text="0"
+                            android:textSize="10sp"
+                            android:textColor="@color/secondary_gray"
+                            android:gravity="bottom"
+                            android:layout_marginBottom="20dp" />
+                    </LinearLayout>
+
+                    <!-- Chart Area with Grid -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="200dp"
+                        android:layout_weight="1">
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <!-- Grid Lines -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:layout_marginBottom="20dp">
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/secondary_gray"
+                                android:alpha="0.2" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/secondary_gray"
+                                android:alpha="0.2" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_weight="1" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="1dp"
+                                android:background="@color/secondary_gray"
+                                android:alpha="0.3" />
+                        </LinearLayout>
+
+                        <!-- Bar Chart -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            android:gravity="bottom"
+                            android:weightSum="7">
 
                     <LinearLayout
+                        android:id="@+id/barContainerSun"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barSun"
                             android:layout_width="match_parent"
                             android:layout_height="40dp"
                             android:background="@drawable/bg_chart_bar"
@@ -120,6 +227,7 @@
                             android:alpha="0.6" />
 
                         <TextView
+                            android:id="@+id/tvSun"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sun"
@@ -129,14 +237,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerMon"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barMon"
                             android:layout_width="match_parent"
                             android:layout_height="80dp"
                             android:background="@drawable/bg_chart_bar"
@@ -144,6 +256,7 @@
                             android:alpha="0.7" />
 
                         <TextView
+                            android:id="@+id/tvMon"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Mon"
@@ -153,14 +266,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerTue"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barTue"
                             android:layout_width="match_parent"
                             android:layout_height="60dp"
                             android:background="@drawable/bg_chart_bar"
@@ -168,6 +285,7 @@
                             android:alpha="0.8" />
 
                         <TextView
+                            android:id="@+id/tvTue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tue"
@@ -177,14 +295,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerWed"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barWed"
                             android:layout_width="match_parent"
                             android:layout_height="100dp"
                             android:background="@drawable/bg_chart_bar"
@@ -192,6 +314,7 @@
                             android:alpha="0.9" />
 
                         <TextView
+                            android:id="@+id/tvWed"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Wed"
@@ -201,14 +324,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerThu"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barThu"
                             android:layout_width="match_parent"
                             android:layout_height="70dp"
                             android:background="@drawable/bg_chart_bar"
@@ -216,6 +343,7 @@
                             android:alpha="0.7" />
 
                         <TextView
+                            android:id="@+id/tvThu"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Thu"
@@ -225,14 +353,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerFri"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barFri"
                             android:layout_width="match_parent"
                             android:layout_height="50dp"
                             android:background="@drawable/bg_chart_bar"
@@ -240,6 +372,7 @@
                             android:alpha="0.6" />
 
                         <TextView
+                            android:id="@+id/tvFri"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Fri"
@@ -249,14 +382,18 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/barContainerSat"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
                         android:orientation="vertical"
                         android:gravity="center_horizontal|bottom"
-                        android:layout_marginHorizontal="4dp">
+                        android:layout_marginHorizontal="4dp"
+                        android:clickable="true"
+                        android:focusable="true">
 
                         <View
+                            android:id="@+id/barSat"
                             android:layout_width="match_parent"
                             android:layout_height="90dp"
                             android:background="@drawable/bg_chart_bar"
@@ -264,6 +401,7 @@
                             android:alpha="0.8" />
 
                         <TextView
+                            android:id="@+id/tvSat"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Sat"
@@ -272,6 +410,90 @@
                             android:layout_marginTop="8dp" />
                     </LinearLayout>
 
+                        </LinearLayout>
+                    </RelativeLayout>
+
+                    <!-- Tooltip Container -->
+                    <FrameLayout
+                        android:id="@+id/tooltipContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:visibility="gone" />
+
+                    </FrameLayout>
+                </LinearLayout>
+
+                <!-- Legend -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="24dp"
+                    android:padding="16dp"
+                    android:background="@drawable/bg_card_light">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Legend"
+                        android:textSize="14sp"
+                        android:textColor="@color/primary_blue"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="12dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="8dp">
+
+                        <View
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:background="@drawable/bg_legend_item"
+                            android:backgroundTint="@color/accent_blue" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Daily Completion Rate"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary_gray" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tvTotalCompletedHabits"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Total habits completed this week: 0"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary_blue"
+                            android:fontFamily="sans-serif-medium" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="4dp">
+
+                        <TextView
+                            android:id="@+id/tvWeeklyCompletionRate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Weekly completion rate: 0%"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary_gray" />
+                    </LinearLayout>
                 </LinearLayout>
 
             </LinearLayout>

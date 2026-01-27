@@ -1,4 +1,4 @@
-package com.example.habittracker.utils
+package com.example.habittracker.util
 
 import android.content.Context
 import android.net.Uri

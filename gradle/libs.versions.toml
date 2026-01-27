@@ -17,8 +17,10 @@ googleid = "1.1.1"
 firebaseDatabase = "22.0.1"
 retrofit = "2.9.0"
 swiperefreshlayout = "1.1.0"
+flexbox = "3.0.0"
 
 [libraries]
+flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

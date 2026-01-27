@@ -8,7 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.repository.PostRepository
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

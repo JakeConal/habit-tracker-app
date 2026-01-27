@@ -17,7 +17,7 @@ import com.bumptech.glide.Glide
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.repository.PostRepository
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 import android.widget.ImageView

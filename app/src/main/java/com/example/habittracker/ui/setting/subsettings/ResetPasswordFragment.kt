@@ -12,7 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.databinding.FragmentResetPasswordBinding
-import com.example.habittracker.utils.UserPreferences
+import com.example.habittracker.util.UserPreferences
 
 class ResetPasswordFragment : Fragment() {
 

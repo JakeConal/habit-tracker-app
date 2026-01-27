@@ -62,10 +62,27 @@
     <string name="calendar">Calendar</string>
     <string name="statistics">Statistics</string>
     <string name="habit_score">Habit Score</string>
+    <string name="habit_score_format">Habit Score: %d%%</string>
+    <string name="habit_score_description">Today\'s habit completion rate</string>
+    <string name="percentage_format">%d%%</string>
     <string name="last_week">Last Week</string>
     <string name="streak">Streak</string>
     <string name="current">Current</string>
     <string name="best">Best</string>
+    <string name="daily">Daily</string>
+    <string name="total_habits_completed_week">Total habits completed this week: %d</string>
+    <string name="weekly_completion_rate">Weekly completion rate: %d%%</string>
+    <string name="day_singular">Day</string>
+    <string name="day_plural">Days</string>
+    <string name="streak_day_format">%d %s</string>
+    <string name="completed_habits_format">Completed %1$d/%2$d</string>
+    <string name="completion_rate_format">Completion rate %d%%</string>
+
+    <!-- Plurals for days -->
+    <plurals name="days">
+        <item quantity="one">%d Day</item>
+        <item quantity="other">%d Days</item>
+    </plurals>
 
     <!-- Feed Screen -->
     <string name="time_ago_format">%s ago</string>
