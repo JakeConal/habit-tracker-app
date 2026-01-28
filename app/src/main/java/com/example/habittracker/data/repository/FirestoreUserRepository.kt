@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 
 /**
  * Repository for managing User data in Firestore
@@ -327,5 +329,43 @@ class FirestoreUserRepository private constructor() {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    /**
+     * Listen to top users in real-time
+     */
+    fun listenToTopUsers(limit: Long): kotlinx.coroutines.flow.Flow<List<User>> = callbackFlow {
+        val db = FirebaseFirestore.getInstance()
+        val query = db.collection(User.COLLECTION_NAME)
+            .orderBy("points", Query.Direction.DESCENDING)
+            .limit(limit)
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                val users = snapshot.documents.mapNotNull { User.fromDocument(it) }
+                trySend(users)
+            }
+        }
+        awaitClose { subscription.remove() }
+    }
+
+    /**
+     * Listen to a specific user in real-time
+     */
+    fun listenToUser(userId: String): Flow<User?> = callbackFlow {
+        val db = FirebaseFirestore.getInstance()
+        val subscription = db.collection(User.COLLECTION_NAME).document(userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) return@addSnapshotListener
+                if (snapshot != null && snapshot.exists()) {
+                    trySend(User.fromDocument(snapshot))
+                } else {
+                    trySend(null)
+                }
+            }
+        awaitClose { subscription.remove() }
     }
 }

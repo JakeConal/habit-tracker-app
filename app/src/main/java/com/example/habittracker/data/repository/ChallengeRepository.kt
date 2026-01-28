@@ -7,6 +7,8 @@ import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.Query
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class ChallengeRepository {
@@ -235,6 +237,30 @@ class ChallengeRepository {
             println("Error updating participant count: ${e.message}")
             false
         }
+    }
+
+    // Real-time listener for visible challenges
+    fun listenToVisibleChallenges(userId: String, limit: Long): kotlinx.coroutines.flow.Flow<List<Challenge>> = callbackFlow {
+        val db = FirebaseFirestore.getInstance()
+
+        // Listen to challenges collection
+        val subscription = db.collection(collectionName)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    return@addSnapshotListener
+                }
+                if (snapshot != null) {
+                    val allFetched = snapshot.documents.mapNotNull { Challenge.fromDocument(it) }
+                    // Filter and Sort client-side to avoid needing complex composite indexes
+                    val visibleChallenges = allFetched.filter {
+                        it.status == ChallengeStatus.APPROVED || (it.status == ChallengeStatus.PENDING && it.creatorId == userId)
+                    }.sortedByDescending { it.createdAt }
+                    .take(limit.toInt())
+
+                    trySend(visibleChallenges)
+                }
+            }
+        awaitClose { subscription.remove() }
     }
 }
 

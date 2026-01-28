@@ -372,41 +372,59 @@ class PostRepository private constructor() {
         return try {
              // Create a new post that references the original one
             val postRef = db.collection("posts").document()
+
+            // If it's a challenge post, let's try to get the latest voting info from the root challenge if possible
+            var latestVoteCount = originalPost.voteCount
+            var latestVotedBy = originalPost.votedBy
+
+            if (!originalPost.challengeId.isNullOrEmpty()) {
+                try {
+                    val challengeDoc = db.collection("challenges").document(originalPost.challengeId).get().await()
+                    if (challengeDoc.exists()) {
+                        latestVoteCount = challengeDoc.getLong("votes")?.toInt() ?: latestVoteCount
+                        latestVotedBy = (challengeDoc.get("votedBy") as? List<String>) ?: latestVotedBy
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+
             val sharedPost = Post(
                 id = postRef.id,
                 userId = currentUserId,
                 authorName = currentUserName,
                 authorAvatarUrl = currentUserAvatar,
-                content = "", // Content can be empty or something like "Shared a post"
+                content = "",
                 timestamp = System.currentTimeMillis(),
 
-                // Copy original content visuals for display
+                // Visuals: preserve the image from the post being shared
                 imageUrl = originalPost.imageUrl,
 
-                // Set reference fields
-                originalPostId = originalPost.originalPostId ?: originalPost.id, // Chain references to the ROOT post
+                // Set reference fields, chaining back to the root post
+                originalPostId = originalPost.originalPostId ?: originalPost.id,
                 originalUserId = originalPost.originalUserId ?: originalPost.userId,
                 originalAuthorName = originalPost.originalAuthorName ?: originalPost.authorName,
                 originalAuthorAvatarUrl = originalPost.originalAuthorAvatarUrl ?: originalPost.authorAvatarUrl,
                 originalContent = originalPost.originalContent ?: originalPost.content,
                 originalImageUrl = originalPost.originalImageUrl ?: originalPost.imageUrl,
 
-                // Synchronize challenge info
+                // Synchronize challenge info with latest data
                 challengeId = originalPost.challengeId,
                 challengeTitle = originalPost.challengeTitle,
-                voteCount = originalPost.voteCount,
-                votedBy = originalPost.votedBy
+                voteCount = latestVoteCount,
+                votedBy = latestVotedBy
             )
 
             postRef.set(sharedPost.toMap()).await()
 
-            // Increment share count on the ORIGINAL post
-            val originalId = originalPost.originalPostId ?: originalPost.id
-            sharePost(originalId, currentUserName, currentUserAvatar)
+            // Increment share count on the ORIGINAL post being clicked
+            val clickedPostId = originalPost.id
+            sharePost(clickedPostId, currentUserName, currentUserAvatar)
 
-            // Notify original post owner - Handled by sharePost now
-            // val originalOwnerId = originalPost.originalUserId ?: originalPost.userId
-            // notifyUser(originalOwnerId, originalPost.id, null, Notification.NotificationType.SHARE_POST, currentUserName, currentUserAvatar)
+            // If the clicked post was already a share, also increment the ROOT post
+            if (!originalPost.originalPostId.isNullOrEmpty()) {
+                sharePost(originalPost.originalPostId, currentUserName, currentUserAvatar)
+            }
 
             Result.success(true)
         } catch (e: Exception) {
@@ -776,5 +794,40 @@ class PostRepository private constructor() {
             e.printStackTrace()
             android.util.Log.e("PostRepository", "Notification error: ${e.message}")
         }
+    }
+
+    // --- Real-time Listeners ---
+
+    fun listenToPosts(limit: Long): kotlinx.coroutines.flow.Flow<List<Post>> = callbackFlow {
+        val query = db.collection("posts")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(limit)
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) {
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                val posts = snapshot.documents.mapNotNull { Post.fromDocument(it) }
+                trySend(posts)
+            }
+        }
+
+        awaitClose { subscription.remove() }
+    }
+
+    fun listenToPost(postId: String): kotlinx.coroutines.flow.Flow<Post?> = callbackFlow {
+        val subscription = db.collection("posts").document(postId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    return@addSnapshotListener
+                }
+                if (snapshot != null && snapshot.exists()) {
+                    trySend(Post.fromDocument(snapshot))
+                } else {
+                    trySend(null)
+                }
+            }
+        awaitClose { subscription.remove() }
     }
 }

@@ -320,8 +320,8 @@ class HomeFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             notificationViewModel.unreadCount.collect { count ->
                 if (count > 0) {
+                    binding.tvNotificationBadge.text = count.toString()
                     binding.tvNotificationBadge.visibility = View.VISIBLE
-                    binding.tvNotificationBadge.text = if (count > 99) "99+" else count.toString()
                 } else {
                     binding.tvNotificationBadge.visibility = View.GONE
                 }

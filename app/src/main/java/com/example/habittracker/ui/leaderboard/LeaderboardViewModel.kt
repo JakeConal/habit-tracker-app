@@ -4,64 +4,54 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.FirestoreUserRepository
-import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 
 class LeaderboardViewModel : ViewModel() {
     private val userRepository = FirestoreUserRepository.getInstance()
     private val PAGE_SIZE = 20L
 
-    private val _topUsers = MutableStateFlow<List<User>>(emptyList())
-    val topUsers: StateFlow<List<User>> = _topUsers.asStateFlow()
+    private val _currentLimit = MutableStateFlow(PAGE_SIZE)
+
+    val topUsers: StateFlow<List<User>> = _currentLimit
+        .flatMapLatest { limit ->
+            userRepository.listenToTopUsers(limit)
+        }
+        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    val error: StateFlow<String?> = _error
 
-    private var lastDocument: DocumentSnapshot? = null
     private var _hasMoreData = true
     val hasMoreData: Boolean get() = _hasMoreData
 
-    init {
-        loadTopUsers(isRefresh = true)
-    }
-
     fun loadTopUsers(isRefresh: Boolean = true) {
-        if (_isLoading.value || (!isRefresh && !_hasMoreData)) return
+        if (_isLoading.value) return
 
         if (isRefresh) {
-            lastDocument = null
+            _currentLimit.value = PAGE_SIZE
             _hasMoreData = true
+            return
         }
 
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-            try {
-                val result = userRepository.getTopUsersPaginated(PAGE_SIZE, lastDocument)
+        if (!_hasMoreData) return
 
-                result.onSuccess { (newUsers, lastSnapshot) ->
-                    if (isRefresh) {
-                        _topUsers.value = newUsers
-                    } else {
-                        _topUsers.value = _topUsers.value + newUsers
-                    }
+        _isLoading.value = true
 
-                    lastDocument = lastSnapshot
-                    _hasMoreData = newUsers.size >= PAGE_SIZE
-                }.onFailure { e ->
-                    _error.value = "Failed to load leaderboard: ${e.message}"
-                }
-            } catch (e: Exception) {
-                _error.value = "Failed to load leaderboard: ${e.message}"
-            } finally {
-                _isLoading.value = false
-            }
+        val currentCount = topUsers.value.size
+        if (currentCount < _currentLimit.value) {
+            _hasMoreData = false
+            _isLoading.value = false
+            return
         }
+
+        _currentLimit.value += PAGE_SIZE
+        _isLoading.value = false
     }
 }

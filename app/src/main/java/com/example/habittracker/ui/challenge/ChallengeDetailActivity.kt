@@ -53,6 +53,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
         initViews()
         loadChallengeData()
+        startChallengeObservation()
         handleHideJoinButton()
         setupClickListeners()
         MainActivity.hideSystemUI(this) // Hide the system navigation bar
@@ -258,9 +259,29 @@ class ChallengeDetailActivity : AppCompatActivity() {
         }
     }
 
+    private fun startChallengeObservation() {
+        val challengeId = challenge?.id ?: return
+        lifecycleScope.launch {
+            // Observe the specific challenge for real-time updates
+            val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
+            db.collection("challenges").document(challengeId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) return@addSnapshotListener
+                    if (snapshot != null && snapshot.exists()) {
+                        challenge = Challenge.fromDocument(snapshot)
+                        updateUiBasedOnStatus()
+                    }
+                }
+        }
+    }
+
     private fun updateUiBasedOnStatus() {
         val currentUserId = auth.currentUser?.uid
         challenge?.let { c ->
+            tvChallengeTitle.text = c.title
+            tvChallengeDetail.text = c.detail
+            tvRewardPoints.text = getString(R.string.reward_points_message, c.reward)
+
             if (c.status == ChallengeStatus.PENDING) {
                 tvVoteProgress.visibility = android.view.View.VISIBLE
                 tvVoteProgress.text = "Votes: ${c.votes}/1000"

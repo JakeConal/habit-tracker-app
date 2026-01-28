@@ -372,7 +372,6 @@ class FeedFragment : Fragment() {
                 val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
                 if (success) {
                     Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
-                    viewModel.fetchVotedChallenges() // Refresh voted IDs for UI sync
                     refreshPosts()
                 } else {
                     Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()

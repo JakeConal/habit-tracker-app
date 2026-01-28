@@ -60,32 +60,38 @@ class ChallengesFragment : Fragment() {
     }
 
     private fun observeViewModel() {
-        viewModel.challengesWithStatus.observe(viewLifecycleOwner) { list ->
-            // Sort: Pending first, then Approved
-            val sortedList = list.sortedBy {
-                if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
-            }
+        lifecycleScope.launch {
+            viewModel.challengesWithStatus.collect { list ->
+                // Sort: Pending first, then Approved
+                val sortedList = list.sortedBy {
+                    if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
+                }
 
-            if (::challengeAdapter.isInitialized) {
-                challengeAdapter.updateData(sortedList.map { it.challenge }.toTypedArray(), sortedList)
-            } else {
-                challengeAdapter = ChallengeAdapter(
-                    sortedList.map { it.challenge }.toTypedArray(),
-                    sortedList,
-                    { challenge -> onChallengeClicked(challenge) },
-                    { onCreateChallengeClicked() }
-                )
-                recyclerViewChallenges.adapter = challengeAdapter
+                if (::challengeAdapter.isInitialized) {
+                    challengeAdapter.updateData(sortedList.map { it.challenge }.toTypedArray(), sortedList)
+                } else {
+                    challengeAdapter = ChallengeAdapter(
+                        sortedList.map { it.challenge }.toTypedArray(),
+                        sortedList,
+                        { challenge -> onChallengeClicked(challenge) },
+                        { onCreateChallengeClicked() }
+                    )
+                    recyclerViewChallenges.adapter = challengeAdapter
+                }
             }
         }
 
-        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
-            swipeRefresh.isRefreshing = isLoading
+        lifecycleScope.launch {
+            viewModel.isLoading.collect { isLoading ->
+                swipeRefresh.isRefreshing = isLoading
+            }
         }
 
-        viewModel.errorMessage.observe(viewLifecycleOwner) { message ->
-            if (!message.isNullOrEmpty()) {
-                android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_LONG).show()
+        lifecycleScope.launch {
+            viewModel.errorMessage.collect { message ->
+                if (!message.isNullOrEmpty()) {
+                    android.widget.Toast.makeText(requireContext(), message, android.widget.Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
