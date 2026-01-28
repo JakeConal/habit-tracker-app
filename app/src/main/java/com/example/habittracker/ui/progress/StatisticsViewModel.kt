@@ -28,6 +28,7 @@ data class HabitStatistics(
     val iconRes: Int,
     val iconBgRes: Int,
     val frequency: String,
+    val badgeBgRes: Int,
     val totalCompletions: Int,
     val expectedCompletions: Int,
     val weeklyDays: List<Pair<String, DayStatus>> // Date to status mapping
@@ -158,13 +159,31 @@ class StatisticsViewModel : ViewModel() {
                 0f
             }
 
+            var iconRes = category?.icon?.resId ?: com.example.habittracker.R.drawable.ic_other
+            var iconBgRes = category?.color?.resId ?: com.example.habittracker.R.drawable.bg_category_icon_pink_light
+            var badgeBgRes = com.example.habittracker.R.drawable.badge_color_cyan // Default
+
+            if (habit.isChallengeHabit) {
+                iconRes = com.example.habittracker.R.drawable.ic_trophy
+                iconBgRes = com.example.habittracker.R.drawable.bg_rainbow_gradient
+
+                // Set badge color based on duration
+                badgeBgRes = when (habit.challengeDurationDays) {
+                    7 -> com.example.habittracker.R.drawable.badge_color_cyan
+                    30 -> com.example.habittracker.R.drawable.badge_color_green
+                    100 -> com.example.habittracker.R.drawable.badge_color_yellow
+                    else -> com.example.habittracker.R.drawable.badge_color_cyan
+                }
+            }
+
             HabitStatistics(
                 habitId = habit.id,
                 habitName = habit.name,
                 completionRate = completionRate.coerceIn(0f, 100f),
-                iconRes = category?.icon?.resId ?: com.example.habittracker.R.drawable.ic_other,
-                iconBgRes = category?.color?.resId ?: com.example.habittracker.R.drawable.bg_category_icon_pink_light,
+                iconRes = iconRes,
+                iconBgRes = iconBgRes,
                 frequency = FrequencyFormatter.formatFrequency(habit.frequency),
+                badgeBgRes = badgeBgRes,
                 totalCompletions = actualCompletions,
                 expectedCompletions = expectedCompletions,
                 weeklyDays = getWeeklyDaysForHabit(habit)

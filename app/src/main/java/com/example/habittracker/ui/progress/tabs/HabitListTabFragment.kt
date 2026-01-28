@@ -60,7 +60,7 @@ class HabitListTabFragment : Fragment() {
                             iconRes = stat.iconRes,
                             iconBgRes = stat.iconBgRes,
                             badgeText = stat.frequency,
-                            badgeBgRes = R.drawable.badge_color_cyan,
+                            badgeBgRes = stat.badgeBgRes,
                             weeklyDays = stat.weeklyDays
                         )
                     }
@@ -95,4 +95,3 @@ class HabitListTabFragment : Fragment() {
         fun newInstance() = HabitListTabFragment()
     }
 }
-

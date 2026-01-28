@@ -36,6 +36,10 @@ class ViewHabitDetailActivity : AppCompatActivity() {
         intent.getStringExtra(EXTRA_HABIT_ID) ?: ""
     }
 
+    private val selectedDate: String by lazy {
+        intent.getStringExtra(EXTRA_SELECTED_DATE) ?: DateUtils.getCurrentDateString()
+    }
+
     private val measurements = listOf(
         "Mins", "Hours", "Pages", "Times", "Km", "Miles",
         "Steps", "Glasses", "Cups", "Calories", "Litres", "Ml",
@@ -45,12 +49,14 @@ class ViewHabitDetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_HABIT_ID = "extra_habit_id"
+        const val EXTRA_SELECTED_DATE = "extra_selected_date"
         private const val REQUEST_CODE_CATEGORY = 1001
         private const val REQUEST_CODE_FOCUS_TIMER = 1002
 
-        fun newIntent(context: Context, habitId: String): Intent {
+        fun newIntent(context: Context, habitId: String, selectedDate: String? = null): Intent {
             return Intent(context, ViewHabitDetailActivity::class.java).apply {
                 putExtra(EXTRA_HABIT_ID, habitId)
+                putExtra(EXTRA_SELECTED_DATE, selectedDate)
             }
         }
     }
@@ -141,7 +147,8 @@ class ViewHabitDetailActivity : AppCompatActivity() {
                         binding.layoutPomodoroSection.visibility = android.view.View.VISIBLE
                     }
 
-                    updateActionButton(it.completedDates.contains(DateUtils.getCurrentDateString()), it.isPomodoroRequired)
+                    val isCompletedOnSelectedDate = it.completedDates.contains(selectedDate)
+                    updateActionButton(isCompletedOnSelectedDate, it.isPomodoroRequired)
                 }
             }
         }
@@ -258,11 +265,22 @@ class ViewHabitDetailActivity : AppCompatActivity() {
     }
 
     private fun updateActionButton(isCompleted: Boolean, isPomodoroRequired: Boolean) {
+        val isToday = selectedDate == DateUtils.getCurrentDateString()
+
         if (isCompleted) {
             binding.btnActionButton.text = getString(R.string.habit_completed)
             binding.btnActionButton.isEnabled = false
             // Use alpha to visually indicate disabled state
             binding.btnActionButton.alpha = 0.6f
+        } else if (!isToday) {
+            // Not completed and not today - disable and dim
+            binding.btnActionButton.isEnabled = false
+            binding.btnActionButton.alpha = 0.4f
+            binding.btnActionButton.text = if (isPomodoroRequired) {
+                getString(R.string.start_pomodoro)
+            } else {
+                getString(R.string.complete_habit)
+            }
         } else {
             binding.btnActionButton.isEnabled = true
             binding.btnActionButton.alpha = 1.0f

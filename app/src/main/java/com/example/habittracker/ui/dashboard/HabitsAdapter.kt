@@ -75,7 +75,14 @@ class HabitsAdapter(
                     onHabitLongClick(habit)
                     true
                 }
-                btnCheck.setOnClickListener { onCheckClick(habit) }
+                btnCheck.setOnClickListener {
+                    // Quick check is disabled from home list per user request
+                    // Users should go to detail view to complete habits
+                }
+
+                // Visually indicate it's not interactive from the list
+                btnCheck.alpha = 0.8f
+                btnCheck.isEnabled = false
             }
         }
     }

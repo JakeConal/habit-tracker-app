@@ -414,12 +414,8 @@ class HomeFragment : Fragment() {
             categories = viewModel.categories.value,
             selectedDate = selectedDay?.fullDate ?: "",
             onHabitClick = { habit ->
-                // Navigate to ViewHabitFragment only if selected day is today
-                if (selectedDay?.isToday == true) {
-                    navigateToViewHabit(habit)
-                } else {
-                    showError("You can only view details for today")
-                }
+                // Navigate to ViewHabitFragment based on selected day
+                navigateToViewHabit(habit, selectedDay?.fullDate)
             },
             onHabitLongClick = { habit ->
                 // Show delete confirmation dialog
@@ -461,11 +457,12 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun navigateToViewHabit(habit: Habit) {
-        // Start ViewHabitDetailActivity with habitId
+    private fun navigateToViewHabit(habit: Habit, selectedDate: String? = null) {
+        // Start ViewHabitDetailActivity with habitId and selectedDate
         val intent = ViewHabitDetailActivity.newIntent(
             requireContext(),
-            habit.id
+            habit.id,
+            selectedDate
         )
         startActivity(intent)
     }
