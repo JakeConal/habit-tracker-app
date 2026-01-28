@@ -114,6 +114,14 @@ class ChallengeAdapter (
                 if (isJoined) {
                     text = holder.itemView.context.getString(R.string.joined)
                     visibility = View.VISIBLE
+
+                    // Match the color of the duration badge
+                    val bgRes = when (challenge.duration.color) {
+                        BadgeColor.CYAN -> R.drawable.badge_color_cyan
+                        BadgeColor.GREEN -> R.drawable.badge_color_green
+                        BadgeColor.YELLOW -> R.drawable.badge_color_yellow
+                    }
+                    setBackgroundResource(bgRes)
                 } else {
                     visibility = View.GONE
                 }

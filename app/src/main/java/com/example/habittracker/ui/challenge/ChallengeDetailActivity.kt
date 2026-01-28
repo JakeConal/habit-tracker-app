@@ -230,6 +230,9 @@ class ChallengeDetailActivity : AppCompatActivity() {
                         // Update participant count
                         challengeRepository.updateParticipantCount(challengeId)
 
+                        // Update user's joined challenges list
+                        userRepository.addJoinedChallenge(currentUserId, challengeId)
+
                         isUserJoined = true
                         updateJoinButton()
                         Toast.makeText(

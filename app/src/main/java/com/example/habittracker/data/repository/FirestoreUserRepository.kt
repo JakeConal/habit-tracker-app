@@ -255,7 +255,7 @@ class FirestoreUserRepository private constructor() {
                     
                     // Sync historical posts
                     try {
-                        val postRepo = com.example.habittracker.data.repository.PostRepository.getInstance()
+                        val postRepo = PostRepository.getInstance()
                         postRepo.updateUserPosts(userId, name, avatarUrl)
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -284,6 +284,22 @@ class FirestoreUserRepository private constructor() {
             FirestoreManager.updateDocument(User.COLLECTION_NAME, userId, updates)
         } catch (e: Exception) {
             e.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * Add challenge ID to user's joined challenges list
+     */
+    suspend fun addJoinedChallenge(userId: String, challengeId: String): Boolean {
+        return try {
+            val db = FirebaseFirestore.getInstance()
+            db.collection(User.COLLECTION_NAME).document(userId)
+                .update("joinedChallengeIds", com.google.firebase.firestore.FieldValue.arrayUnion(challengeId))
+                .await()
+            true
+        } catch (e: Exception) {
+            println("Error adding joined challenge: ${e.message}")
             false
         }
     }
@@ -334,7 +350,7 @@ class FirestoreUserRepository private constructor() {
     /**
      * Listen to top users in real-time
      */
-    fun listenToTopUsers(limit: Long): kotlinx.coroutines.flow.Flow<List<User>> = callbackFlow {
+    fun listenToTopUsers(limit: Long): Flow<List<User>> = callbackFlow {
         val db = FirebaseFirestore.getInstance()
         val query = db.collection(User.COLLECTION_NAME)
             .orderBy("points", Query.Direction.DESCENDING)
@@ -374,7 +390,7 @@ class FirestoreUserRepository private constructor() {
     /**
      * Get user rank in real-time based on points
      */
-    fun listenToUserRank(points: Int): kotlinx.coroutines.flow.Flow<Int> = callbackFlow {
+    fun listenToUserRank(points: Int): Flow<Int> = callbackFlow {
         val db = FirebaseFirestore.getInstance()
         val query = db.collection(User.COLLECTION_NAME)
             .whereGreaterThan("points", points)
