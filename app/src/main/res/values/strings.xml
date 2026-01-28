@@ -14,6 +14,8 @@
     <string name="tab_challenges">Challenges</string>
     <string name="tab_leaderboard">Leaderboard</string>
     
+    <string name="no_habits_yet">No habits yet</string>
+
     <!-- Home Screen -->
     <string name="greeting_morning">Good Morning!</string>
     <string name="greeting_afternoon">Good Afternoon!</string>

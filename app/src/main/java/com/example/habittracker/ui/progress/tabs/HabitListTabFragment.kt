@@ -47,19 +47,25 @@ class HabitListTabFragment : Fragment() {
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.habitStatistics.collect { statistics ->
-                val items = statistics.map { stat ->
-                    HabitStatItem(
-                        habitId = stat.habitId,
-                        name = stat.habitName,
-                        score = getString(R.string.habit_score_format, stat.completionRate.toInt()),
-                        iconRes = stat.iconRes,
-                        iconBgRes = stat.iconBgRes,
-                        badgeText = stat.frequency,
-                        badgeBgRes = R.drawable.badge_color_cyan,
-                        weeklyDays = stat.weeklyDays
-                    )
+                if (statistics.isEmpty()) {
+                    binding.rvHabits.visibility = View.GONE
+                    binding.llEmptyHabits.visibility = View.VISIBLE
+                } else {
+                    binding.rvHabits.visibility = View.VISIBLE
+                    binding.llEmptyHabits.visibility = View.GONE
+                    val items = statistics.map { stat ->
+                        HabitStatItem(
+                            habitId = stat.habitId,
+                            name = stat.habitName,
+                            iconRes = stat.iconRes,
+                            iconBgRes = stat.iconBgRes,
+                            badgeText = stat.frequency,
+                            badgeBgRes = R.drawable.badge_color_cyan,
+                            weeklyDays = stat.weeklyDays
+                        )
+                    }
+                    adapter.setItems(items)
                 }
-                adapter.setItems(items)
             }
         }
     }

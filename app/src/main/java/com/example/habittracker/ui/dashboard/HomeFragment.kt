@@ -340,7 +340,14 @@ class HomeFragment : Fragment() {
             }
         } ?: habitsList
 
-        binding.rvHabits.visibility = View.VISIBLE
+        if (filteredHabits.isEmpty()) {
+            binding.rvHabits.visibility = View.GONE
+            binding.llEmptyHabits.visibility = View.VISIBLE
+        } else {
+            binding.rvHabits.visibility = View.VISIBLE
+            binding.llEmptyHabits.visibility = View.GONE
+        }
+
         habitsAdapter.updateHabits(
             filteredHabits.toMutableList(),
             categoriesList,

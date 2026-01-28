@@ -12,200 +12,209 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/habitScoreCard"
+        <LinearLayout
+            android:id="@+id/contentLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@android:color/transparent"
-            app:strokeWidth="0dp"
+            android:orientation="vertical"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/habitScoreCard"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="24dp"
-                android:gravity="center">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="0dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Habit Score"
-                    android:textSize="18sp"
-                    android:textColor="@color/primary_blue"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_marginBottom="24dp" />
-
-                <FrameLayout
-                    android:layout_width="200dp"
-                    android:layout_height="200dp">
-
-                    <ProgressBar
-                        android:id="@+id/progressCircle"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:indeterminate="false"
-                        android:max="100"
-                        android:progress="80"
-                        style="?android:attr/progressBarStyleHorizontal"
-                        android:progressDrawable="@drawable/circular_progress" />
-
-                    <TextView
-                        android:id="@+id/tvHabitScore"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:text="80%"
-                        android:textSize="48sp"
-                        android:textColor="@color/primary_blue"
-                        android:fontFamily="sans-serif-medium" />
-                </FrameLayout>
-
-                <TextView
-                    android:id="@+id/tvHabitScoreDescription"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/habit_score_description"
-                    android:textSize="14sp"
-                    android:textColor="@color/secondary_gray"
-                    android:fontFamily="sans-serif"
-                    android:layout_marginTop="16dp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/chartCard"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="0dp"
-            app:cardBackgroundColor="@color/white"
-            app:strokeColor="@android:color/transparent"
-            app:strokeWidth="0dp"
-            app:layout_constraintTop_toBottomOf="@id/habitScoreCard"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Last Week"
-                    android:textSize="18sp"
-                    android:textColor="@color/primary_blue"
-                    android:fontFamily="sans-serif-medium"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Chart with Y-axis and Grid -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:gravity="center">
 
-                    <!-- Y-axis Labels -->
-                    <LinearLayout
+                    <TextView
                         android:layout_width="wrap_content"
-                        android:layout_height="200dp"
-                        android:orientation="vertical"
-                        android:gravity="end"
-                        android:layout_marginEnd="8dp">
+                        android:layout_height="wrap_content"
+                        android:text="Habit Score"
+                        android:textSize="18sp"
+                        android:textColor="@color/primary_blue"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="24dp" />
 
-                        <TextView
-                            android:id="@+id/tvYAxisMax"
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:text="10"
-                            android:textSize="10sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="top" />
-
-                        <TextView
-                            android:id="@+id/tvYAxisMid"
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:text="5"
-                            android:textSize="10sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center_vertical" />
-
-                        <TextView
-                            android:id="@+id/tvYAxisMin"
-                            android:layout_width="wrap_content"
-                            android:layout_height="0dp"
-                            android:layout_weight="1"
-                            android:text="0"
-                            android:textSize="10sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="bottom"
-                            android:layout_marginBottom="20dp" />
-                    </LinearLayout>
-
-                    <!-- Chart Area with Grid -->
                     <FrameLayout
-                        android:layout_width="0dp"
-                        android:layout_height="200dp"
-                        android:layout_weight="1">
+                        android:layout_width="200dp"
+                        android:layout_height="200dp">
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                        <!-- Grid Lines -->
-                        <LinearLayout
+                        <ProgressBar
+                            android:id="@+id/progressCircle"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="80"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:progressDrawable="@drawable/circular_progress" />
+
+                        <TextView
+                            android:id="@+id/tvHabitScore"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="80%"
+                            android:textSize="48sp"
+                            android:textColor="@color/primary_blue"
+                            android:fontFamily="sans-serif-medium" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:id="@+id/tvHabitScoreDescription"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/habit_score_description"
+                        android:textSize="14sp"
+                        android:textColor="@color/secondary_gray"
+                        android:fontFamily="sans-serif"
+                        android:layout_marginTop="16dp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chartCard"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white"
+                app:strokeColor="@android:color/transparent"
+                app:strokeWidth="0dp"
+                app:layout_constraintTop_toBottomOf="@id/habitScoreCard"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Last Week"
+                        android:textSize="18sp"
+                        android:textColor="@color/primary_blue"
+                        android:fontFamily="sans-serif-medium"
+                        android:layout_marginBottom="16dp" />
+
+                    <!-- Chart with Y-axis and Grid -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <!-- Y-axis Labels -->
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="200dp"
                             android:orientation="vertical"
-                            android:layout_marginBottom="20dp">
+                            android:gravity="end"
+                            android:layout_marginEnd="8dp">
 
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="@color/secondary_gray"
-                                android:alpha="0.2" />
-
-                            <View
-                                android:layout_width="match_parent"
+                            <TextView
+                                android:id="@+id/tvYAxisMax"
+                                android:layout_width="wrap_content"
                                 android:layout_height="0dp"
-                                android:layout_weight="1" />
+                                android:layout_weight="1"
+                                android:text="10"
+                                android:textSize="10sp"
+                                android:textColor="@color/secondary_gray"
+                                android:gravity="top" />
 
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="@color/secondary_gray"
-                                android:alpha="0.2" />
-
-                            <View
-                                android:layout_width="match_parent"
+                            <TextView
+                                android:id="@+id/tvYAxisMid"
+                                android:layout_width="wrap_content"
                                 android:layout_height="0dp"
-                                android:layout_weight="1" />
+                                android:layout_weight="1"
+                                android:text="5"
+                                android:textSize="10sp"
+                                android:textColor="@color/secondary_gray"
+                                android:gravity="center_vertical" />
 
-                            <View
-                                android:layout_width="match_parent"
-                                android:layout_height="1dp"
-                                android:background="@color/secondary_gray"
-                                android:alpha="0.3" />
+                            <TextView
+                                android:id="@+id/tvYAxisMin"
+                                android:layout_width="wrap_content"
+                                android:layout_height="0dp"
+                                android:layout_weight="1"
+                                android:text="0"
+                                android:textSize="10sp"
+                                android:textColor="@color/secondary_gray"
+                                android:gravity="bottom"
+                                android:layout_marginBottom="20dp" />
                         </LinearLayout>
 
-                        <!-- Bar Chart -->
-                        <LinearLayout
+                        <!-- Chart Area with Grid -->
+                        <FrameLayout
+                            android:layout_width="0dp"
+                            android:layout_height="200dp"
+                            android:layout_weight="1">
+
+                        <RelativeLayout
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal"
-                            android:gravity="bottom"
-                            android:weightSum="7">
+                            android:layout_height="match_parent">
+
+                            <!-- Grid Lines -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="vertical"
+                                android:layout_marginBottom="20dp">
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="@color/secondary_gray"
+                                    android:alpha="0.2" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="@color/secondary_gray"
+                                    android:alpha="0.2" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="0dp"
+                                    android:layout_weight="1" />
+
+                                <View
+                                    android:layout_width="match_parent"
+                                    android:layout_height="1dp"
+                                    android:background="@color/secondary_gray"
+                                    android:alpha="0.3" />
+                            </LinearLayout>
+
+                            <!-- Bar Chart -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:orientation="horizontal"
+                                android:gravity="bottom"
+                                android:weightSum="7">
 
                     <LinearLayout
                         android:id="@+id/barContainerSun"
@@ -498,6 +507,38 @@
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llEmptyStatistics"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="100dp">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_card_star"
+                app:tint="#4A5565"
+                android:alpha="0.5" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/no_habits_yet"
+                android:textColor="#4A5565"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

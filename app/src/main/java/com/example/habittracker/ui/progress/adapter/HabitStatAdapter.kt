@@ -12,7 +12,6 @@ import com.example.habittracker.ui.progress.DayStatus
 data class HabitStatItem(
     val habitId: String = "",
     val name: String,
-    val score: String,
     val iconRes: Int,
     val iconBgRes: Int,
     val badgeText: String,
@@ -70,7 +69,6 @@ class HabitStatAdapter(
 
         fun bind(item: HabitStatItem) {
             binding.tvHabitName.text = item.name
-            binding.tvHabitScore.text = item.score
             binding.ivHabitIcon.setImageResource(item.iconRes)
             binding.iconCard.setBackgroundResource(item.iconBgRes)
 
