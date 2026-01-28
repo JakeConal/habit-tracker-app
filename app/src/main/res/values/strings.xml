@@ -146,6 +146,7 @@
     <string name="settings_edit_profile">Edit Profile</string>
     <string name="settings_reset_password">Reset Password</string>
     <string name="settings_notification">Notification</string>
+    <string name="settings_quote">Quote</string>
     <string name="settings_terms">Terms</string>
     <string name="settings_review_challenge">Review Challenge</string>
     <string name="settings_logout">Logout</string>

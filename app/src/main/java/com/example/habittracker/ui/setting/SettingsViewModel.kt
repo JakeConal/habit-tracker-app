@@ -46,6 +46,7 @@ class SettingsViewModel : ViewModel() {
             add(SettingMenuItem(1, R.string.settings_edit_profile, R.drawable.ic_person))
             add(SettingMenuItem(2, R.string.settings_reset_password, R.drawable.ic_lock))
             add(SettingMenuItem(3, R.string.settings_notification, R.drawable.ic_notification_menu))
+            add(SettingMenuItem(5, R.string.settings_quote, R.drawable.ic_quote))
             add(SettingMenuItem(4, R.string.settings_terms, R.drawable.ic_terms))
 
 

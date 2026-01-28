@@ -85,6 +85,10 @@
         <action
             android:id="@+id/action_settingsFragment_to_notificationSettingsFragment"
             app:destination="@id/nav_notification_settings" />
+
+        <action
+            android:id="@+id/action_settingsFragment_to_dailyQuoteFragment"
+            app:destination="@id/nav_daily_quote" />
         
         <action
             android:id="@+id/action_settingsFragment_to_subscriptionFragment"

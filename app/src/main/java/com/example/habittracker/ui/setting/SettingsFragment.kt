@@ -74,6 +74,7 @@ class SettingsFragment : Fragment() {
             1 -> navigateToEditProfile()
             2 -> navigateToResetPassword()
             3 -> navigateToNotificationSettings()
+            5 -> navigateToQuote()
             4 -> navigateToTerms()
             6 -> handleLogout()
             7 -> handleDeleteAccount()
@@ -90,6 +91,11 @@ class SettingsFragment : Fragment() {
     
     private fun navigateToNotificationSettings() {
         findNavController().navigate(R.id.action_settingsFragment_to_notificationSettingsFragment)
+    }
+
+    private fun navigateToQuote() {
+        // Open DailyQuoteFragment so users can re-enable quote on dashboard
+        findNavController().navigate(R.id.action_settingsFragment_to_dailyQuoteFragment)
     }
     
     private fun navigateToTerms() {
