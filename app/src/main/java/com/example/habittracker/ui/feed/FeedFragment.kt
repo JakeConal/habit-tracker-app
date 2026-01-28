@@ -23,6 +23,7 @@ import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.launch
 import android.widget.ImageView
 import android.widget.Toast
+import kotlinx.coroutines.flow.collectLatest
 
 class FeedFragment : Fragment() {
 
@@ -390,7 +391,7 @@ class FeedFragment : Fragment() {
         }
 
         lifecycleScope.launch {
-            viewModel.isLoading.collect { isLoading ->
+            viewModel.isLoading.collectLatest { isLoading ->
                 swipeRefreshFeed.isRefreshing = isLoading
             }
         }

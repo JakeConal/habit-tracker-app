@@ -298,9 +298,11 @@
     <string name="shared">Shared</string>
     <string name="shared_feed_message">Shared to feed for votes!</string>
     <string name="vote_count_format">Vote (%1$d)</string>
-    <string name="shared_post_format">%1$s shared the post of %2$s</string>
-    <string name="challenge_title_format">🏆 %1$s</string>
+    <string name="you">You</string>
     <string name="voted">Voted</string>
     <string name="pending">Pending</string>
     <string name="joined">Joined</string>
+    <string name="challenge_title_format">🏆 %1$s</string>
+    <string name="shared_post_format">%1$s shared %2$s\'s post</string>
+    <string name="current_position">Current Position</string>
 </resources>

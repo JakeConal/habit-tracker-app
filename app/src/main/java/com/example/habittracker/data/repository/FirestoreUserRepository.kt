@@ -342,6 +342,8 @@ class FirestoreUserRepository private constructor() {
 
         val subscription = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                // Emit an empty list or keep current data on error, but ensure flow continues or terminates properly
+                trySend(emptyList())
                 return@addSnapshotListener
             }
             if (snapshot != null) {
@@ -366,6 +368,23 @@ class FirestoreUserRepository private constructor() {
                     trySend(null)
                 }
             }
+        awaitClose { subscription.remove() }
+    }
+
+    /**
+     * Get user rank in real-time based on points
+     */
+    fun listenToUserRank(points: Int): kotlinx.coroutines.flow.Flow<Int> = callbackFlow {
+        val db = FirebaseFirestore.getInstance()
+        val query = db.collection(User.COLLECTION_NAME)
+            .whereGreaterThan("points", points)
+
+        val subscription = query.addSnapshotListener { snapshot, error ->
+            if (error != null) return@addSnapshotListener
+            if (snapshot != null) {
+                trySend(snapshot.size() + 1)
+            }
+        }
         awaitClose { subscription.remove() }
     }
 }

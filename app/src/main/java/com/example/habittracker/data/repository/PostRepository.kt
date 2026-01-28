@@ -805,6 +805,7 @@ class PostRepository private constructor() {
 
         val subscription = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                trySend(emptyList())
                 return@addSnapshotListener
             }
             if (snapshot != null) {

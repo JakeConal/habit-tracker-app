@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -20,16 +22,19 @@ class FeedViewModel : ViewModel() {
     private val repository = PostRepository.getInstance()
     private val PAGE_SIZE = 10L
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     private val _currentLimit = MutableStateFlow(PAGE_SIZE)
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val posts: StateFlow<List<Post>> = _currentLimit
         .flatMapLatest { limit ->
             repository.listenToPosts(limit)
+                .onStart { _isLoading.value = true }
+                .onEach { _isLoading.value = false }
         }
-        .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     private val _votedChallengeIds = MutableStateFlow<List<String>>(emptyList())
     val votedChallengeIds: StateFlow<List<String>> =
@@ -49,11 +54,20 @@ class FeedViewModel : ViewModel() {
     }
 
     fun fetchPosts(isRefresh: Boolean = false) {
-        if (_isLoading.value) return
+        if (_isLoading.value && !isRefresh) return
 
         if (isRefresh) {
-            _currentLimit.value = PAGE_SIZE
             _hasMoreData = true
+            if (_currentLimit.value == PAGE_SIZE) {
+                _isLoading.value = true
+                viewModelScope.launch {
+                    kotlinx.coroutines.delay(500)
+                    _isLoading.value = false
+                }
+            } else {
+                _isLoading.value = true
+                _currentLimit.value = PAGE_SIZE
+            }
             return
         }
 

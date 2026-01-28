@@ -62,17 +62,12 @@ class ChallengesFragment : Fragment() {
     private fun observeViewModel() {
         lifecycleScope.launch {
             viewModel.challengesWithStatus.collect { list ->
-                // Sort: Pending first, then Approved
-                val sortedList = list.sortedBy {
-                    if (it.challenge.status == com.example.habittracker.data.model.ChallengeStatus.PENDING) 0 else 1
-                }
-
                 if (::challengeAdapter.isInitialized) {
-                    challengeAdapter.updateData(sortedList.map { it.challenge }.toTypedArray(), sortedList)
+                    challengeAdapter.updateData(list.map { it.challenge }.toTypedArray(), list)
                 } else {
                     challengeAdapter = ChallengeAdapter(
-                        sortedList.map { it.challenge }.toTypedArray(),
-                        sortedList,
+                        list.map { it.challenge }.toTypedArray(),
+                        list,
                         { challenge -> onChallengeClicked(challenge) },
                         { onCreateChallengeClicked() }
                     )

@@ -12,34 +12,60 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_leaderboard"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:paddingHorizontal="@dimen/spacing_md"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/spacing_lg"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_leaderboard_entry" />
 
-            <!-- Top 3 Podium - Fixed at top -->
-            <include layout="@layout/layout_leaderboard_podium" />
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-            <!-- Scrollable Leaderboard List -->
-            <ScrollView
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:fillViewport="true">
+    <!-- Pill-shaped Current User Floating Rank Card -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardCurrentUserRank"
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:visibility="gone"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="12dp"
+        app:cardBackgroundColor="@color/white"
+        app:strokeWidth="2.5dp"
+        app:strokeColor="@color/accent_pink"
+        tools:visibility="visible">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rv_leaderboard"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="@dimen/spacing_lg"
-                    android:layout_marginTop="@dimen/spacing_lg"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:itemCount="8"
-                    tools:listitem="@layout/item_leaderboard_entry" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="20dp">
 
-            </ScrollView>
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/ivCurrentUserAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:scaleType="centerCrop"
+                app:shapeAppearanceOverlay="@style/CircleImageView"
+                tools:src="@tools:sample/avatars" />
+
+            <TextView
+                android:id="@+id/tvCurrentUserRank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:textColor="@color/accent_pink"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="#15" />
 
         </LinearLayout>
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </com.google.android.material.card.MaterialCardView>
 
 </FrameLayout>

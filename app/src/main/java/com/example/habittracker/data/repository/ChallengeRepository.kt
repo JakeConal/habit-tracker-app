@@ -247,6 +247,7 @@ class ChallengeRepository {
         val subscription = db.collection(collectionName)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
+                    trySend(emptyList())
                     return@addSnapshotListener
                 }
                 if (snapshot != null) {
