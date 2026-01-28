@@ -4,6 +4,8 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.example.habittracker.util.NotificationHelper
+import com.example.habittracker.util.ReminderScheduler
 import com.google.firebase.FirebaseApp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreSettings
@@ -71,6 +73,13 @@ class HabitTrackerApplication : Application() {
     private fun initializeApp() {
         // Hide system navigation bar globally for immersive experience
         setUpNavigationBarHiding()
+
+        // Create reminder notification channel
+        NotificationHelper.createReminderNotificationChannel(this)
+
+        // Schedule reminder if it was previously enabled
+        // This ensures the reminder works after app restart or device reboot
+        ReminderScheduler.scheduleFromPreferences(this)
 
         // TODO: Initialize Timber for logging
         // Timber.plant(Timber.DebugTree())

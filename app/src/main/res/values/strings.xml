@@ -324,4 +324,20 @@
     <string name="calendar_legend_partial">Partial</string>
     <string name="calendar_legend_missed">Missed all</string>
     <string name="calendar_legend_off">Off-day</string>
+
+    <!-- Reminder Notifications -->
+    <string name="reminder_notification_title">Don\'t forget your habits!</string>
+    <string name="reminder_single_habit">You still need to complete: %s</string>
+    <string name="reminder_few_habits">Incomplete habits: %s</string>
+    <string name="reminder_many_habits">You have %d incomplete habits today</string>
+    
+    <!-- Reminder Settings -->
+    <string name="reminder_title">Daily Reminder</string>
+    <string name="reminder_subtitle">Get reminded to complete your habits</string>
+    <string name="reminder_time_label">Remind at</string>
+    <string name="reminder_enabled_message">Reminder set for %s daily</string>
+    <string name="reminder_disabled_message">Reminder disabled</string>
+    <string name="reminder_permission_required">Notification permission is required for reminders</string>
+    <string name="reminder_permission_denied">Please enable notifications in app settings to use reminders</string>
+    <string name="open_settings">Open Settings</string>
 </resources>
