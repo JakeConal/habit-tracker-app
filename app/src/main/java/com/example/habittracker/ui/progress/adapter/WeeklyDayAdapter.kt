@@ -41,35 +41,42 @@ class WeeklyDayAdapter : RecyclerView.Adapter<WeeklyDayAdapter.WeeklyDayViewHold
             binding.tvDayName.text = day.dayName
 
             val context = binding.root.context
+            val density = context.resources.displayMetrics.density
+            val strokeWidthPx = (1 * density).toInt()
 
             when (day.status) {
                 DayStatus.COMPLETED -> {
                     // Green background for completed
                     binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.habit_completed))
+                    binding.dayCard.strokeWidth = 0
                     binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
                     binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
                 DayStatus.MISSED -> {
                     // Red background for missed
                     binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.destructive_red_light))
+                    binding.dayCard.strokeWidth = 0
                     binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
                     binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
                 DayStatus.NOT_HABIT_DAY -> {
                     // Dim white/gray background for non-habit days (trắng xám mờ)
                     binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.gray_100))
+                    binding.dayCard.strokeWidth = strokeWidthPx
                     binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.gray_400))
                     binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.gray_300))
                 }
                 DayStatus.HABIT_DAY -> {
                     // White background for habit days
                     binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
+                    binding.dayCard.strokeWidth = strokeWidthPx
                     binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.primary_blue))
                     binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }
                 DayStatus.TODAY_PENDING -> {
                     // Orange background for today's pending habit (màu cam)
                     binding.dayCard.setCardBackgroundColor(ContextCompat.getColor(context, R.color.icon_bg_orange))
+                    binding.dayCard.strokeWidth = 0
                     binding.tvDayNumber.setTextColor(ContextCompat.getColor(context, R.color.white))
                     binding.tvDayName.setTextColor(ContextCompat.getColor(context, R.color.secondary_gray))
                 }

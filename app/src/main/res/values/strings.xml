@@ -96,6 +96,7 @@
     <string name="like_count_placeholder">12</string>
     <string name="comment_count_placeholder">4</string>
     <string name="author_avatar_desc">Author Avatar</string>
+    <string name="participants">Participants icon</string>
     <string name="post_image_desc">Post Image</string>
     <string name="like_icon_desc">Like Icon</string>
     <string name="comment_icon_desc">Comment Icon</string>
@@ -205,6 +206,8 @@
 
     <!-- Challenge Detail Screen -->
     <string name="details">Details</string>
+    <string name="participants_format">%1$d participants</string>
+    <string name="votes_format">Votes: %1$d/1000</string>
     <string name="notifications">Notifications</string>
     <string name="challenge_image">Challenge Image</string>
     <string name="key_results">Key Results</string>
@@ -217,6 +220,7 @@
     <string name="hundred_days_challenge">100 Days Challenge</string>
     <string name="reward">Reward</string>
     <string name="earn_reward_points">Earn Reward Points</string>
+    <string name="share_to_feed_for_votes">Share to feed for votes</string>
 
     <!-- Challenge Create Screen -->
     <string name="create_challenge">Create Challenge</string>

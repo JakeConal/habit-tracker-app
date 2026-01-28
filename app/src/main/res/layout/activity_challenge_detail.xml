@@ -123,19 +123,59 @@
                             tools:text="Votes: 450/1000"
                             tools:visibility="visible" />
 
-                        <!-- Duration Badge -->
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chipDuration"
-                            android:layout_width="wrap_content"
+                        <!-- Duration and Participants -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
-                            android:text="@string/seven_days_challenge"
-                            android:textColor="@color/primary_blue"
-                            app:chipBackgroundColor="@color/badge_7_days_cyan"
-                            app:chipCornerRadius="12dp"
-                            app:chipIconTint="@color/primary_blue"
-                            app:chipStrokeWidth="0dp"
-                            app:closeIconEnabled="false" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="16dp">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDuration"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/seven_days_challenge"
+                                android:textColor="@color/primary_blue"
+                                app:chipBackgroundColor="@color/badge_7_days_cyan"
+                                app:chipCornerRadius="12dp"
+                                app:chipIconTint="@color/primary_blue"
+                                app:chipStrokeWidth="0dp"
+                                app:closeIconEnabled="false" />
+
+                            <LinearLayout
+                                android:id="@+id/llParticipantCount"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:layout_marginStart="16dp"
+                                android:background="@drawable/bg_card_light"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="6dp"
+                                android:visibility="gone"
+                                tools:visibility="visible">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@drawable/ic_person"
+                                    android:contentDescription="@string/participants"
+                                    app:tint="@color/primary_blue" />
+
+                                <TextView
+                                    android:id="@+id/tvParticipantCount"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:textColor="@color/primary_blue"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"
+                                    android:fontFamily="sans-serif-medium"
+                                    tools:text="1,234 participants" />
+                            </LinearLayout>
+
+                        </LinearLayout>
 
 
 
@@ -271,7 +311,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginBottom="16dp"
-                    android:text="Share to Feed for Votes"
+                    android:text="@string/share_to_feed_for_votes"
                     android:textAllCaps="false"
                     android:textSize="16sp"
                     android:textStyle="bold"

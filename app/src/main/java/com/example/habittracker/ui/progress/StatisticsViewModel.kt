@@ -10,8 +10,12 @@ import com.example.habittracker.data.repository.HabitRepository
 import com.example.habittracker.util.DateUtils
 import com.example.habittracker.util.FrequencyFormatter
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -57,26 +61,66 @@ class StatisticsViewModel : ViewModel() {
     private val categoryRepository = CategoryRepository.getInstance()
     private val authRepository = AuthRepository.getInstance()
 
-    private val _habits = MutableStateFlow<List<Habit>>(emptyList())
-    val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
-
     private val _categories = MutableStateFlow<Map<String, Category>>(emptyMap())
     val categories: StateFlow<Map<String, Category>> = _categories.asStateFlow()
 
-    private val _habitStatistics = MutableStateFlow<List<HabitStatistics>>(emptyList())
-    val habitStatistics: StateFlow<List<HabitStatistics>> = _habitStatistics.asStateFlow()
-
-    private val _weeklyChartData = MutableStateFlow<List<WeeklyChartData>>(emptyList())
-    val weeklyChartData: StateFlow<List<WeeklyChartData>> = _weeklyChartData.asStateFlow()
-
-    private val _calendarData = MutableStateFlow<CalendarData?>(null)
-    val calendarData: StateFlow<CalendarData?> = _calendarData.asStateFlow()
-
-    private val _overallCompletionRate = MutableStateFlow(0f)
-    val overallCompletionRate: StateFlow<Float> = _overallCompletionRate.asStateFlow()
-
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    // Fully reactive habits Flow - SharingStarted.Eagerly for preloading/caching
+    val habits: StateFlow<List<Habit>> = habitRepository.habits
+        .map { allHabits ->
+            val currentTime = System.currentTimeMillis()
+            allHabits.filter { habit ->
+                if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
+                    val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
+                    val expiryTime = habit.createdAt + durationMillis
+                    currentTime <= expiryTime
+                } else {
+                    true
+                }
+            }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Combine habits and categories to calculate list statistics
+    val habitStatistics: StateFlow<List<HabitStatistics>> = combine(habits, _categories) { filteredHabits, categoriesMap ->
+        try {
+            calculateHabitStatisticsInternal(filteredHabits, categoriesMap)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating habit statistics", e)
+            emptyList()
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Weekly chart data logic
+    val weeklyChartData: StateFlow<List<WeeklyChartData>> = habits.map { habitsList ->
+        try {
+            calculateWeeklyChartDataInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating chart data", e)
+            emptyList()
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    // Calendar logic
+    val calendarData: StateFlow<CalendarData?> = habits.map { habitsList ->
+        try {
+            calculateCalendarDataInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating calendar data", e)
+            null
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
+    // Overall completion rate
+    val overallCompletionRate: StateFlow<Float> = habits.map { habitsList ->
+        try {
+            calculateOverallCompletionRateInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating completion rate", e)
+            0f
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
 
     init {
         loadAllData()
@@ -84,43 +128,26 @@ class StatisticsViewModel : ViewModel() {
 
     fun loadAllData() {
         viewModelScope.launch {
+            val userId = authRepository.getCurrentUser()?.uid ?: return@launch
             _isLoading.value = true
             try {
-                val userId = authRepository.getCurrentUser()?.uid ?: return@launch
+                // Fetch habits (updates habitRepository.habits Flow)
+                habitRepository.getHabitsForUser(userId)
 
-                // Load habits and categories
-                val allHabits = habitRepository.getHabitsForUser(userId)
-                val currentTime = System.currentTimeMillis()
-
-                // Filter out expired challenge habits
-                val habits = allHabits.filter { habit ->
-                    if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
-                        val expiryTime = habit.createdAt + (habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000)
-                        currentTime <= expiryTime
-                    } else {
-                        true
-                    }
-                }
-
-                _habits.value = habits
-
+                // Fetch categories
                 val categories = categoryRepository.getCategoriesForUser(userId)
                 _categories.value = categories.associateBy { it.id }
-
-                // Calculate statistics
-                calculateHabitStatistics(habits)
-                calculateWeeklyChartData(habits)
-                calculateCalendarData(habits)
-                calculateOverallCompletionRate(habits)
+            } catch (e: Exception) {
+                android.util.Log.e("StatisticsViewModel", "Error loading data", e)
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    private fun calculateHabitStatistics(habits: List<Habit>) {
-        val statistics = habits.map { habit ->
-            val category = _categories.value[habit.categoryId]
+    private fun calculateHabitStatisticsInternal(habits: List<Habit>, categoriesMap: Map<String, Category>): List<HabitStatistics> {
+        return habits.map { habit ->
+            val category = categoriesMap[habit.categoryId]
 
             // Calculate expected completions based on frequency
             val expectedCompletions = calculateExpectedCompletions(habit)
@@ -131,32 +158,25 @@ class StatisticsViewModel : ViewModel() {
                 0f
             }
 
-            // Calculate weekly days status
-            val weeklyDays = getWeeklyDaysForHabit(habit)
-
-            // Format frequency using FrequencyFormatter for range-based summary
-            val frequencyText = FrequencyFormatter.formatFrequency(habit.frequency)
-
             HabitStatistics(
                 habitId = habit.id,
                 habitName = habit.name,
                 completionRate = completionRate.coerceIn(0f, 100f),
                 iconRes = category?.icon?.resId ?: com.example.habittracker.R.drawable.ic_other,
                 iconBgRes = category?.color?.resId ?: com.example.habittracker.R.drawable.bg_category_icon_pink_light,
-                frequency = frequencyText,
+                frequency = FrequencyFormatter.formatFrequency(habit.frequency),
                 totalCompletions = actualCompletions,
                 expectedCompletions = expectedCompletions,
-                weeklyDays = weeklyDays
+                weeklyDays = getWeeklyDaysForHabit(habit)
             )
         }.sortedByDescending { it.completionRate }
-
-        _habitStatistics.value = statistics
     }
 
     private fun getWeeklyDaysForHabit(habit: Habit): List<Pair<String, DayStatus>> {
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val today = dateFormat.format(calendar.time)
+        val habitCreatedDate = dateFormat.format(java.util.Date(habit.createdAt))
 
         // Start from last Sunday
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
@@ -171,6 +191,7 @@ class StatisticsViewModel : ViewModel() {
             val isToday = dateStr == today
 
             val status = when {
+                dateStr < habitCreatedDate -> DayStatus.NOT_HABIT_DAY // Before creation
                 isCompleted -> DayStatus.COMPLETED
                 !shouldDoHabit -> DayStatus.NOT_HABIT_DAY
                 isToday && !isCompleted -> DayStatus.TODAY_PENDING
@@ -207,9 +228,8 @@ class StatisticsViewModel : ViewModel() {
         }
     }
 
-    private fun calculateWeeklyChartData(habits: List<Habit>) {
+    private fun calculateWeeklyChartDataInternal(habits: List<Habit>): List<WeeklyChartData> {
         val calendar = Calendar.getInstance()
-
         val weekData = mutableListOf<WeeklyChartData>()
         val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
 
@@ -225,9 +245,7 @@ class StatisticsViewModel : ViewModel() {
             var totalHabitsForDay = 0
 
             habits.forEach { habit ->
-                // Check if habit should be done on this day
-                val shouldDoHabit = shouldHabitBeDoneOnDay(habit, calendar)
-                if (shouldDoHabit) {
+                if (shouldHabitBeDoneOnDay(habit, calendar)) {
                     totalHabitsForDay++
                     if (habit.completedDates.contains(dateStr)) {
                         completionCount++
@@ -235,25 +253,19 @@ class StatisticsViewModel : ViewModel() {
                 }
             }
 
-            val completionRate = if (totalHabitsForDay > 0) {
-                (completionCount.toFloat() / totalHabitsForDay) * 100f
-            } else {
-                0f
-            }
-
             weekData.add(
                 WeeklyChartData(
                     dayName = dayName,
                     completionCount = completionCount,
                     totalHabits = totalHabitsForDay,
-                    completionRate = completionRate
+                    completionRate = if (totalHabitsForDay > 0) (completionCount.toFloat() / totalHabitsForDay) * 100f else 0f
                 )
             )
 
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        _weeklyChartData.value = weekData
+        return weekData
     }
 
     private fun shouldHabitBeDoneOnDay(habit: Habit, calendar: Calendar): Boolean {
@@ -273,45 +285,23 @@ class StatisticsViewModel : ViewModel() {
         return habit.frequency.contains(dayOfWeek)
     }
 
-    private fun calculateCalendarData(habits: List<Habit>) {
-        if (habits.isEmpty()) {
-            _calendarData.value = CalendarData(0, 0, 0, 0f)
-            return
-        }
+    private fun calculateCalendarDataInternal(habits: List<Habit>): CalendarData? {
+        if (habits.isEmpty()) return CalendarData(0, 0, 0, 0f)
 
-        // Get all unique completion dates across all habits where at least one habit was completed
         val allCompletionDates = mutableSetOf<String>()
-        val calendar = Calendar.getInstance()
-
-        // Collect all dates where at least one habit was completed
-        habits.forEach { habit ->
-            habit.completedDates.forEach { dateStr ->
-                allCompletionDates.add(dateStr)
-            }
-        }
-
+        habits.forEach { habit -> habit.completedDates.forEach { allCompletionDates.add(it) } }
         val sortedCompletionDates = allCompletionDates.sorted()
 
-        // Calculate current streak
-        val currentStreak = calculateCurrentStreak(sortedCompletionDates)
-
-        // Calculate best streak
-        val bestStreak = calculateBestStreak(sortedCompletionDates)
-
-        // Total completion days
-        val totalCompletionDays = sortedCompletionDates.size
-
-        // Monthly completion rate
+        val calendar = Calendar.getInstance()
         val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         val currentMonth = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(calendar.time)
         val monthlyCompletions = sortedCompletionDates.count { it.startsWith(currentMonth) }
-        val monthlyRate = (monthlyCompletions.toFloat() / daysInMonth) * 100f
 
-        _calendarData.value = CalendarData(
-            currentStreak = currentStreak,
-            bestStreak = bestStreak,
-            totalCompletionDays = totalCompletionDays,
-            monthlyCompletionRate = monthlyRate
+        return CalendarData(
+            currentStreak = calculateCurrentStreak(sortedCompletionDates),
+            bestStreak = calculateBestStreak(sortedCompletionDates),
+            totalCompletionDays = sortedCompletionDates.size,
+            monthlyCompletionRate = (monthlyCompletions.toFloat() / daysInMonth) * 100f
         )
     }
 
@@ -370,27 +360,14 @@ class StatisticsViewModel : ViewModel() {
         return maxStreak
     }
 
-    private fun calculateOverallCompletionRate(habits: List<Habit>) {
-        if (habits.isEmpty()) {
-            _overallCompletionRate.value = 0f
-            return
-        }
-
+    private fun calculateOverallCompletionRateInternal(habits: List<Habit>): Float {
+        if (habits.isEmpty()) return 0f
         var totalExpected = 0
         var totalCompleted = 0
-
         habits.forEach { habit ->
-            val expected = calculateExpectedCompletions(habit)
-            totalExpected += expected
+            totalExpected += calculateExpectedCompletions(habit)
             totalCompleted += habit.completedDates.size
         }
-
-        val rate = if (totalExpected > 0) {
-            (totalCompleted.toFloat() / totalExpected) * 100f
-        } else {
-            0f
-        }
-
-        _overallCompletionRate.value = rate.coerceIn(0f, 100f)
+        return if (totalExpected > 0) (totalCompleted.toFloat() / totalExpected) * 100f else 0f
     }
 }

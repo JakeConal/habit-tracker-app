@@ -45,17 +45,8 @@ class StatisticsTabFragment : Fragment() {
     }
 
     private fun observeData() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.habits.collect { habits ->
-                if (habits.isEmpty()) {
-                    binding.contentLayout.visibility = View.GONE
-                    binding.llEmptyStatistics.visibility = View.VISIBLE
-                } else {
-                    binding.contentLayout.visibility = View.VISIBLE
-                    binding.llEmptyStatistics.visibility = View.GONE
-                }
-            }
-        }
+        // Always show contentLayout
+        binding.contentLayout.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.overallCompletionRate.collect { rate ->

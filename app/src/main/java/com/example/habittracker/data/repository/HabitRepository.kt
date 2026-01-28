@@ -3,8 +3,8 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.util.DateUtils
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.asStateFlow
 class HabitRepository private constructor() {
 
     private val _habits = MutableStateFlow<List<Habit>>(emptyList())
-    val habits: Flow<List<Habit>> = _habits.asStateFlow()
+    val habits: StateFlow<List<Habit>> = _habits.asStateFlow()
+
+    private var lastUserId: String? = null
 
     companion object {
         @Volatile
@@ -27,10 +29,18 @@ class HabitRepository private constructor() {
     }
 
     /**
-     * Get all habits for a specific user
+     * Get all habits for a specific user.
+     * Uses cache if it's the same user, but refreshes in background.
      */
-    suspend fun getHabitsForUser(userId: String): List<Habit> {
+    suspend fun getHabitsForUser(userId: String, forceRefresh: Boolean = false): List<Habit> {
+        if (!forceRefresh && userId == lastUserId && _habits.value.isNotEmpty()) {
+            // Return cached version immediately and refresh in background
+            refreshHabits(userId)
+            return _habits.value
+        }
+
         return try {
+            lastUserId = userId
             val habits = FirestoreManager.getCollectionWhere(
                 collectionName = Habit.COLLECTION_NAME,
                 field = "userId",
@@ -42,7 +52,22 @@ class HabitRepository private constructor() {
             habits
         } catch (e: Exception) {
             println("Error getting habits for user: ${e.message}")
-            emptyList()
+            _habits.value // Return what we have anyway
+        }
+    }
+
+    suspend fun refreshHabits(userId: String) {
+        try {
+            lastUserId = userId
+            val habits = FirestoreManager.getCollectionWhere(
+                collectionName = Habit.COLLECTION_NAME,
+                field = "userId",
+                value = userId,
+                mapper = { document -> Habit.fromDocument(document) }
+            )
+            _habits.value = habits
+        } catch (e: Exception) {
+            println("Error refreshing habits: ${e.message}")
         }
     }
 

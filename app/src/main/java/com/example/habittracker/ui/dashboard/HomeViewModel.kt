@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -54,6 +55,32 @@ class HomeViewModel : ViewModel() {
 
     init {
         loadCurrentUser()
+        observeHabits()
+    }
+
+    private fun observeHabits() {
+        viewModelScope.launch {
+            habitRepository.habits.collect { habitsList ->
+                // Check and reward ended challenges when habits change
+                val user = _currentUser.value
+                if (user != null) {
+                    checkAndRewardChallenges(habitsList, user)
+                }
+
+                // Filter out expired challenge habits
+                val currentTime = System.currentTimeMillis()
+                val filteredHabits = habitsList.filter { habit ->
+                    if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
+                        val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
+                        val expiryTime = habit.createdAt + durationMillis
+                        currentTime <= expiryTime
+                    } else {
+                        true
+                    }
+                }
+                _habits.value = filteredHabits
+            }
+        }
     }
 
     private fun loadCurrentUser() {
@@ -66,33 +93,10 @@ class HomeViewModel : ViewModel() {
                 if (userId != null) {
                     // Load user info from Firestore
                     val user = firestoreUserRepository.getUserById(userId)
-
                     _currentUser.value = user
 
-                    // Load user's habits from Firestore
-                    val habitsList = habitRepository.getHabitsForUser(userId)
-
-                    // Check and reward ended challenges
-                    checkAndRewardChallenges(habitsList, user)
-
-                    // Refresh habits list after rewarding (habits might have been updated)
-                    val updatedHabitsList = if (habitsList.any { it.isChallengeHabit && !it.isChallengeRewarded })
-                        habitRepository.getHabitsForUser(userId)
-                    else
-                        habitsList
-
-                    // Filter out expired challenge habits
-                    val currentTime = System.currentTimeMillis()
-                    val filteredHabits = updatedHabitsList.filter { habit ->
-                        if (habit.isChallengeHabit && habit.challengeDurationDays != null) {
-                            val durationMillis = habit.challengeDurationDays.toLong() * 24 * 60 * 60 * 1000
-                            val expiryTime = habit.createdAt + durationMillis
-                            currentTime <= expiryTime
-                        } else {
-                            true
-                        }
-                    }
-                    _habits.value = filteredHabits
+                    // Just trigger the fetch, the observer will handle the update
+                    habitRepository.getHabitsForUser(userId)
 
                     // Load user's categories from Firestore
                     val categoriesList = categoryRepository.getCategoriesForUser(userId)

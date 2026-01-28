@@ -14,7 +14,6 @@ import com.example.habittracker.data.model.ChallengeDuration
 import com.example.habittracker.data.model.ChallengeStatus
 import com.example.habittracker.data.model.Habit
 import com.example.habittracker.data.model.Post
-import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.ChallengeRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.HabitRepository
@@ -36,6 +35,8 @@ class ChallengeDetailActivity : AppCompatActivity() {
     private lateinit var tvKeyResults: TextView
     private lateinit var tvRewardPoints: TextView
     private lateinit var tvVoteProgress: TextView
+    private lateinit var tvParticipantCount: TextView
+    private lateinit var llParticipantCount: android.view.View
     private lateinit var btnJoinNow: MaterialButton
     private lateinit var btnShareToFeed: MaterialButton
 
@@ -75,6 +76,8 @@ class ChallengeDetailActivity : AppCompatActivity() {
         tvKeyResults = findViewById(R.id.tvKeyResults)
         tvRewardPoints = findViewById(R.id.tvRewardPoints)
         tvVoteProgress = findViewById(R.id.tvVoteProgress)
+        tvParticipantCount = findViewById(R.id.tvParticipantCount)
+        llParticipantCount = findViewById(R.id.llParticipantCount)
         btnJoinNow = findViewById(R.id.btnJoinNow)
         btnShareToFeed = findViewById(R.id.btnShareToFeed)
     }
@@ -284,8 +287,9 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
             if (c.status == ChallengeStatus.PENDING) {
                 tvVoteProgress.visibility = android.view.View.VISIBLE
-                tvVoteProgress.text = "Votes: ${c.votes}/1000"
+                tvVoteProgress.text = getString(R.string.votes_format, c.votes)
                 btnJoinNow.visibility = android.view.View.GONE
+                llParticipantCount.visibility = android.view.View.GONE
 
                 // Only creator can share for votes
                 if (c.creatorId == currentUserId) {
@@ -297,6 +301,8 @@ class ChallengeDetailActivity : AppCompatActivity() {
                 tvVoteProgress.visibility = android.view.View.GONE
                 btnShareToFeed.visibility = android.view.View.GONE
                 btnJoinNow.visibility = android.view.View.VISIBLE
+                llParticipantCount.visibility = android.view.View.VISIBLE
+                tvParticipantCount.text = getString(R.string.participants_format, c.participantCount)
             }
         }
     }
