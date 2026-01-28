@@ -153,8 +153,8 @@ class StatisticsTabFragment : Fragment() {
 
     private fun updateLegend(weekData: List<com.example.habittracker.ui.progress.WeeklyChartData>) {
         if (weekData.isEmpty()) {
-            binding.tvTotalCompletedHabits.text = getString(R.string.total_habits_completed_week, 0)
-            binding.tvWeeklyCompletionRate.text = getString(R.string.weekly_completion_rate, 0)
+            binding.tvTotalCompletedHabits.text = "0"
+            binding.tvWeeklyCompletionRate.text = "0"
             return
         }
 
@@ -166,8 +166,8 @@ class StatisticsTabFragment : Fragment() {
             0
         }
 
-        binding.tvTotalCompletedHabits.text = getString(R.string.total_habits_completed_week, totalCompletions)
-        binding.tvWeeklyCompletionRate.text = getString(R.string.weekly_completion_rate, avgCompletionRate)
+        binding.tvTotalCompletedHabits.text = totalCompletions.toString()
+        binding.tvWeeklyCompletionRate.text = avgCompletionRate.toString()
     }
 
     private fun setupBarClickListeners() {

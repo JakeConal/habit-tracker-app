@@ -12,240 +12,330 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
+        <!-- Calendar Legend -->
         <com.google.android.material.card.MaterialCardView
-                android:id="@+id/calendarCard"
-                android:layout_width="0dp"
+            android:id="@+id/calendarLegendCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="#F8FAFC"
+            app:strokeWidth="1dp"
+            app:strokeColor="#F1F5F9"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/white"
-                app:strokeColor="@android:color/transparent"
-                app:strokeWidth="0dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="12dp"
+                app:flexWrap="wrap"
+                app:justifyContent="center"
+                app:alignItems="center">
 
+                <!-- Legend Item: Full Completion -->
                 <LinearLayout
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp">
-
-                        <ImageButton
-                            android:id="@+id/btnPrevMonth"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_alignParentStart="true"
-                            android:background="@drawable/button_background_round"
-                            android:src="@drawable/ic_back"
-                            android:scaleType="centerInside"
-                            android:padding="8dp"
-                            android:contentDescription="Previous month" />
-
-                        <TextView
-                            android:id="@+id/tvMonthYear"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_centerInParent="true"
-                            android:text="August\n2024"
-                            android:textSize="18sp"
-                            android:textColor="@color/primary_blue"
-                            android:fontFamily="sans-serif-medium"
-                            android:gravity="center"
-                            android:lineSpacingMultiplier="0.9" />
-
-                        <ImageButton
-                            android:id="@+id/btnNextMonth"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:layout_alignParentEnd="true"
-                            android:background="@drawable/button_background_round"
-                            android:src="@drawable/ic_forward"
-                            android:scaleType="centerInside"
-                            android:padding="8dp"
-                            android:contentDescription="Next month" />
-                    </RelativeLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:weightSum="7"
-                        android:layout_marginBottom="8dp">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Sun"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Mon"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Tue"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Wed"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Thu"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Fri"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Sat"
-                            android:textSize="12sp"
-                            android:textColor="@color/secondary_gray"
-                            android:gravity="center" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvCalendarDays"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        tools:itemCount="35"
-                        tools:listitem="@layout/item_calendar_month_day" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/streakCard"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:cardBackgroundColor="@color/white"
-                app:strokeColor="@android:color/transparent"
-                app:strokeWidth="0dp"
-                app:layout_constraintTop_toBottomOf="@id/calendarCard"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="20dp">
-
+                    android:layout_margin="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@drawable/shape_legend_full" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Streak"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/calendar_legend_full"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#64748B" />
+                </LinearLayout>
+
+                <!-- Legend Item: Partial Completion -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@drawable/shape_legend_partial" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/calendar_legend_partial"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#64748B" />
+                </LinearLayout>
+
+                <!-- Legend Item: Missed all -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <View
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@drawable/shape_legend_none" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:text="@string/calendar_legend_missed"
+                        android:textSize="11sp"
+                        android:fontFamily="sans-serif-medium"
+                        android:textColor="#64748B" />
+                </LinearLayout>
+            </com.google.android.flexbox.FlexboxLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/calendarCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@android:color/transparent"
+            app:strokeWidth="0dp"
+            app:layout_constraintTop_toBottomOf="@id/calendarLegendCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageButton
+                        android:id="@+id/btnPrevMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentStart="true"
+                        android:background="@drawable/button_background_round"
+                        android:src="@drawable/ic_back"
+                        android:scaleType="centerInside"
+                        android:padding="8dp"
+                        android:contentDescription="Previous month" />
+
+                    <TextView
+                        android:id="@+id/tvMonthYear"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:text="August\n2024"
                         android:textSize="18sp"
                         android:textColor="@color/primary_blue"
                         android:fontFamily="sans-serif-medium"
-                        android:layout_marginBottom="16dp" />
+                        android:gravity="center"
+                        android:lineSpacingMultiplier="0.9" />
+
+                    <ImageButton
+                        android:id="@+id/btnNextMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/button_background_round"
+                        android:src="@drawable/ic_forward"
+                        android:scaleType="centerInside"
+                        android:padding="8dp"
+                        android:contentDescription="Next month" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="7"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sun"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mon"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Tue"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Wed"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Thu"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Fri"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sat"
+                        android:textSize="12sp"
+                        android:textColor="@color/secondary_gray"
+                        android:gravity="center" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCalendarDays"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="35"
+                    tools:listitem="@layout/item_calendar_month_day" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/streakCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/white"
+            app:strokeColor="@android:color/transparent"
+            app:strokeWidth="0dp"
+            app:layout_constraintTop_toBottomOf="@id/calendarCard"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Streak"
+                    android:textSize="18sp"
+                    android:textColor="@color/primary_blue"
+                    android:fontFamily="sans-serif-medium"
+                    android:layout_marginBottom="16dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
 
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
                         android:gravity="center">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:id="@+id/tvCurrentStreak"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
+                            android:text="1 Day"
+                            android:textSize="28sp"
+                            android:textColor="@color/primary_blue"
+                            android:fontFamily="sans-serif-medium" />
 
-                            <TextView
-                                android:id="@+id/tvCurrentStreak"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="1 Day"
-                                android:textSize="28sp"
-                                android:textColor="@color/primary_blue"
-                                android:fontFamily="sans-serif-medium" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Current"
-                                android:textSize="14sp"
-                                android:textColor="@color/secondary_gray"
-                                android:layout_marginTop="4dp" />
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="60dp"
-                            android:background="@color/secondary_gray"
-                            android:alpha="0.3" />
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <TextView
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
+                            android:text="Current"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary_gray"
+                            android:layout_marginTop="4dp" />
+                    </LinearLayout>
 
-                            <TextView
-                                android:id="@+id/tvBestStreak"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="156 Days"
-                                android:textSize="28sp"
-                                android:textColor="@color/primary_blue"
-                                android:fontFamily="sans-serif-medium" />
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="60dp"
+                        android:background="@color/secondary_gray"
+                        android:alpha="0.3" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Best"
-                                android:textSize="14sp"
-                                android:textColor="@color/secondary_gray"
-                                android:layout_marginTop="4dp" />
-                        </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center">
+
+                        <TextView
+                            android:id="@+id/tvBestStreak"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="156 Days"
+                            android:textSize="28sp"
+                            android:textColor="@color/primary_blue"
+                            android:fontFamily="sans-serif-medium" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Best"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary_gray"
+                            android:layout_marginTop="4dp" />
                     </LinearLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
