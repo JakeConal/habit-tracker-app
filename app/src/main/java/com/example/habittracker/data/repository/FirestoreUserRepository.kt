@@ -222,11 +222,23 @@ class FirestoreUserRepository private constructor() {
         return (nameResults + emailResults).distinctBy { it.id }
     }
 
-    suspend fun updateUserProfile(userId: String, name: String, avatarUrl: String?): Boolean {
+    suspend fun updateUserProfile(
+        userId: String,
+        name: String,
+        avatarUrl: String?,
+        gender: String? = null,
+        dateOfBirth: String? = null
+    ): Boolean {
         return try {
             val updates = mutableMapOf<String, Any>("name" to name)
             if (avatarUrl != null) {
                 updates["avatarUrl"] = avatarUrl
+            }
+            if (gender != null) {
+                updates["gender"] = gender
+            }
+            if (dateOfBirth != null) {
+                updates["dateOfBirth"] = dateOfBirth
             }
             
             val success = FirestoreManager.setDocument(
@@ -242,7 +254,9 @@ class FirestoreUserRepository private constructor() {
                 if (currentUserVal != null && currentUserVal.id == userId) {
                      val updatedUser = currentUserVal.copy(
                          name = name,
-                         avatarUrl = avatarUrl ?: currentUserVal.avatarUrl
+                         avatarUrl = avatarUrl ?: currentUserVal.avatarUrl,
+                         gender = gender ?: currentUserVal.gender,
+                         dateOfBirth = dateOfBirth ?: currentUserVal.dateOfBirth
                      )
                      _currentUser.value = updatedUser
                 }

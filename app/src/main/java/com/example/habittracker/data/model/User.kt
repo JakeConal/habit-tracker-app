@@ -6,6 +6,11 @@ data class User(
     val id: String = "",
     val name: String = "",
     val avatarUrl: String? = null,
+    // Profile fields
+    // Stored as ISO date string: yyyy-MM-dd (optional)
+    val dateOfBirth: String? = null,
+    // Stored as string enum: male/female/other/prefer_not_to_say (optional)
+    val gender: String? = null,
     val points: Int = 0,
     val rank: Int = 0,
     val email: String? = null,
@@ -22,12 +27,19 @@ data class User(
         const val ROLE_USER = "user"
         const val ROLE_ADMIN = "admin"
 
+        const val GENDER_MALE = "male"
+        const val GENDER_FEMALE = "female"
+        const val GENDER_OTHER = "other"
+        const val GENDER_PREFER_NOT_TO_SAY = "prefer_not_to_say"
+
         // Convert Firestore DocumentSnapshot to User object
         fun fromDocument(document: DocumentSnapshot): User? {
             return try {
                 val id = document.id
                 val name = document.getString("name") ?: ""
                 val avatarUrl = document.getString("avatarUrl")
+                val dateOfBirth = document.getString("dateOfBirth")
+                val gender = document.getString("gender")
                 val points = document.getLong("points")?.toInt() ?: 0
                 val rank = document.getLong("rank")?.toInt() ?: 0
                 val email = document.getString("email")
@@ -43,6 +55,8 @@ data class User(
                     id = id,
                     name = name,
                     avatarUrl = avatarUrl,
+                    dateOfBirth = dateOfBirth,
+                    gender = gender,
                     points = points,
                     rank = rank,
                     email = email,
@@ -66,6 +80,8 @@ data class User(
         return mapOf(
             "name" to name,
             "avatarUrl" to avatarUrl,
+            "dateOfBirth" to dateOfBirth,
+            "gender" to gender,
             "points" to points,
             "rank" to rank,
             "email" to email,

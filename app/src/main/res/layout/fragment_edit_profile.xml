@@ -153,6 +153,57 @@
                         android:textColor="@color/text_secondary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Gender (Dropdown) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilGender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="16dp"
+                    android:hint="@string/profile_gender"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue"
+                    app:endIconMode="dropdown_menu"
+                    app:layout_constraintTop_toBottomOf="@+id/tilEmail">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/etGender"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="16dp"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        android:inputType="none"
+                        android:importantForAutofill="no"
+                        android:textColor="@color/primary_text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Date of Birth (Picker) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDob"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="24dp"
+                    android:layout_marginTop="16dp"
+                    android:hint="@string/profile_dob"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue"
+                    app:endIconMode="custom"
+                    app:endIconDrawable="@drawable/ic_calendar"
+                    app:layout_constraintTop_toBottomOf="@+id/tilGender">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDob"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:inputType="none"
+                        android:textColor="@color/primary_text" />
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <!-- Save Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSave"
@@ -166,7 +217,7 @@
                     android:textStyle="bold"
                     app:cornerRadius="12dp"
                     app:backgroundTint="@color/primary_blue"
-                    app:layout_constraintTop_toBottomOf="@+id/tilEmail"
+                    app:layout_constraintTop_toBottomOf="@+id/tilDob"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>

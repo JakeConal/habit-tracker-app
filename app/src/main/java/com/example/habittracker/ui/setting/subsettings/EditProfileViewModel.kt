@@ -47,7 +47,13 @@ class EditProfileViewModel : ViewModel() {
         }
     }
 
-    fun updateProfile(name: String, imageUri: Uri?, context: Context) {
+    fun updateProfile(
+        name: String,
+        imageUri: Uri?,
+        gender: String?,
+        dateOfBirth: String?,
+        context: Context
+    ) {
         val user = _currentUser.value ?: return
         viewModelScope.launch {
             _uiState.value = EditProfileUiState.Loading
@@ -66,10 +72,18 @@ class EditProfileViewModel : ViewModel() {
 
                 val updatedUser = user.copy(
                     name = name,
-                    avatarUrl = avatarUrl
+                    avatarUrl = avatarUrl,
+                    gender = gender,
+                    dateOfBirth = dateOfBirth
                 )
 
-                val success = userRepository.updateUserProfile(user.id, name, avatarUrl)
+                val success = userRepository.updateUserProfile(
+                    userId = user.id,
+                    name = name,
+                    avatarUrl = avatarUrl,
+                    gender = gender,
+                    dateOfBirth = dateOfBirth
+                )
                 if (success) {
                     _currentUser.value = updatedUser
                     _uiState.value = EditProfileUiState.Success

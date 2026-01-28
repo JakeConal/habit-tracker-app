@@ -159,6 +159,16 @@
     <string name="friends_icon">Friends Icon</string>
     <string name="friends_coming_soon">Friends feature coming soon!</string>
     <string name="settings_coming_soon">Settings will be available soon</string>
+
+    <!-- Profile extra fields -->
+    <string name="profile_gender">Gender</string>
+    <string name="profile_dob">Date of birth</string>
+    <string name="gender_male">Male</string>
+    <string name="gender_female">Female</string>
+    <string name="gender_other">Other</string>
+    <string name="gender_prefer_not_to_say">Prefer not to say</string>
+    <string name="profile_gender_label">Gender: %s</string>
+    <string name="profile_dob_label">DOB: %s</string>
     
     <!-- Friends Feature -->
     <string name="add_friend">Add friend</string>
