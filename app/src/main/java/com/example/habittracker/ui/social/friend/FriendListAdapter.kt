@@ -75,7 +75,7 @@ class FriendListAdapter(
             }
             VIEW_TYPE_GLOBAL_USER -> {
                 val binding = ItemGlobalUserBinding.inflate(inflater, parent, false)
-                GlobalUserViewHolder(binding, onAddFriend)
+                GlobalUserViewHolder(binding, onAddFriend, onViewProfile)
             }
             VIEW_TYPE_EMPTY -> {
                 val binding = ItemEmptyStateBinding.inflate(inflater, parent, false)
@@ -230,7 +230,8 @@ class FriendListAdapter(
     // Global User ViewHolder
     class GlobalUserViewHolder(
         private val binding: ItemGlobalUserBinding,
-        private val onAddFriend: (User) -> Unit
+        private val onAddFriend: (User) -> Unit,
+        private val onViewProfile: (User) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(user: User) {
@@ -245,6 +246,11 @@ class FriendListAdapter(
                     .placeholder(R.drawable.ic_person)
                     .error(R.drawable.ic_person)
                     .into(binding.ivAvatar)
+            }
+
+            // Click on card to view profile
+            binding.root.setOnClickListener {
+                onViewProfile(user)
             }
 
             // Button clicks
