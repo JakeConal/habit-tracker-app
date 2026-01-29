@@ -1,11 +1,9 @@
 package com.example.habittracker.data.service
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.media.RingtoneManager
-import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.example.habittracker.R
@@ -46,7 +44,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             CoroutineScope(Dispatchers.IO).launch {
-                FirestoreUserRepository.Companion.getInstance().updateFcmToken(currentUser.uid, token)
+                FirestoreUserRepository.getInstance().updateFcmToken(currentUser.uid, token)
             }
         }
     }
@@ -65,8 +63,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val channelId = "habit_tracker_default_channel"
-        val channelName = "Habit Tracker Notifications"
+        val channelId = com.example.habittracker.util.NotificationHelper.DEFAULT_CHANNEL_ID
         val defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setSmallIcon(R.mipmap.ic_launcher)
@@ -78,15 +75,8 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
-        // Since android Oreo notification channel is needed.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
+        // Create channels if not already created (safe to call multiple times)
+        com.example.habittracker.util.NotificationHelper.createNotificationChannels(this)
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }

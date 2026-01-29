@@ -33,6 +33,7 @@ import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.PostRepository
 import com.example.habittracker.databinding.ActivityMainBinding
 import com.example.habittracker.ui.feed.CommentsActivity
+import com.example.habittracker.util.NotificationHelper
 import com.example.habittracker.util.UserPreferences
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
@@ -214,8 +215,7 @@ class MainActivity : AppCompatActivity() {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-        val channelId = "habit_tracker_default_channel"
-        val channelName = "Habit Tracker Notifications"
+        val channelId = NotificationHelper.DEFAULT_CHANNEL_ID
         val defaultSoundUri = android.media.RingtoneManager.getDefaultUri(android.media.RingtoneManager.TYPE_NOTIFICATION)
 
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
@@ -227,16 +227,6 @@ class MainActivity : AppCompatActivity() {
             .setContentIntent(pendingIntent)
 
         val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                channelName,
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            notificationManager.createNotificationChannel(channel)
-        }
-
         notificationManager.notify(System.currentTimeMillis().toInt(), notificationBuilder.build())
     }
 

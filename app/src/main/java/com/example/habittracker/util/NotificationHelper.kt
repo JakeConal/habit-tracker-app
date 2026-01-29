@@ -21,26 +21,43 @@ object NotificationHelper {
     private const val REMINDER_CHANNEL_NAME = "Habit Reminders"
     private const val REMINDER_CHANNEL_DESCRIPTION = "Daily reminders to complete your habits"
 
+    // Default notification channel for social interactions
+    const val DEFAULT_CHANNEL_ID = "habit_tracker_default_channel"
+    private const val DEFAULT_CHANNEL_NAME = "Habit Tracker Notifications"
+    private const val DEFAULT_CHANNEL_DESCRIPTION = "Notifications for likes, comments, and shares"
+
     // Notification IDs
     const val REMINDER_NOTIFICATION_ID = 1001
 
     /**
-     * Create notification channel for reminders (required for Android O+)
+     * Create all notification channels (required for Android O+)
      */
-    fun createReminderNotificationChannel(context: Context) {
+    fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
+            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // Reminder Channel
+            val reminderChannel = NotificationChannel(
                 REMINDER_CHANNEL_ID,
                 REMINDER_CHANNEL_NAME,
-                NotificationManager.IMPORTANCE_HIGH // High importance for heads-up notification
+                NotificationManager.IMPORTANCE_HIGH
             ).apply {
                 description = REMINDER_CHANNEL_DESCRIPTION
                 enableVibration(true)
                 enableLights(true)
             }
 
-            val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
+            // Default Social Channel
+            val defaultChannel = NotificationChannel(
+                DEFAULT_CHANNEL_ID,
+                DEFAULT_CHANNEL_NAME,
+                NotificationManager.IMPORTANCE_DEFAULT
+            ).apply {
+                description = DEFAULT_CHANNEL_DESCRIPTION
+            }
+
+            notificationManager.createNotificationChannel(reminderChannel)
+            notificationManager.createNotificationChannel(defaultChannel)
         }
     }
 
@@ -56,7 +73,7 @@ object NotificationHelper {
         habitNames: List<String> = emptyList()
     ) {
         // Create notification channel if not exists
-        createReminderNotificationChannel(context)
+        createNotificationChannels(context)
 
         // Intent to open app when notification is tapped
         val intent = Intent(context, MainActivity::class.java).apply {
