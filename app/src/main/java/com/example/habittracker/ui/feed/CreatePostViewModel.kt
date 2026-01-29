@@ -79,7 +79,7 @@ class CreatePostViewModel(application: Application) : AndroidViewModel(applicati
                         val challengeRepo = com.example.habittracker.data.repository.ChallengeRepository()
                         val challenge = challengeRepo.getChallengeById(challengeId)
                         if (challenge != null) {
-                            latestVoteCount = challenge.votes
+                            latestVoteCount = challenge.votedBy.size
                             latestVotedBy = challenge.votedBy
                         }
                     } catch (e: Exception) {

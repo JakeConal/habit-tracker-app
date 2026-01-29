@@ -306,7 +306,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun toggleLike(postId: String, senderName: String? = null, senderAvatar: String? = null) {
         val currentPosts = _posts.value.toMutableList()
         val postIndex = currentPosts.indexOfFirst { it.id == postId }
-        
+
         if (postIndex != -1) {
             val post = currentPosts[postIndex]
             val isLiked = post.likedBy.contains(currentUserId)

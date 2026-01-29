@@ -225,7 +225,8 @@
     <!-- Challenge Detail Screen -->
     <string name="details">Details</string>
     <string name="participants_format">%1$d participants</string>
-    <string name="votes_format">Votes: %1$d/1000</string>
+    <string name="votes_format">Votes: %1$d/10</string>
+    <string name="challenge_unlocked">Challenge Unlocked</string>
     <string name="notifications">Notifications</string>
     <string name="challenge_image">Challenge Image</string>
     <string name="key_results">Key Results</string>

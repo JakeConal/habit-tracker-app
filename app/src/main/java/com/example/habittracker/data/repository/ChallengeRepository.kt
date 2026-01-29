@@ -85,60 +85,44 @@ class ChallengeRepository {
             // Check if user already voted for this challenge (Global check)
             if (challenge.votedBy.contains(userId)) return false
 
-            val postRepository = PostRepository.getInstance()
+            val db = FirebaseFirestore.getInstance()
+            val batch = db.batch()
 
-            // Atomic Update for Post (the one clicked)
-            val postUpdated = FirestoreManager.updateDocument(
-                "posts",
-                postId,
-                mapOf(
-                    "voteCount" to FieldValue.increment(1),
-                    "votedBy" to FieldValue.arrayUnion(userId)
-                )
+            // Also update the user's votedChallengeIds (Global state for UI sync)
+            val userRef = db.collection("users").document(userId)
+            batch.update(userRef, "votedChallengeIds", FieldValue.arrayUnion(challengeId))
+
+            // Update ALL posts with this challengeId to ensure everything stays in sync
+            try {
+                val querySnapshot = db.collection("posts")
+                    .whereEqualTo("challengeId", challengeId)
+                    .get()
+                    .await()
+
+                for (doc in querySnapshot.documents) {
+                    // Use atomic updates in batch
+                    batch.update(doc.reference, "voteCount", FieldValue.increment(1))
+                    batch.update(doc.reference, "votedBy", FieldValue.arrayUnion(userId))
+                }
+            } catch (e: Exception) {
+                println("Error syncing all challenge posts: ${e.message}")
+            }
+
+            val newChallengeVotes = challenge.votedBy.size + 1
+            val challengeRef = db.collection(collectionName).document(challengeId)
+            val challengeUpdates = mutableMapOf<String, Any>(
+                "votes" to FieldValue.increment(1),
+                "votedBy" to FieldValue.arrayUnion(userId)
             )
 
-            if (postUpdated) {
-                // Also update the user's votedChallengeIds (Global state for UI sync)
-                FirestoreManager.updateDocument(
-                    "users",
-                    userId,
-                    mapOf("votedChallengeIds" to FieldValue.arrayUnion(challengeId))
-                )
-
-                // Update ALL posts with this challengeId to ensure everything stays in sync
-                try {
-                    val db = FirebaseFirestore.getInstance()
-                    val querySnapshot = db.collection("posts")
-                        .whereEqualTo("challengeId", challengeId)
-                        .get()
-                        .await()
-
-                    val batch = db.batch()
-                    for (doc in querySnapshot.documents) {
-                        // Use atomic updates in batch
-                        batch.update(doc.reference, "voteCount", FieldValue.increment(1))
-                        batch.update(doc.reference, "votedBy", FieldValue.arrayUnion(userId))
-                    }
-                    batch.commit().await()
-                } catch (e: Exception) {
-                    println("Error syncing all challenge posts: ${e.message}")
-                }
-
-                val newChallengeVotes = challenge.votes + 1
-                val updates = mutableMapOf<String, Any>(
-                    "votes" to FieldValue.increment(1),
-                    "votedBy" to FieldValue.arrayUnion(userId)
-                )
-
-                // Check if reached 1000 votes
-                if (newChallengeVotes >= 1000 && challenge.status == ChallengeStatus.PENDING) {
-                    updates["status"] = ChallengeStatus.APPROVED.name
-                }
-
-                FirestoreManager.updateDocument(collectionName, challengeId, updates)
-            } else {
-                false
+            // Check if reached 10 votes
+            if (newChallengeVotes >= 10 && challenge.status == ChallengeStatus.PENDING) {
+                challengeUpdates["status"] = ChallengeStatus.APPROVED.name
             }
+
+            batch.update(challengeRef, challengeUpdates)
+            batch.commit().await()
+            true
         } catch (e: Exception) {
             println("Error voting for challenge: ${e.message}")
             false

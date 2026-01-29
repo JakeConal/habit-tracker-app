@@ -381,8 +381,9 @@ class PostRepository private constructor() {
                 try {
                     val challengeDoc = db.collection("challenges").document(originalPost.challengeId).get().await()
                     if (challengeDoc.exists()) {
-                        latestVoteCount = challengeDoc.getLong("votes")?.toInt() ?: latestVoteCount
-                        latestVotedBy = (challengeDoc.get("votedBy") as? List<String>) ?: latestVotedBy
+                        val votedByList = (challengeDoc.get("votedBy") as? List<String>) ?: latestVotedBy
+                        latestVoteCount = votedByList.size
+                        latestVotedBy = votedByList
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()

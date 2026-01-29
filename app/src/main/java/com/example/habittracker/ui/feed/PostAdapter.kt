@@ -101,11 +101,15 @@ class PostAdapter(
                 tvChallengeShareTitle?.text = itemView.context.getString(R.string.challenge_title_format, post.challengeTitle)
 
                 btnVoteChallenge?.apply {
-                    if (isVoted) {
+                    val currentVotes = post.votedBy.size
+                    if (currentVotes >= 10) {
+                        setText(R.string.challenge_unlocked)
+                        isEnabled = false
+                    } else if (isVoted) {
                         setText(R.string.voted)
                         isEnabled = false
                     } else {
-                        setText(itemView.context.getString(R.string.vote_count_format, post.voteCount))
+                        setText(itemView.context.getString(R.string.vote_count_format, currentVotes))
                         isEnabled = true
                     }
                     setOnClickListener { onVoteClick(post) }

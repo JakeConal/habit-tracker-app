@@ -120,7 +120,7 @@
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:visibility="gone"
-                            tools:text="Votes: 450/1000"
+                            tools:text="Votes: 4/10"
                             tools:visibility="visible" />
 
                         <!-- Duration and Participants -->

@@ -290,7 +290,7 @@ class ChallengeDetailActivity : AppCompatActivity() {
 
             if (c.status == ChallengeStatus.PENDING) {
                 tvVoteProgress.visibility = android.view.View.VISIBLE
-                tvVoteProgress.text = getString(R.string.votes_format, c.votes)
+                tvVoteProgress.text = getString(R.string.votes_format, c.votedBy.size)
                 btnJoinNow.visibility = android.view.View.GONE
                 llParticipantCount.visibility = android.view.View.GONE
 
