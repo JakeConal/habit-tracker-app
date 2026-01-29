@@ -347,22 +347,28 @@ class MainActivity : AppCompatActivity() {
          * Creates a full-screen immersive experience
          */
         fun hideSystemUI(activity: AppCompatActivity) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // For Android 11 and above
-                activity.window.insetsController?.let { controller ->
-                    controller.hide(WindowInsets.Type.navigationBars())
-                    controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    // For Android 11 and above
+                    activity.window.decorView.post {
+                        activity.window.insetsController?.let { controller ->
+                            controller.hide(WindowInsets.Type.navigationBars())
+                            controller.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                        }
+                    }
+                } else {
+                    // For Android 10 and below
+                    @Suppress("DEPRECATION")
+                    activity.window.decorView.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    )
                 }
-            } else {
-                // For Android 10 and below
-                @Suppress("DEPRECATION")
-                activity.window.decorView.systemUiVisibility = (
-                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                    or View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                )
+            } catch (e: Exception) {
+                android.util.Log.e("MainActivity", "Error hiding system UI: ${e.message}")
             }
         }
     }

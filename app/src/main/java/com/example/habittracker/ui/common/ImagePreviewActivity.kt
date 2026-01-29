@@ -13,14 +13,15 @@ class ImagePreviewActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        binding = ActivityImagePreviewBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
         try {
             MainActivity.hideSystemUI(this)
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
-        binding = ActivityImagePreviewBinding.inflate(layoutInflater)
-        setContentView(binding.root)
 
         val imageUri = intent.getStringExtra(EXTRA_IMAGE_URI)
 
