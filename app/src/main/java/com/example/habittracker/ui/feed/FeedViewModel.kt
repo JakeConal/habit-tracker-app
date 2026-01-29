@@ -33,19 +33,23 @@ class FeedViewModel : ViewModel() {
     val posts: StateFlow<List<Post>> = combine(_currentLimit, _refreshTrigger) { limit, _ -> limit }
         .flatMapLatest { limit ->
             repository.listenToPosts(limit)
-                .onStart { _isLoading.value = true }
+                .onStart {
+                    // Only show loading if we don't have enough data yet
+                    if (_currentLimit.value <= PAGE_SIZE) {
+                        _isLoading.value = true
+                    }
+                }
                 .onEach { postsList ->
                     _isLoading.value = false
                     // If we receive fewer posts than the current limit, we've reached the end
                     if (postsList.size < limit) {
                         _hasMoreData.value = false
-                    } else if (postsList.size >= limit) {
-                        // If we have enough or more (though more is unlikely with limit), there might be more
+                    } else {
                         _hasMoreData.value = true
                     }
                 }
         }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val votedChallengeIds: StateFlow<List<String>> =
         com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid?.let { userId ->

@@ -72,6 +72,26 @@ class FirestoreUserRepository private constructor() {
         }
     }
 
+    suspend fun clearFcmToken(userId: String) {
+        try {
+            val updates = mapOf("fcmToken" to "")
+            FirestoreManager.updateDocument(User.COLLECTION_NAME, userId, updates)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    fun clearLocalUserData() {
+        _currentUser.value = null
+    }
+
+    /**
+     * Set the current user manually
+     */
+    fun setCurrentUser(user: User?) {
+        _currentUser.value = user
+    }
+
     /**
      * Get user by ID from Firestore
      */
