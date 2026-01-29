@@ -171,7 +171,7 @@ class AuthRepository private constructor() {
                 } else {
                     val user = User(
                         id = firebaseUser.uid,
-                        name = "Guest User",
+                        name = "Guest ${firebaseUser.uid.take(5)}",
                         avatarUrl = null,
                         createdAt = System.currentTimeMillis(),
                         lastLoginAt = System.currentTimeMillis()
