@@ -38,7 +38,8 @@ class NotificationDropdownAdapter(
 
         fun bind(notification: Notification) {
             binding.apply {
-                tvNotificationTitle.text = getNotificationText(notification)
+                tvNotificationSender.text = notification.senderName
+                tvNotificationAction.text = getActionText(notification)
                 tvNotificationTime.text = timeFormat.format(Date(notification.timestamp))
 
                 unreadDot.visibility = if (notification.read) View.GONE else View.VISIBLE
@@ -60,14 +61,14 @@ class NotificationDropdownAdapter(
             }
         }
 
-        private fun getNotificationText(notification: Notification): String {
+        private fun getActionText(notification: Notification): String {
             return when (notification.type) {
-                Notification.NotificationType.LIKE_POST -> "${notification.senderName} liked your post"
-                Notification.NotificationType.COMMENT_POST -> "${notification.senderName} commented on your post"
-                Notification.NotificationType.SHARE_POST -> "${notification.senderName} shared your post"
-                Notification.NotificationType.REPLY_COMMENT -> "${notification.senderName} replied to your comment"
-                Notification.NotificationType.LIKE_COMMENT -> "${notification.senderName} liked your comment"
-                Notification.NotificationType.DISLIKE_COMMENT -> "${notification.senderName} disliked your comment"
+                Notification.NotificationType.LIKE_POST -> "liked your post"
+                Notification.NotificationType.COMMENT_POST -> "commented on your post"
+                Notification.NotificationType.SHARE_POST -> "shared your post"
+                Notification.NotificationType.REPLY_COMMENT -> "replied to your comment"
+                Notification.NotificationType.LIKE_COMMENT -> "liked your comment"
+                Notification.NotificationType.DISLIKE_COMMENT -> "disliked your comment"
             }
         }
     }

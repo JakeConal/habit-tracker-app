@@ -773,10 +773,16 @@ class PostRepository private constructor() {
 
             // Send FCM Push Notification
             if (!fcmToken.isNullOrEmpty()) {
-                val title = "Habit Tracker"
-                var body = "You have a new notification"
+                val title = when (type) {
+                    Notification.NotificationType.COMMENT_POST -> "New Comment"
+                    Notification.NotificationType.LIKE_POST -> "New Like"
+                    Notification.NotificationType.SHARE_POST -> "Post Shared"
+                    Notification.NotificationType.LIKE_COMMENT -> "Comment Liked"
+                    Notification.NotificationType.DISLIKE_COMMENT -> "Comment Disliked"
+                    Notification.NotificationType.REPLY_COMMENT -> "New Reply"
+                }
 
-                body = when (type) {
+                val body = when (type) {
                     Notification.NotificationType.COMMENT_POST -> "$finalSenderName commented on your post"
                     Notification.NotificationType.LIKE_POST -> "$finalSenderName liked your post"
                     Notification.NotificationType.SHARE_POST -> "$finalSenderName shared your post"
@@ -805,16 +811,21 @@ class PostRepository private constructor() {
 
         val subscription = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
+                android.util.Log.e("PostRepository", "Listen error: ${error.message}")
                 trySend(emptyList())
                 return@addSnapshotListener
             }
             if (snapshot != null) {
+                android.util.Log.d("PostRepository", "Received snapshot with ${snapshot.size()} docs")
                 val posts = snapshot.documents.mapNotNull { Post.fromDocument(it) }
                 trySend(posts)
             }
         }
 
-        awaitClose { subscription.remove() }
+        awaitClose {
+            android.util.Log.d("PostRepository", "Closing post listener")
+            subscription.remove()
+        }
     }
 
     fun listenToPost(postId: String): kotlinx.coroutines.flow.Flow<Post?> = callbackFlow {

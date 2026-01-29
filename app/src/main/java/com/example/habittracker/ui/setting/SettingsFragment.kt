@@ -115,16 +115,18 @@ class SettingsFragment : Fragment() {
 
     private fun performLogout() {
         // Sign out from Firebase
-        com.example.habittracker.data.repository.AuthRepository.getInstance().signOut()
-        
-        // Clear local preferences
-        UserPreferences.clearUserData(requireContext())
-        
-        // Navigate to login and clear backstack
-        val navOptions = androidx.navigation.NavOptions.Builder()
-            .setPopUpTo(R.id.nav_graph_main, true)
-            .build()
-        findNavController().navigate(R.id.nav_login, null, navOptions)
+        viewLifecycleOwner.lifecycleScope.launch {
+            com.example.habittracker.data.repository.AuthRepository.getInstance().signOut()
+
+            // Clear local preferences
+            UserPreferences.clearUserData(requireContext())
+
+            // Navigate to login and clear backstack
+            val navOptions = androidx.navigation.NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph_main, true)
+                .build()
+            findNavController().navigate(R.id.nav_login, null, navOptions)
+        }
     }
 
     private fun handleDeleteAccount() {

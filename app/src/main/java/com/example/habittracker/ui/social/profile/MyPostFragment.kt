@@ -185,7 +185,6 @@ class MyPostFragment : Fragment() {
                 val challengeRepository = com.example.habittracker.data.repository.ChallengeRepository()
                 val success = challengeRepository.voteForChallenge(challengeId, post.id, currentUserId)
                 if (success) {
-                    Toast.makeText(requireContext(), "Voted successfully!", Toast.LENGTH_SHORT).show()
                     viewModel.refreshPosts() // Refresh profile data
                 } else {
                     Toast.makeText(requireContext(), "Failed to vote or already voted", Toast.LENGTH_SHORT).show()

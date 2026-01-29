@@ -7,12 +7,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import com.example.habittracker.R
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.databinding.FragmentResetPasswordBinding
 import com.example.habittracker.util.UserPreferences
+import kotlinx.coroutines.launch
 
 class ResetPasswordFragment : Fragment() {
 
@@ -98,16 +100,18 @@ class ResetPasswordFragment : Fragment() {
 
     private fun performLogout() {
         // Sign out from Firebase
-        AuthRepository.getInstance().signOut()
-        
-        // Clear local preferences
-        UserPreferences.clearUserData(requireContext())
-        
-        // Navigate to login and clear backstack
-        val navOptions = NavOptions.Builder()
-            .setPopUpTo(R.id.nav_graph_main, true)
-            .build()
-        findNavController().navigate(R.id.nav_login, null, navOptions)
+        viewLifecycleOwner.lifecycleScope.launch {
+            AuthRepository.getInstance().signOut()
+
+            // Clear local preferences
+            UserPreferences.clearUserData(requireContext())
+
+            // Navigate to login and clear backstack
+            val navOptions = NavOptions.Builder()
+                .setPopUpTo(R.id.nav_graph_main, true)
+                .build()
+            findNavController().navigate(R.id.nav_login, null, navOptions)
+        }
     }
 
     override fun onDestroyView() {

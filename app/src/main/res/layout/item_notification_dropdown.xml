@@ -27,13 +27,23 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvNotificationTitle"
+            android:id="@+id/tvNotificationSender"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
+            android:fontFamily="sans-serif-black"
             android:textColor="@color/black"
-            android:textSize="14sp"
-            tools:text="John Doe liked your post" />
+            android:textSize="15sp"
+            tools:text="John Doe" />
+
+        <TextView
+            android:id="@+id/tvNotificationAction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:textColor="@color/gray_700"
+            android:textSize="13sp"
+            android:layout_marginTop="1dp"
+            tools:text="liked your post" />
 
         <TextView
             android:id="@+id/tvNotificationTime"

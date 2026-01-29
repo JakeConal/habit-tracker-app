@@ -59,6 +59,7 @@ class AuthRepository private constructor() {
                     // User exists, update last login time and return existing profile
                     userRepository.updateLastLogin(firebaseUser.uid)
                     val updatedUser = existingUser.copy(lastLoginAt = System.currentTimeMillis())
+                    userRepository.setCurrentUser(updatedUser)
                     Result.success(updatedUser)
                 } else {
                     // Profile doesn't exist in Firestore, create it
@@ -70,6 +71,7 @@ class AuthRepository private constructor() {
                         lastLoginAt = System.currentTimeMillis()
                     )
                     userRepository.createOrUpdateUser(user)
+                    userRepository.setCurrentUser(user)
                     seedDefaultCategoriesForUser(user.id)
                     Result.success(user)
                 }
@@ -105,6 +107,7 @@ class AuthRepository private constructor() {
                 )
                 // Create user profile in Firestore
                 userRepository.createOrUpdateUser(user)
+                userRepository.setCurrentUser(user)
                 seedDefaultCategoriesForUser(user.id)
                 Result.success(user)
             } else {
@@ -130,7 +133,9 @@ class AuthRepository private constructor() {
                 if (existingUser != null) {
                     // User exists, only update last login time
                     userRepository.updateLastLogin(firebaseUser.uid)
-                    Result.success(existingUser.copy(lastLoginAt = System.currentTimeMillis()))
+                    val updatedUser = existingUser.copy(lastLoginAt = System.currentTimeMillis())
+                    userRepository.setCurrentUser(updatedUser)
+                    Result.success(updatedUser)
                 } else {
                     // New user, create new profile
                     val user = User(
@@ -142,6 +147,7 @@ class AuthRepository private constructor() {
                     )
                     // Create user profile in Firestore
                     userRepository.createOrUpdateUser(user)
+                    userRepository.setCurrentUser(user)
                     seedDefaultCategoriesForUser(user.id)
                     Result.success(user)
                 }
@@ -167,6 +173,7 @@ class AuthRepository private constructor() {
                 if (existingUser != null) {
                     userRepository.updateLastLogin(firebaseUser.uid)
                     val updatedUser = existingUser.copy(lastLoginAt = System.currentTimeMillis())
+                    userRepository.setCurrentUser(updatedUser)
                     Result.success(updatedUser)
                 } else {
                     val user = User(
@@ -178,6 +185,7 @@ class AuthRepository private constructor() {
                     )
                     // Create user profile in Firestore
                     userRepository.createOrUpdateUser(user)
+                    userRepository.setCurrentUser(user)
                     seedDefaultCategoriesForUser(user.id)
                     Result.success(user)
                 }
@@ -242,7 +250,18 @@ class AuthRepository private constructor() {
     /**
      * Sign out current user
      */
-    fun signOut() {
+    suspend fun signOut() {
+        val currentUser = auth.currentUser
+        if (currentUser != null) {
+            try {
+                // Clear FCM token in Firestore before actually signing out
+                FirestoreUserRepository.getInstance().clearFcmToken(currentUser.uid)
+                // Clear local flow in FirestoreUserRepository
+                FirestoreUserRepository.getInstance().clearLocalUserData()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
         auth.signOut()
     }
 

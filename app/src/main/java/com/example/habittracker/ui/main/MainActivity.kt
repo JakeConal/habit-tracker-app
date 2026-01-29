@@ -1,7 +1,6 @@
 package com.example.habittracker.ui.main
 
 import android.Manifest
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
@@ -27,6 +26,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Notification
+import com.example.habittracker.data.model.User
 import com.example.habittracker.data.repository.AuthRepository
 import com.example.habittracker.data.repository.NotificationRepository
 import com.example.habittracker.data.repository.FirestoreUserRepository
@@ -36,6 +36,7 @@ import com.example.habittracker.ui.feed.CommentsActivity
 import com.example.habittracker.util.NotificationHelper
 import com.example.habittracker.util.UserPreferences
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 /**
@@ -75,6 +76,11 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavigation()
         setupFab()
         hideSystemUI(this)
+
+        // Initialize current user to trigger notification listener and other user-dependent logic
+        lifecycleScope.launch {
+            FirestoreUserRepository.getInstance().getCurrentUser()
+        }
 
         // Ask for permission after UI is ready
         binding.root.post {
@@ -163,28 +169,32 @@ class MainActivity : AppCompatActivity() {
     private fun setupNotificationListener() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                try {
-                    val user = AuthRepository.getInstance().getCurrentUser()
+                // Use flatMapLatest or just nested collection properly
+                FirestoreUserRepository.getInstance().currentUser.collectLatest { user: User? ->
                     if (user != null) {
-                        android.util.Log.d("NotificationListener", "Starting listener for user: ${user.uid}")
-                        NotificationRepository.getInstance()
-                            .getNewNotifications(user.uid)
-                            .collect { notification ->
-                                android.util.Log.d("NotificationListener", "Received notification: ${notification.id}")
-                                if (UserPreferences.areNotificationsEnabled(this@MainActivity)) {
-                                    showInAppNotification(notification)
+                        android.util.Log.d("NotificationListener", "Starting listener for user: ${user.id}")
+                        try {
+                            NotificationRepository.getInstance()
+                                .getNewNotifications(user.id)
+                                .collect { notification ->
+                                    android.util.Log.d("NotificationListener", "Received notification: ${notification.id}")
+                                    if (UserPreferences.areNotificationsEnabled(this@MainActivity)) {
+                                        showInAppNotification(notification)
+                                    }
                                 }
-                            }
+                        } catch (e: Exception) {
+                            android.util.Log.e("NotificationListener", "Inner error: ${e.message}")
+                        }
+                    } else {
+                        android.util.Log.d("NotificationListener", "No user logged in, listener idle")
                     }
-                } catch (e: Exception) {
-                    android.util.Log.e("NotificationListener", "Error: ${e.message}")
-                    e.printStackTrace()
                 }
             }
         }
     }
 
     private fun showInAppNotification(notification: Notification) {
+        // Build specific text for in-app or system notification trigger if desired
         val text = when(notification.type) {
             Notification.NotificationType.LIKE_POST -> "${notification.senderName} liked your post"
             Notification.NotificationType.COMMENT_POST -> "${notification.senderName} commented on your post"
@@ -196,7 +206,7 @@ class MainActivity : AppCompatActivity() {
 
         try {
             // Trigger system notification - title is generic to avoid duplication
-            triggerSystemNotification("Habit Tracker", text, notification.postId)
+            triggerSystemNotification("Habit Tracker Interaction", text, notification.postId)
         } catch (e: Exception) {
             e.printStackTrace()
         }

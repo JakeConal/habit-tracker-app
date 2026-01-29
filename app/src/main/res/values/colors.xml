@@ -84,6 +84,10 @@
     <color name="gray_300">#D1D5DB</color>
     <color name="gray_400">#9CA3AF</color>
     <color name="gray_500">#6B7280</color>
+    <color name="gray_600">#4B5563</color>
+    <color name="gray_700">#374151</color>
+    <color name="gray_800">#1F2937</color>
+    <color name="gray_900">#111827</color>
 
     <!-- Leaderboard colors -->
     <color name="leaderboard_bg_start">#F3E8FF</color>

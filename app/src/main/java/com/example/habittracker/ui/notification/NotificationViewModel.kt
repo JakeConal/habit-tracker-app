@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Notification
 import com.example.habittracker.data.repository.AuthRepository
+import com.example.habittracker.data.repository.FirestoreUserRepository
 import com.example.habittracker.data.repository.NotificationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class NotificationViewModel : ViewModel() {
     private val authRepository = AuthRepository.getInstance()
+    private val firestoreUserRepository = FirestoreUserRepository.getInstance()
     private val notificationRepository = NotificationRepository.getInstance()
 
     private val _notifications = MutableStateFlow<List<Notification>>(emptyList())
@@ -24,20 +27,30 @@ class NotificationViewModel : ViewModel() {
     val showAllNotifications: StateFlow<Boolean> = _showAllNotifications.asStateFlow()
 
     init {
-        loadNotifications()
+        observeUser()
     }
 
-    private fun loadNotifications() {
-        val userId = authRepository.getCurrentUser()?.uid ?: return
+    private fun observeUser() {
         viewModelScope.launch {
-            try {
-                notificationRepository.getNotifications(userId).collect { list ->
-                    _notifications.value = list
-                    _unreadCount.value = list.count { !it.read }
+            firestoreUserRepository.currentUser.collectLatest { user ->
+                if (user != null) {
+                    loadNotifications(user.id)
+                } else {
+                    _notifications.value = emptyList()
+                    _unreadCount.value = 0
                 }
-            } catch (e: Exception) {
-                android.util.Log.e("NotificationViewModel", "Error loading notifications: ${e.message}")
             }
+        }
+    }
+
+    private suspend fun loadNotifications(userId: String) {
+        try {
+            notificationRepository.getNotifications(userId).collect { list ->
+                _notifications.value = list
+                _unreadCount.value = list.count { !it.read }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("NotificationViewModel", "Error loading notifications: ${e.message}")
         }
     }
 
