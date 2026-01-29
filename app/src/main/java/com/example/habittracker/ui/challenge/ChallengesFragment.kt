@@ -13,9 +13,10 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.habittracker.R
 import com.example.habittracker.data.model.Challenge
-import com.example.habittracker.data.repository.ChallengeRepository
+import com.example.habittracker.data.model.ChallengeStatus
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
+import androidx.appcompat.app.AlertDialog
 
 class ChallengesFragment : Fragment() {
 
@@ -69,6 +70,7 @@ class ChallengesFragment : Fragment() {
                         list.map { it.challenge }.toTypedArray(),
                         list,
                         { challenge -> onChallengeClicked(challenge) },
+                        { challenge -> onChallengeLongClicked(challenge) },
                         { onCreateChallengeClicked() }
                     )
                     recyclerViewChallenges.adapter = challengeAdapter
@@ -132,6 +134,23 @@ class ChallengesFragment : Fragment() {
             putExtra(ChallengeDetailActivity.EXTRA_CHALLENGE_VOTES, challenge.votes)
         }
         startActivity(intent)
+    }
+
+    private fun onChallengeLongClicked(challenge: Challenge) {
+        if (challenge.status != ChallengeStatus.PENDING) return
+
+        // Ensure only the creator can delete their pending challenge
+        val currentUserId = auth.currentUser?.uid
+        if (challenge.creatorId != currentUserId) return
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Challenge")
+            .setMessage("Are you sure you want to delete this pending challenge?")
+            .setPositiveButton("Delete") { _, _ ->
+                viewModel.deleteChallenge(challenge.id)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
 
     private fun onCreateChallengeClicked() {

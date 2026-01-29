@@ -86,4 +86,15 @@ class ChallengeViewModel : ViewModel() {
         _currentLimit.value += PAGE_SIZE
         _isLoading.value = false
     }
+
+    fun deleteChallenge(challengeId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            val success = challengeRepository.deleteChallenge(challengeId)
+            _isLoading.value = false
+            if (!success) {
+                _errorMessage.value = "Failed to delete challenge"
+            }
+        }
+    }
 }

@@ -17,6 +17,7 @@ class ChallengeAdapter (
     private var challengeList: Array<Challenge>,
     private var challengeStatusList: List<ChallengeWithStatus> = emptyList(),
     private val onChallengeClick: ((Challenge) -> Unit)? = null,
+    private val onChallengeLongClick: ((Challenge) -> Unit)? = null,
     private val onCreateChallengeClick: (() -> Unit)? = null
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -130,6 +131,11 @@ class ChallengeAdapter (
 
         holder.itemView.setOnClickListener {
             onChallengeClick?.invoke(challenge)
+        }
+
+        holder.itemView.setOnLongClickListener {
+            onChallengeLongClick?.invoke(challenge)
+            true
         }
     }
 
