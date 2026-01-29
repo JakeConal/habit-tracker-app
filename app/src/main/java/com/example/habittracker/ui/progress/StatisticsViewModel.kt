@@ -113,6 +113,16 @@ class StatisticsViewModel : ViewModel() {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    // Today's completion rate logic
+    val todayCompletionRate: StateFlow<Float> = habits.map { habitsList ->
+        try {
+            calculateTodayCompletionRateInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating today rate", e)
+            0f
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
+
     // Overall completion rate
     val overallCompletionRate: StateFlow<Float> = habits.map { habitsList ->
         try {
@@ -225,6 +235,23 @@ class StatisticsViewModel : ViewModel() {
         return weeklyDays
     }
 
+    private fun shouldHabitBeDoneOnDay(habit: Habit, calendar: Calendar): Boolean {
+        if (habit.frequency.contains("Daily")) return true
+
+        val dayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
+            Calendar.SUNDAY -> "Sunday"
+            Calendar.MONDAY -> "Monday"
+            Calendar.TUESDAY -> "Tuesday"
+            Calendar.WEDNESDAY -> "Wednesday"
+            Calendar.THURSDAY -> "Thursday"
+            Calendar.FRIDAY -> "Friday"
+            Calendar.SATURDAY -> "Saturday"
+            else -> ""
+        }
+
+        return habit.frequency.contains(dayOfWeek)
+    }
+
     private fun calculateExpectedCompletions(habit: Habit): Int {
         val calendar = Calendar.getInstance()
         val today = calendar.time
@@ -251,12 +278,13 @@ class StatisticsViewModel : ViewModel() {
         val calendar = Calendar.getInstance()
         val weekData = mutableListOf<WeeklyChartData>()
         val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
 
         // Go back to last Sunday
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
 
         for (i in 0..6) {
-            val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+            val dateStr = dateFormat.format(calendar.time)
             val dayName = dayNames[calendar.get(Calendar.DAY_OF_WEEK) - 1]
 
             // Count completions for this day
@@ -264,7 +292,8 @@ class StatisticsViewModel : ViewModel() {
             var totalHabitsForDay = 0
 
             habits.forEach { habit ->
-                if (shouldHabitBeDoneOnDay(habit, calendar)) {
+                val habitCreatedDate = dateFormat.format(java.util.Date(habit.createdAt))
+                if (shouldHabitBeDoneOnDay(habit, calendar) && dateStr >= habitCreatedDate) {
                     totalHabitsForDay++
                     if (habit.completedDates.contains(dateStr)) {
                         completionCount++
@@ -287,21 +316,26 @@ class StatisticsViewModel : ViewModel() {
         return weekData
     }
 
-    private fun shouldHabitBeDoneOnDay(habit: Habit, calendar: Calendar): Boolean {
-        if (habit.frequency.contains("Daily")) return true
+    private fun calculateTodayCompletionRateInternal(habits: List<Habit>): Float {
+        if (habits.isEmpty()) return 0f
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayStr = dateFormat.format(calendar.time)
 
-        val dayOfWeek = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.SUNDAY -> "Sunday"
-            Calendar.MONDAY -> "Monday"
-            Calendar.TUESDAY -> "Tuesday"
-            Calendar.WEDNESDAY -> "Wednesday"
-            Calendar.THURSDAY -> "Thursday"
-            Calendar.FRIDAY -> "Friday"
-            Calendar.SATURDAY -> "Saturday"
-            else -> ""
+        var totalHabitsToday = 0
+        var completedHabitsToday = 0
+
+        habits.forEach { habit ->
+            val habitCreatedDate = dateFormat.format(java.util.Date(habit.createdAt))
+            if (shouldHabitBeDoneOnDay(habit, calendar) && todayStr >= habitCreatedDate) {
+                totalHabitsToday++
+                if (habit.completedDates.contains(todayStr)) {
+                    completedHabitsToday++
+                }
+            }
         }
 
-        return habit.frequency.contains(dayOfWeek)
+        return if (totalHabitsToday > 0) (completedHabitsToday.toFloat() / totalHabitsToday) * 100f else 0f
     }
 
     private fun calculateCalendarDataInternal(habits: List<Habit>): CalendarData? {

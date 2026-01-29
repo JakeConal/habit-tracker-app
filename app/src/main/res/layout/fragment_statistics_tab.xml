@@ -39,7 +39,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/today_completion_rate"
+                            android:text="Today's Completion Rate"
                             android:textSize="18sp"
                             android:textColor="@color/primary_blue"
                             android:fontFamily="sans-serif-medium"
@@ -93,7 +93,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/this_week"
+                        android:text="This Week"
                         android:textSize="18sp"
                         android:textColor="@color/primary_blue"
                         android:fontFamily="sans-serif-medium"
@@ -109,13 +109,13 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent"
-                            android:text="@string/completed_habits"
+                            android:text="Completed Habits"
                             android:textSize="10sp"
                             android:textColor="@color/secondary_gray"
                             android:gravity="center"
                             android:rotation="-90"
-                            android:layout_marginEnd="-20dp"
-                            android:layout_marginStart="-20dp" />
+                            android:layout_marginEnd="-30dp"
+                            android:layout_marginStart="-30dp" />
 
                         <!-- Y-axis Labels -->
                         <LinearLayout
@@ -427,12 +427,21 @@
                     </FrameLayout>
                 </LinearLayout>
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="4dp"
+                    android:text="Day of Week"
+                    android:textSize="10sp"
+                    android:textColor="@color/secondary_gray"
+                    android:alpha="0.5" />
 
                 <!-- Legend -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="16dp"
                     android:layout_gravity="center_horizontal"
                     app:cardCornerRadius="100dp"
                     app:cardElevation="0dp"
@@ -458,7 +467,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:text="@string/completed_habits_count"
+                            android:text="Completed Habits Count"
                             android:textSize="11sp"
                             android:textColor="@color/secondary_gray"
                             android:fontFamily="sans-serif-medium" />

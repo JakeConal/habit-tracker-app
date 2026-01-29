@@ -49,7 +49,7 @@ class StatisticsTabFragment : Fragment() {
         binding.contentLayout.visibility = View.VISIBLE
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.overallCompletionRate.collect { rate ->
+            viewModel.todayCompletionRate.collect { rate ->
                 val rateInt = rate.toInt()
                 binding.tvHabitScore.text = getString(R.string.percentage_format, rateInt)
                 binding.progressCircle.progress = rateInt
@@ -261,4 +261,3 @@ class StatisticsTabFragment : Fragment() {
         fun newInstance() = StatisticsTabFragment()
     }
 }
-
