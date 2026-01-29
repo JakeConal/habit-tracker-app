@@ -18,8 +18,8 @@ import com.example.habittracker.data.model.Post
 import com.example.habittracker.databinding.ActivityCreatePostBinding
 import com.example.habittracker.util.UserPreferences
 import com.example.habittracker.R
-import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.ui.common.ImagePreviewActivity
+import com.example.habittracker.ui.main.MainActivity.Companion.hideSystemUI
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -75,12 +75,9 @@ class CreatePostActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            MainActivity.hideSystemUI(this)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+
         binding = ActivityCreatePostBinding.inflate(layoutInflater)
+        hideSystemUI(this)
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this)[CreatePostViewModel::class.java]

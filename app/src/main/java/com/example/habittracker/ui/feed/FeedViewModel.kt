@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.repository.PostRepository
-import com.google.firebase.firestore.DocumentSnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +14,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 
 class FeedViewModel : ViewModel() {
 
@@ -26,17 +24,29 @@ class FeedViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _currentLimit = MutableStateFlow(PAGE_SIZE)
+    private val _refreshTrigger = MutableStateFlow(System.currentTimeMillis())
+
+    private val _hasMoreData = MutableStateFlow(true)
+    val hasMoreData: Boolean get() = _hasMoreData.value
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    val posts: StateFlow<List<Post>> = _currentLimit
+    val posts: StateFlow<List<Post>> = combine(_currentLimit, _refreshTrigger) { limit, _ -> limit }
         .flatMapLatest { limit ->
             repository.listenToPosts(limit)
                 .onStart { _isLoading.value = true }
-                .onEach { _isLoading.value = false }
+                .onEach { postsList ->
+                    _isLoading.value = false
+                    // If we receive fewer posts than the current limit, we've reached the end
+                    if (postsList.size < limit) {
+                        _hasMoreData.value = false
+                    } else if (postsList.size >= limit) {
+                        // If we have enough or more (though more is unlikely with limit), there might be more
+                        _hasMoreData.value = true
+                    }
+                }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    private val _votedChallengeIds = MutableStateFlow<List<String>>(emptyList())
     val votedChallengeIds: StateFlow<List<String>> =
         com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid?.let { userId ->
             com.example.habittracker.data.repository.FirestoreUserRepository.getInstance()
@@ -45,49 +55,24 @@ class FeedViewModel : ViewModel() {
                 .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
         } ?: MutableStateFlow<List<String>>(emptyList()).asStateFlow()
 
-    private var lastDocument: DocumentSnapshot? = null
-    private var _hasMoreData = true
-    val hasMoreData: Boolean get() = _hasMoreData
-
-    init {
-        // fetchVotedChallenges() - No longer needed as it's a real-time Flow
-    }
-
     fun fetchPosts(isRefresh: Boolean = false) {
         if (_isLoading.value && !isRefresh) return
 
         if (isRefresh) {
-            _hasMoreData = true
+            _hasMoreData.value = true
             if (_currentLimit.value == PAGE_SIZE) {
-                _isLoading.value = true
-                viewModelScope.launch {
-                    kotlinx.coroutines.delay(500)
-                    _isLoading.value = false
-                }
+                // Trigger a re-load even if limit is same by updating the refresh trigger
+                _refreshTrigger.value = System.currentTimeMillis()
             } else {
-                _isLoading.value = true
                 _currentLimit.value = PAGE_SIZE
             }
             return
         }
 
-        if (!_hasMoreData) return
+        if (!_hasMoreData.value) return
 
+        // Set loading to true to prevent multiple triggers from FeedFragment
         _isLoading.value = true
-
-        // When using real-time listener with limit, we just increase the limit.
-        // We need to check if we can actually load more.
-        // A simple way is to check the current posts size.
-
-        val currentPostsCount = posts.value.size
-        if (currentPostsCount < _currentLimit.value) {
-            // We already reached the end because Firestore returned fewer than requested
-            _hasMoreData = false
-            _isLoading.value = false
-            return
-        }
-
         _currentLimit.value += PAGE_SIZE
-        _isLoading.value = false
     }
 }

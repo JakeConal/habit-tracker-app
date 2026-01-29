@@ -22,11 +22,11 @@ import com.example.habittracker.data.model.Post
 import com.example.habittracker.data.model.Comment
 import com.example.habittracker.databinding.ActivityCommentsBinding
 import com.example.habittracker.data.repository.PostRepository
-import com.example.habittracker.ui.main.MainActivity
 import com.example.habittracker.ui.common.ImagePreviewActivity
 import com.example.habittracker.util.UserPreferences
 import kotlinx.coroutines.launch
 import android.content.Context
+import com.example.habittracker.ui.main.MainActivity.Companion.hideSystemUI
 
 class CommentsActivity : AppCompatActivity() {
 
@@ -41,11 +41,7 @@ class CommentsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        try {
-            MainActivity.hideSystemUI(this)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        hideSystemUI(this)
 
         // Allow content to extend behind system bars and handle insets manually
         WindowCompat.setDecorFitsSystemWindows(window, false)
