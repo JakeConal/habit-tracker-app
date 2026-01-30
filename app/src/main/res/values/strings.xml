@@ -55,6 +55,16 @@
     <string name="agree_to_terms">I agree to the </string>
     <string name="terms_privacy">Terms &amp; Privacy</string>
     <string name="sign_in_with_google">Sign in with Google</string>
+
+    <!-- Auth Messages -->
+    <string name="welcome_user">Welcome %s!</string>
+    <string name="password_reset_sent">Password reset email sent!</string>
+    <string name="password_reset_sent_check_inbox">Password reset email sent! Please check your inbox.</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="creating_account">Creating account…</string>
+    <string name="accept_terms_required">Please accept the terms and conditions</string>
+    <string name="google_signin_failed">Google sign in failed: %s</string>
+    <string name="google_signup_failed">Google sign up failed: %s</string>
     <string name="default_web_client_id" translatable="false">791039352776-ca724m7tspfokl41dkjvka0doj267msh.apps.googleusercontent.com</string>
 
     <!-- Friend Profile Screen -->

@@ -40,7 +40,7 @@ class ForgotPasswordFragment : Fragment() {
                 is ForgotPasswordState.Success -> {
                     Toast.makeText(
                         requireContext(),
-                        "Password reset email sent! Please check your inbox.",
+                        getString(R.string.password_reset_sent_check_inbox),
                         Toast.LENGTH_LONG
                     ).show()
                     viewModel.resetState()

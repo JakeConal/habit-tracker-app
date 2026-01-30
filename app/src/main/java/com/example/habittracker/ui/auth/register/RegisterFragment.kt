@@ -54,7 +54,7 @@ class RegisterFragment : Fragment() {
                     UserPreferences.saveUserName(requireContext(), state.user.name)
                     UserPreferences.saveUserAvatar(requireContext(), state.user.avatarUrl ?: "")
 
-                    Toast.makeText(requireContext(), "Welcome ${state.user.name}!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.welcome_user, state.user.name), Toast.LENGTH_SHORT).show()
                     // Clear back stack to prevent going back to login/register
                     val navOptions = NavOptions.Builder()
                         .setPopUpTo(R.id.nav_login, true)
@@ -76,7 +76,7 @@ class RegisterFragment : Fragment() {
             binding.btnSignUp.isEnabled = !isLoading
             
             if (isLoading) {
-                binding.btnSignUp.text = "Creating account..."
+                binding.btnSignUp.text = getString(R.string.creating_account)
             } else {
                 binding.btnSignUp.text = getString(R.string.sign_up)
             }
@@ -86,7 +86,7 @@ class RegisterFragment : Fragment() {
     private fun setupClickListeners() {
         binding.btnSignUp.setOnClickListener {
             if (!binding.cbTerms.isChecked) {
-                Toast.makeText(requireContext(), "Please accept the terms and conditions", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.accept_terms_required), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
@@ -125,7 +125,7 @@ class RegisterFragment : Fragment() {
                 )
                 viewModel.handleGoogleSignUp(result)
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Google sign up failed: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), getString(R.string.google_signup_failed, e.message), Toast.LENGTH_LONG).show()
             }
         }
     }
