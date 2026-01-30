@@ -3910,29 +3910,3 @@ class HabitTrackerApp : Application() {
     }
 }
 ```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-For support, email jakeconal@example.com or open an issue in the GitHub repository.
-
-## Roadmap
-
-Planned features for future releases:
-- [ ] iOS version
-- [ ] Habit templates
-- [ ] Team challenges
-- [ ] Achievement badges
-- [ ] Export habit data
-- [ ] Habit streaks freeze feature
-- [ ] Customizable themes
-- [ ] Widget support
-- [ ] Apple Watch integration
-- [ ] Advanced analytics with charts
-
----
-
-**Built with ❤️ using Kotlin and Firebase**
