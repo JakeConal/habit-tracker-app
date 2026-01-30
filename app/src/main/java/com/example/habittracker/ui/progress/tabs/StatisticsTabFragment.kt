@@ -16,6 +16,7 @@ import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentStatisticsTabBinding
 import com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity
 import com.example.habittracker.ui.progress.StatisticsViewModel
+import com.example.habittracker.ui.progress.UnfinishedHabit
 import com.example.habittracker.util.DateUtils
 import kotlinx.coroutines.launch
 
@@ -90,9 +91,9 @@ class StatisticsTabFragment : Fragment() {
 
     private fun setupUnfinishedHabitsDrawer() {
         // Setup RecyclerView
-        unfinishedHabitsAdapter = UnfinishedHabitsAdapter { habit ->
+        unfinishedHabitsAdapter = UnfinishedHabitsAdapter { habitId ->
             // Navigate to habit detail activity
-            navigateToHabitDetail(habit.id)
+            navigateToHabitDetail(habitId)
         }
 
         binding.rvUnfinishedHabits.apply {
@@ -106,7 +107,7 @@ class StatisticsTabFragment : Fragment() {
         }
     }
 
-    private fun updateUnfinishedHabitsDrawer(unfinishedHabits: List<com.example.habittracker.data.model.Habit>) {
+    private fun updateUnfinishedHabitsDrawer(unfinishedHabits: List<UnfinishedHabit>) {
         if (unfinishedHabits.isEmpty()) {
             // Hide drawer when all habits are completed
             binding.unfinishedHabitsDrawer.visibility = View.GONE

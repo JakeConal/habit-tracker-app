@@ -61,6 +61,14 @@ data class TodayHabitsCount(
     val total: Int
 )
 
+data class UnfinishedHabit(
+    val id: String,
+    val name: String,
+    val iconRes: Int,
+    val iconBgRes: Int,
+    val frequency: String
+)
+
 class StatisticsViewModel : ViewModel() {
 
     private val habitRepository = HabitRepository.getInstance()
@@ -139,9 +147,9 @@ class StatisticsViewModel : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, TodayHabitsCount(0, 0))
 
     // Today's unfinished habits
-    val todayUnfinishedHabits: StateFlow<List<Habit>> = habits.map { habitsList ->
+    val todayUnfinishedHabits: StateFlow<List<UnfinishedHabit>> = combine(habits, _categories) { habitsList, categoriesMap ->
         try {
-            getTodayUnfinishedHabitsInternal(habitsList)
+            getTodayUnfinishedHabitsInternal(habitsList, categoriesMap)
         } catch (e: Exception) {
             android.util.Log.e("StatisticsViewModel", "Error getting unfinished habits", e)
             emptyList()
@@ -385,7 +393,7 @@ class StatisticsViewModel : ViewModel() {
         return TodayHabitsCount(completedHabitsToday, totalHabitsToday)
     }
 
-    private fun getTodayUnfinishedHabitsInternal(habits: List<Habit>): List<Habit> {
+    private fun getTodayUnfinishedHabitsInternal(habits: List<Habit>, categoriesMap: Map<String, Category>): List<UnfinishedHabit> {
         if (habits.isEmpty()) return emptyList()
         val calendar = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -396,6 +404,24 @@ class StatisticsViewModel : ViewModel() {
             shouldHabitBeDoneOnDay(habit, calendar) &&
             todayStr >= habitCreatedDate &&
             !habit.completedDates.contains(todayStr)
+        }.map { habit ->
+            val category = categoriesMap[habit.categoryId]
+
+            var iconRes = category?.icon?.resId ?: com.example.habittracker.R.drawable.ic_other
+            var iconBgRes = category?.color?.resId ?: com.example.habittracker.R.drawable.bg_category_icon_pink_light
+
+            if (habit.isChallengeHabit) {
+                iconRes = com.example.habittracker.R.drawable.ic_trophy
+                iconBgRes = com.example.habittracker.R.drawable.bg_rainbow_gradient
+            }
+
+            UnfinishedHabit(
+                id = habit.id,
+                name = habit.name,
+                iconRes = iconRes,
+                iconBgRes = iconBgRes,
+                frequency = FrequencyFormatter.formatFrequency(habit.frequency)
+            )
         }
     }
 

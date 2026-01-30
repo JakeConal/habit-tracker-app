@@ -5,12 +5,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.habittracker.data.model.Habit
 import com.example.habittracker.databinding.ItemUnfinishedHabitBinding
+import com.example.habittracker.ui.progress.UnfinishedHabit
 
 class UnfinishedHabitsAdapter(
-    private val onHabitClick: (Habit) -> Unit
-) : ListAdapter<Habit, UnfinishedHabitsAdapter.HabitViewHolder>(HabitDiffCallback()) {
+    private val onHabitClick: (String) -> Unit
+) : ListAdapter<UnfinishedHabit, UnfinishedHabitsAdapter.HabitViewHolder>(HabitDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HabitViewHolder {
         val binding = ItemUnfinishedHabitBinding.inflate(
@@ -29,31 +29,26 @@ class UnfinishedHabitsAdapter(
         private val binding: ItemUnfinishedHabitBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(habit: Habit) {
+        fun bind(habit: UnfinishedHabit) {
             binding.tvHabitName.text = habit.name
-            binding.tvHabitFrequency.text = if (habit.frequency.isNotEmpty()) {
-                habit.frequency.joinToString(", ")
-            } else {
-                "Daily"
-            }
+            binding.tvHabitFrequency.text = habit.frequency
 
-            // Set icon background color based on category or default
-            binding.habitIcon.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                binding.root.context.getColor(com.example.habittracker.R.color.accent_blue)
-            )
+            // Set icon image and background
+            binding.habitIcon.setImageResource(habit.iconRes)
+            binding.habitIconCard.setBackgroundResource(habit.iconBgRes)
 
             binding.root.setOnClickListener {
-                onHabitClick(habit)
+                onHabitClick(habit.id)
             }
         }
     }
 
-    class HabitDiffCallback : DiffUtil.ItemCallback<Habit>() {
-        override fun areItemsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+    class HabitDiffCallback : DiffUtil.ItemCallback<UnfinishedHabit>() {
+        override fun areItemsTheSame(oldItem: UnfinishedHabit, newItem: UnfinishedHabit): Boolean {
             return oldItem.id == newItem.id
         }
 
-        override fun areContentsTheSame(oldItem: Habit, newItem: Habit): Boolean {
+        override fun areContentsTheSame(oldItem: UnfinishedHabit, newItem: UnfinishedHabit): Boolean {
             return oldItem == newItem
         }
     }
