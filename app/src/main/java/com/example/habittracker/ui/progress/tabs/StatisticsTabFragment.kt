@@ -1,5 +1,6 @@
 package com.example.habittracker.ui.progress.tabs
 
+import android.animation.ObjectAnimator
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -10,9 +11,12 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.habittracker.R
 import com.example.habittracker.databinding.FragmentStatisticsTabBinding
+import com.example.habittracker.ui.habit.detail.ViewHabitDetailActivity
 import com.example.habittracker.ui.progress.StatisticsViewModel
+import com.example.habittracker.util.DateUtils
 import kotlinx.coroutines.launch
 
 class StatisticsTabFragment : Fragment() {
@@ -22,6 +26,8 @@ class StatisticsTabFragment : Fragment() {
     private val viewModel: StatisticsViewModel by activityViewModels()
     private var currentWeekData: List<com.example.habittracker.ui.progress.WeeklyChartData> = emptyList()
     private var currentTooltipView: View? = null
+    private lateinit var unfinishedHabitsAdapter: UnfinishedHabitsAdapter
+    private var isDrawerExpanded = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,6 +40,7 @@ class StatisticsTabFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupUnfinishedHabitsDrawer()
         setupBarClickListeners()
         observeData()
     }
@@ -67,12 +74,86 @@ class StatisticsTabFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.todayUnfinishedHabits.collect { unfinishedHabits ->
+                updateUnfinishedHabitsDrawer(unfinishedHabits)
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.weeklyChartData.collect { weekData ->
                 currentWeekData = weekData
                 updateWeeklyChart(weekData)
                 updateLegend(weekData)
             }
         }
+    }
+
+    private fun setupUnfinishedHabitsDrawer() {
+        // Setup RecyclerView
+        unfinishedHabitsAdapter = UnfinishedHabitsAdapter { habit ->
+            // Navigate to habit detail activity
+            navigateToHabitDetail(habit.id)
+        }
+
+        binding.rvUnfinishedHabits.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = unfinishedHabitsAdapter
+        }
+
+        // Setup drawer toggle click listener
+        binding.drawerToggle.setOnClickListener {
+            toggleDrawer()
+        }
+    }
+
+    private fun updateUnfinishedHabitsDrawer(unfinishedHabits: List<com.example.habittracker.data.model.Habit>) {
+        if (unfinishedHabits.isEmpty()) {
+            // Hide drawer when all habits are completed
+            binding.unfinishedHabitsDrawer.visibility = View.GONE
+        } else {
+            // Show drawer when there are unfinished habits
+            binding.unfinishedHabitsDrawer.visibility = View.VISIBLE
+            unfinishedHabitsAdapter.submitList(unfinishedHabits)
+
+            // Update title with count
+            binding.tvUnfinishedHabitsTitle.text = getString(
+                R.string.unfinished_habits
+            ) + " (${unfinishedHabits.size})"
+        }
+    }
+
+    private fun toggleDrawer() {
+        isDrawerExpanded = !isDrawerExpanded
+
+        if (isDrawerExpanded) {
+            // Expand drawer
+            binding.rvUnfinishedHabits.visibility = View.VISIBLE
+            binding.tvNoUnfinishedHabits.visibility = View.GONE
+
+            // Rotate arrow
+            ObjectAnimator.ofFloat(binding.ivDrawerToggle, "rotation", 0f, 180f).apply {
+                duration = 200
+                start()
+            }
+        } else {
+            // Collapse drawer
+            binding.rvUnfinishedHabits.visibility = View.GONE
+
+            // Rotate arrow back
+            ObjectAnimator.ofFloat(binding.ivDrawerToggle, "rotation", 180f, 0f).apply {
+                duration = 200
+                start()
+            }
+        }
+    }
+
+    private fun navigateToHabitDetail(habitId: String) {
+        val intent = ViewHabitDetailActivity.newIntent(
+            requireContext(),
+            habitId,
+            DateUtils.getCurrentDateString()
+        )
+        startActivity(intent)
     }
 
     private fun updateWeeklyChart(weekData: List<com.example.habittracker.ui.progress.WeeklyChartData>) {

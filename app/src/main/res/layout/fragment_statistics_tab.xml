@@ -80,6 +80,71 @@
                         android:textColor="@color/secondary_gray"
                         android:fontFamily="sans-serif" />
 
+                    <!-- Unfinished Habits Drawer -->
+                    <LinearLayout
+                        android:id="@+id/unfinishedHabitsDrawer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="16dp"
+                        android:visibility="gone">
+
+                        <!-- Drawer Header/Toggle -->
+                        <LinearLayout
+                            android:id="@+id/drawerToggle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:padding="12dp"
+                            android:background="?attr/selectableItemBackground"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:id="@+id/tvUnfinishedHabitsTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="@string/unfinished_habits"
+                                android:textSize="14sp"
+                                android:textColor="@color/primary_blue"
+                                android:fontFamily="sans-serif-medium" />
+
+                            <ImageView
+                                android:id="@+id/ivDrawerToggle"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_arrow_down"
+                                app:tint="@color/primary_blue"
+                                android:rotation="0"
+                                android:contentDescription="@string/view_unfinished_habits" />
+                        </LinearLayout>
+
+                        <!-- Drawer Content (Initially Collapsed) -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvUnfinishedHabits"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:paddingHorizontal="8dp"
+                            android:paddingBottom="8dp"
+                            android:visibility="gone"
+                            android:nestedScrollingEnabled="false" />
+
+                        <!-- Empty State -->
+                        <TextView
+                            android:id="@+id/tvNoUnfinishedHabits"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="16dp"
+                            android:text="@string/no_unfinished_habits"
+                            android:textSize="14sp"
+                            android:textColor="@color/secondary_gray"
+                            android:gravity="center"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

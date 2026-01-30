@@ -138,6 +138,16 @@ class StatisticsViewModel : ViewModel() {
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, TodayHabitsCount(0, 0))
 
+    // Today's unfinished habits
+    val todayUnfinishedHabits: StateFlow<List<Habit>> = habits.map { habitsList ->
+        try {
+            getTodayUnfinishedHabitsInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error getting unfinished habits", e)
+            emptyList()
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     // Overall completion rate
     val overallCompletionRate: StateFlow<Float> = habits.map { habitsList ->
         try {
@@ -373,6 +383,20 @@ class StatisticsViewModel : ViewModel() {
         }
 
         return TodayHabitsCount(completedHabitsToday, totalHabitsToday)
+    }
+
+    private fun getTodayUnfinishedHabitsInternal(habits: List<Habit>): List<Habit> {
+        if (habits.isEmpty()) return emptyList()
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayStr = dateFormat.format(calendar.time)
+
+        return habits.filter { habit ->
+            val habitCreatedDate = dateFormat.format(java.util.Date(habit.createdAt))
+            shouldHabitBeDoneOnDay(habit, calendar) &&
+            todayStr >= habitCreatedDate &&
+            !habit.completedDates.contains(todayStr)
+        }
     }
 
     private fun calculateCalendarDataInternal(habits: List<Habit>): CalendarData? {

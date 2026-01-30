@@ -100,7 +100,10 @@
     <string name="today_completion_rate">Today\'s Completion Rate</string>
     <string name="habits_completed_today">%1$d/%2$d completed</string>
     <string name="completed_habits">Completed Habits</string>
-    <string name="day">Day</string>
+    <string name="unfinished_habits">Unfinished Habits</string>
+    <string name="no_unfinished_habits">All habits completed! 🎉</string>
+    <string name="view_unfinished_habits">View unfinished habits</string>
+    <string name="hide_unfinished_habits">Hide unfinished habits</string>
     <string name="weekly_total">Weekly Total</string>
     <string name="avg_success">Avg. Success</string>
     <string name="completed_habits_count">Completed Habits Count</string>
