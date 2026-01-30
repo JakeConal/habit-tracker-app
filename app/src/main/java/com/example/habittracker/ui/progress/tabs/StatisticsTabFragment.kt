@@ -118,8 +118,9 @@ class StatisticsTabFragment : Fragment() {
 
             // Update title with count
             binding.tvUnfinishedHabitsTitle.text = getString(
-                R.string.unfinished_habits
-            ) + " (${unfinishedHabits.size})"
+                R.string.unfinished_habits_count,
+                unfinishedHabits.size
+            )
         }
     }
 
