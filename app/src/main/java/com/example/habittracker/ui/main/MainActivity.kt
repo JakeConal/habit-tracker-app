@@ -269,6 +269,7 @@ class MainActivity : AppCompatActivity() {
             when (destination.id) {
                 R.id.nav_login, 
                 R.id.nav_register,
+                R.id.nav_forgot_password,
                 R.id.nav_create_habit,
                 R.id.nav_create_category,
                 R.id.nav_view_habit,
