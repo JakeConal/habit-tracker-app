@@ -3,10 +3,8 @@ package com.example.habittracker.data.repository
 import com.example.habittracker.data.firebase.FirestoreManager
 import com.example.habittracker.data.model.Challenge
 import com.example.habittracker.data.model.ChallengeStatus
-import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
@@ -14,20 +12,6 @@ import kotlinx.coroutines.tasks.await
 class ChallengeRepository {
     private val collectionName = "challenges"
     private val userChallengeRepository = UserChallengeRepository()
-
-    // Get all approved challenges
-    suspend fun getAllChallenges(): List<Challenge> {
-        return try {
-            val list = FirestoreManager.getCollection(collectionName) { doc ->
-                Challenge.fromDocument(doc)
-            }
-            list.filter { it.status == ChallengeStatus.APPROVED }
-        } catch (e: Exception) {
-            println("Error getting all challenges: ${e.message}")
-            emptyList()
-        }
-    }
-
     // Get all challenges including PENDING if the user is the creator
     suspend fun getAllVisibleChallenges(userId: String): List<Challenge> {
         return try {
@@ -40,40 +24,6 @@ class ChallengeRepository {
         } catch (e: Exception) {
             println("Error getting visible challenges: ${e.message}")
             emptyList()
-        }
-    }
-
-    // Paginated visible challenges
-    suspend fun getVisibleChallengesPaginated(userId: String, pageSize: Long, lastDocument: DocumentSnapshot?): Result<Triple<List<Challenge>, DocumentSnapshot?, Boolean>> {
-        return try {
-            val db = FirebaseFirestore.getInstance()
-
-            // Fetch documents
-            var query = db.collection(collectionName)
-                .limit(pageSize * 3) // Fetch a larger chunk to ensure we have enough after filtering
-
-            if (lastDocument != null) {
-                query = query.startAfter(lastDocument)
-            }
-
-            val snapshot = query.get().await()
-            val fetchedDocs = snapshot.documents
-            val allFetched = fetchedDocs.mapNotNull { Challenge.fromDocument(it) }
-
-            // Client-side filtering for visibility
-            val visibleChallenges = allFetched.filter {
-                it.status == ChallengeStatus.APPROVED || (it.status == ChallengeStatus.PENDING && it.creatorId == userId)
-            }.sortedByDescending { it.createdAt } // Sort client-side
-            .take(pageSize.toInt())
-
-            val lastVisible = if (fetchedDocs.isNotEmpty()) fetchedDocs.last() else null
-            val hasMoreInQuery = fetchedDocs.size >= (pageSize * 3)
-
-            // We return a Triple: (VisibleItems, LastVisibleDoc, MightHaveMoreDocs)
-            Result.success(Triple(visibleChallenges, lastVisible, hasMoreInQuery))
-        } catch (e: Exception) {
-            println("Error in getVisibleChallengesPaginated: ${e.message}")
-            Result.failure(e)
         }
     }
 
@@ -129,23 +79,6 @@ class ChallengeRepository {
         }
     }
 
-    // Get all challenges with join status for a specific user
-    suspend fun getAllChallengesWithUserStatus(userId: String): List<ChallengeWithStatus> {
-        return try {
-            val challenges = getAllVisibleChallenges(userId)
-            challenges.map { challenge ->
-                val isJoined = userChallengeRepository.hasUserJoinedChallenge(userId, challenge.id)
-                ChallengeWithStatus(
-                    challenge = challenge,
-                    isJoined = isJoined
-                )
-            }
-        } catch (e: Exception) {
-            println("Error getting challenges with user status: ${e.message}")
-            emptyList()
-        }
-    }
-
     // Get challenge by ID
     suspend fun getChallengeById(id: String): Challenge? {
         return try {
@@ -157,24 +90,6 @@ class ChallengeRepository {
         }
     }
 
-    // Get challenge by ID with user join status
-    suspend fun getChallengeWithStatus(id: String, userId: String): ChallengeWithStatus? {
-        return try {
-            val challenge = getChallengeById(id)
-            if (challenge != null) {
-                val isJoined = userChallengeRepository.hasUserJoinedChallenge(userId, id)
-                ChallengeWithStatus(
-                    challenge = challenge,
-                    isJoined = isJoined
-                )
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            println("Error getting challenge with status: ${e.message}")
-            null
-        }
-    }
 
     // Create new challenge
     suspend fun createChallenge(challenge: Challenge): String? {
@@ -187,16 +102,6 @@ class ChallengeRepository {
         }
     }
 
-    // Update existing challenge
-    suspend fun updateChallenge(id: String, challenge: Challenge): Boolean {
-        return try {
-            val challengeMap = challenge.toMap()
-            FirestoreManager.updateDocument(collectionName, id, challengeMap)
-        } catch (e: Exception) {
-            println("Error updating challenge: ${e.message}")
-            false
-        }
-    }
 
     // Delete challenge
     suspend fun deleteChallenge(id: String): Boolean {
