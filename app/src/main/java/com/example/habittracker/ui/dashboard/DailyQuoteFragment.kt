@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import android.widget.Toast
@@ -16,8 +17,12 @@ import com.example.habittracker.databinding.FragmentDailyQuoteBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * DailyQuoteFragment - Screen for editing daily motivational quote
@@ -26,12 +31,24 @@ class DailyQuoteFragment : Fragment() {
 
     private var _binding: FragmentDailyQuoteBinding? = null
     private val binding get() = _binding!!
+    
+    private val viewModel: HomeViewModel by viewModels()
 
     private var currentApiQuote: String = "Believe in yourself and all that you are."
 
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)  // Connection timeout
+            .readTimeout(60, TimeUnit.SECONDS)     // Read timeout - increased for AI generation
+            .writeTimeout(30, TimeUnit.SECONDS)    // Write timeout
+            .build()
+    }
+
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://api.dailyquotes.dev/")
+            // Using Heroku production URL - works for both emulator and physical devices
+            .baseUrl("https://ai-backend-mobile-427145b19235.herokuapp.com/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -185,9 +202,49 @@ class DailyQuoteFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    quoteApiService.getMotivationalQuote()
+                // Load habits first
+                viewModel.loadHabits()
+                
+                // Calculate aggregated habit statistics
+                val habits = viewModel.habits.value
+                
+                if (habits.isEmpty()) {
+                    currentApiQuote = "Start building your first habit today!"
+                    binding.tvPreviewQuote.text = currentApiQuote
+                    binding.btnRefreshQuote.isEnabled = true
+                    return@launch
                 }
+                
+                // Get yesterday's date string
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.DAY_OF_MONTH, -1)
+                val yesterdayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                
+                // Calculate stats
+                val totalHabits = habits.size
+                val completedYesterday = habits.count { it.completedDates.contains(yesterdayDate) }
+                val bestStreak = habits.maxOfOrNull { it.streak } ?: 0
+                val averageStreak = if (habits.isNotEmpty()) {
+                    habits.sumOf { it.streak } / habits.size
+                } else {
+                    0
+                }
+                val bestStreakHabit = habits.maxByOrNull { it.streak }
+                val bestStreakHabitName = bestStreakHabit?.name ?: "your habits"
+                
+                // Create request with aggregated stats
+                val request = com.example.habittracker.data.model.QuoteRequest(
+                    totalHabits = totalHabits,
+                    completedYesterday = completedYesterday,
+                    bestStreak = bestStreak,
+                    bestStreakHabitName = bestStreakHabitName,
+                    averageStreak = averageStreak
+                )
+                
+                val response = withContext(Dispatchers.IO) {
+                    quoteApiService.generateAiQuote(request)
+                }
+                
                 if (response.isSuccessful) {
                     response.body()?.let { quoteResponse ->
                         // Update API quote and preview
@@ -217,9 +274,10 @@ class DailyQuoteFragment : Fragment() {
                     currentApiQuote = "Believe in yourself and all that you are."
                     binding.tvPreviewQuote.text = currentApiQuote
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 currentApiQuote = "Believe in yourself and all that you are."
                 binding.tvPreviewQuote.text = currentApiQuote
+                Toast.makeText(requireContext(), "Failed to generate quote: ${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 binding.btnRefreshQuote.isEnabled = true
             }

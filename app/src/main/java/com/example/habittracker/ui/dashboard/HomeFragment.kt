@@ -30,10 +30,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 /**
  * HomeFragment - Main screen displaying dashboard of the application
@@ -53,9 +55,19 @@ class HomeFragment : Fragment() {
     private var notificationPopupWindow: PopupWindow? = null
     private lateinit var notificationAdapter: NotificationDropdownAdapter
 
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)  // Connection timeout
+            .readTimeout(60, TimeUnit.SECONDS)     // Read timeout - increased for AI generation
+            .writeTimeout(30, TimeUnit.SECONDS)    // Write timeout
+            .build()
+    }
+
     private val retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl("https://api.dailyquotes.dev/")
+            // Using ngrok tunnel URL - works for both emulator and physical devices
+            .baseUrl("https://ai-backend-mobile-427145b19235.herokuapp.com/")
+            .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
@@ -253,9 +265,44 @@ class HomeFragment : Fragment() {
     private fun fetchAndDisplayQuote(sharedPref: android.content.SharedPreferences) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val response = withContext(Dispatchers.IO) {
-                    quoteApiService.getMotivationalQuote()
+                // Calculate aggregated habit statistics
+                val habits = viewModel.habits.value
+                
+                if (habits.isEmpty()) {
+                    binding.tvQuote.text = "Start building your first habit today!"
+                    return@launch
                 }
+                
+                // Get yesterday's date string
+                val calendar = Calendar.getInstance()
+                calendar.add(Calendar.DAY_OF_MONTH, -1)
+                val yesterdayDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
+                
+                // Calculate stats
+                val totalHabits = habits.size
+                val completedYesterday = habits.count { it.completedDates.contains(yesterdayDate) }
+                val bestStreak = habits.maxOfOrNull { it.streak } ?: 0
+                val averageStreak = if (habits.isNotEmpty()) {
+                    habits.sumOf { it.streak } / habits.size
+                } else {
+                    0
+                }
+                val bestStreakHabit = habits.maxByOrNull { it.streak }
+                val bestStreakHabitName = bestStreakHabit?.name ?: "your habits"
+                
+                // Create request with aggregated stats
+                val request = com.example.habittracker.data.model.QuoteRequest(
+                    totalHabits = totalHabits,
+                    completedYesterday = completedYesterday,
+                    bestStreak = bestStreak,
+                    bestStreakHabitName = bestStreakHabitName,
+                    averageStreak = averageStreak
+                )
+                
+                val response = withContext(Dispatchers.IO) {
+                    quoteApiService.generateAiQuote(request)
+                }
+                
                 if (response.isSuccessful) {
                     response.body()?.let { quoteResponse ->
                         binding.tvQuote.text = quoteResponse.quote
@@ -271,7 +318,8 @@ class HomeFragment : Fragment() {
                 } else {
                     binding.tvQuote.text = getString(R.string.motivational_quote)
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                // Fallback to default quote on error
                 binding.tvQuote.text = getString(R.string.motivational_quote)
             }
         }
