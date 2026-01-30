@@ -83,7 +83,6 @@ class FriendProfileViewModel : ViewModel() {
                     _friendshipStatus.value = FriendshipStatus.FRIEND
                 } else {
                     // Check if request is pending
-                    val requests = friendRepository.getFriendRequests()
                     val sentRequests = com.example.habittracker.data.firebase.FirestoreManager.getCollectionWhere(
                         com.example.habittracker.data.model.FriendRequest.COLLECTION_NAME,
                         "senderId",
@@ -131,7 +130,7 @@ class FriendProfileViewModel : ViewModel() {
     private fun fetchVotedChallenges() {
         viewModelScope.launch {
             val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return@launch
-            val user = com.example.habittracker.data.repository.FirestoreUserRepository.getInstance().getUserById(currentUserId)
+            val user = userRepository.getUserById(currentUserId)
             user?.let {
                 _votedChallengeIds.value = it.votedChallengeIds
             }
@@ -195,6 +194,70 @@ class FriendProfileViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    fun toggleLike(post: Post) {
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val isLiked = post.likedBy.contains(currentUserId)
+
+        // Toggle locally for reactivity
+        val newLikedBy = if (isLiked) post.likedBy - currentUserId else post.likedBy + currentUserId
+        val newLikeCount = if (isLiked) maxOf(0, post.likeCount - 1) else post.likeCount + 1
+
+        val updatedPost = post.copy(
+            likedBy = newLikedBy,
+            likeCount = newLikeCount
+        )
+
+        val currentList = _posts.value.toMutableList()
+        val index = currentList.indexOfFirst { it.id == post.id }
+        if (index != -1) {
+            currentList[index] = updatedPost
+            _posts.value = currentList
+        }
+
+        // Call repository
+        viewModelScope.launch {
+            val user = userRepository.getUserById(currentUserId)
+            val result = postRepository.toggleLikePost(
+                post.id,
+                !isLiked,
+                user?.name ?: "User",
+                user?.avatarUrl ?: ""
+            )
+            if (result.isFailure) {
+                // Revert if failed
+                val revertedList = _posts.value.toMutableList()
+                val revertedIndex = revertedList.indexOfFirst { it.id == post.id }
+                if (revertedIndex != -1) {
+                    revertedList[revertedIndex] = post
+                    _posts.value = revertedList
+                }
+            }
+        }
+    }
+
+    fun updatePost(postId: String?, commentCount: Int, likeCount: Int, isLiked: Boolean) {
+        if (postId == null) return
+        val currentUserId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        val currentList = _posts.value.toMutableList()
+        val index = currentList.indexOfFirst { it.id == postId }
+        if (index != -1) {
+            val currentPost = currentList[index]
+            val newLikedBy = if (isLiked) {
+                if (!currentPost.likedBy.contains(currentUserId)) currentPost.likedBy + currentUserId else currentPost.likedBy
+            } else {
+                currentPost.likedBy - currentUserId
+            }
+
+            currentList[index] = currentPost.copy(
+                commentCount = commentCount,
+                likeCount = likeCount,
+                likedBy = newLikedBy
+            )
+            _posts.value = currentList
         }
     }
 }

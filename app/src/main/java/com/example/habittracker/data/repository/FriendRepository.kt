@@ -107,6 +107,19 @@ class FriendRepository {
     }
 
     /**
+     * Observe pending friend requests for current user (Real-time)
+     */
+    fun getFriendRequestsFlow(): kotlinx.coroutines.flow.Flow<List<FriendRequest>> {
+        val currentUserId = auth.currentUser?.uid ?: return kotlinx.coroutines.flow.flowOf(emptyList())
+
+        return FirestoreManager.observeCollectionWhere(
+            FriendRequest.COLLECTION_NAME,
+            "receiverId",
+            currentUserId
+        ) { FriendRequest.fromDocument(it) }
+    }
+
+    /**
      * Get friends (returns detailed User objects)
      * If userId is provided, get friends of that user. Otherwise get friends of current user.
      */

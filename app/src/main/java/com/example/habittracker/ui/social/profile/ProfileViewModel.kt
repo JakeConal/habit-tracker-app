@@ -122,6 +122,14 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         fetchUserPosts(userId)
         fetchFriendsAndRequests()
 
+        // Observe friend requests in real-time
+        viewModelScope.launch {
+            friendRepository.getFriendRequestsFlow().collect { requests ->
+                cachedRequests = requests
+                updateFriendListUI()
+            }
+        }
+
         // Observe user updates from Repository
         viewModelScope.launch {
             userRepository.currentUser.collect { user ->
@@ -237,7 +245,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                cachedRequests = friendRepository.getFriendRequests()
                 cachedFriends = friendRepository.getFriends()
                 updateFriendListUI()
             } catch (e: Exception) {
