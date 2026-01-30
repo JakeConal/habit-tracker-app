@@ -40,6 +40,12 @@
     <string name="password_create_hint">Create a strong password</string>
     <string name="name_hint">John Doe</string>
     <string name="forgot_password">Forgot Password?</string>
+    <string name="forgot_password_title">Forgot Password</string>
+    <string name="forgot_password_subtitle">Enter your email and we\'ll send you a link to reset your password</string>
+    <string name="send_reset_link">Send Reset Link</string>
+    <string name="sending">Sending…</string>
+    <string name="remember_password">Remember your password?  </string>
+    <string name="back_to_login">Back to Login</string>
     <string name="login">Login</string>
     <string name="sign_up">Sign Up</string>
     <string name="log_in">Log In</string>

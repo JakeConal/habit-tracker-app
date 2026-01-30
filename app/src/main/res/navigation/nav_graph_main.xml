@@ -13,6 +13,12 @@
         tools:layout="@layout/fragment_login" />
 
     <fragment
+        android:id="@+id/nav_forgot_password"
+        android:name="com.example.habittracker.ui.auth.forgotpassword.ForgotPasswordFragment"
+        android:label="Forgot Password"
+        tools:layout="@layout/fragment_forgot_password" />
+
+    <fragment
         android:id="@+id/nav_register"
         android:name="com.example.habittracker.ui.auth.register.RegisterFragment"
         android:label="Register"

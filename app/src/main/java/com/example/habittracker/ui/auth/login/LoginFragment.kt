@@ -104,12 +104,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvForgotPassword.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
-            if (email.isNotEmpty()) {
-                viewModel.sendPasswordResetEmail(email)
-            } else {
-                Toast.makeText(requireContext(), "Please enter your email address", Toast.LENGTH_SHORT).show()
-            }
+            findNavController().navigate(R.id.nav_forgot_password)
         }
 
         binding.btnGoogleSignIn.setOnClickListener {
