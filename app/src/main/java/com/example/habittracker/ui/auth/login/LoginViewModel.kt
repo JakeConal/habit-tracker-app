@@ -110,31 +110,6 @@ class LoginViewModel : ViewModel() {
     }
 
     /**
-     * Send password reset email
-     */
-    fun sendPasswordResetEmail(email: String) {
-        if (email.isBlank()) {
-            _loginState.value = LoginState.Error("Please enter your email address")
-            return
-        }
-
-        viewModelScope.launch {
-            _isLoading.value = true
-            val result = authRepository.sendPasswordResetEmail(email)
-            _isLoading.value = false
-
-            result.fold(
-                onSuccess = {
-                    _loginState.value = LoginState.PasswordResetSent
-                },
-                onFailure = { exception ->
-                    _loginState.value = LoginState.Error(exception.message ?: "Failed to send reset email")
-                }
-            )
-        }
-    }
-
-    /**
      * Validate email and password
      */
     private fun validateEmailPassword(email: String, password: String): Boolean {

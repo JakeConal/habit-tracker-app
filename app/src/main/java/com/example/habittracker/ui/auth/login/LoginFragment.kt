@@ -54,7 +54,7 @@ class LoginFragment : Fragment() {
                     UserPreferences.saveUserName(requireContext(), state.user.name)
                     UserPreferences.saveUserAvatar(requireContext(), state.user.avatarUrl ?: "")
 
-                    Toast.makeText(requireContext(), "Welcome ${state.user.name}!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.welcome_user, state.user.name), Toast.LENGTH_SHORT).show()
                     // Clear back stack to prevent going back to login
                     val navOptions = NavOptions.Builder()
                         .setPopUpTo(R.id.nav_login, true)
@@ -67,7 +67,7 @@ class LoginFragment : Fragment() {
                     viewModel.resetState()
                 }
                 is LoginState.PasswordResetSent -> {
-                    Toast.makeText(requireContext(), "Password reset email sent!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), getString(R.string.password_reset_sent), Toast.LENGTH_SHORT).show()
                     viewModel.resetState()
                 }
                 LoginState.Idle -> {
@@ -81,7 +81,7 @@ class LoginFragment : Fragment() {
             binding.btnContinueGuest.isEnabled = !isLoading
             
             if (isLoading) {
-                binding.btnLogin.text = "Signing in..."
+                binding.btnLogin.text = getString(R.string.signing_in)
             } else {
                 binding.btnLogin.text = getString(R.string.login)
             }
@@ -104,12 +104,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.tvForgotPassword.setOnClickListener {
-            val email = binding.etEmail.text.toString().trim()
-            if (email.isNotEmpty()) {
-                viewModel.sendPasswordResetEmail(email)
-            } else {
-                Toast.makeText(requireContext(), "Please enter your email address", Toast.LENGTH_SHORT).show()
-            }
+            findNavController().navigate(R.id.nav_forgot_password)
         }
 
         binding.btnGoogleSignIn.setOnClickListener {
@@ -135,7 +130,7 @@ class LoginFragment : Fragment() {
                 )
                 viewModel.handleGoogleSignIn(result)
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Google sign in failed: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), getString(R.string.google_signin_failed, e.message), Toast.LENGTH_LONG).show()
             }
         }
     }
