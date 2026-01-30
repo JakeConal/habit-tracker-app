@@ -56,6 +56,11 @@ data class CalendarData(
     val monthlyCompletionRate: Float
 )
 
+data class TodayHabitsCount(
+    val completed: Int,
+    val total: Int
+)
+
 class StatisticsViewModel : ViewModel() {
 
     private val habitRepository = HabitRepository.getInstance()
@@ -122,6 +127,16 @@ class StatisticsViewModel : ViewModel() {
             0f
         }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0f)
+
+    // Today's habits count (completed / total)
+    val todayHabitsCount: StateFlow<TodayHabitsCount> = habits.map { habitsList ->
+        try {
+            calculateTodayHabitsCountInternal(habitsList)
+        } catch (e: Exception) {
+            android.util.Log.e("StatisticsViewModel", "Error calculating today habits count", e)
+            TodayHabitsCount(0, 0)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, TodayHabitsCount(0, 0))
 
     // Overall completion rate
     val overallCompletionRate: StateFlow<Float> = habits.map { habitsList ->
@@ -336,6 +351,28 @@ class StatisticsViewModel : ViewModel() {
         }
 
         return if (totalHabitsToday > 0) (completedHabitsToday.toFloat() / totalHabitsToday) * 100f else 0f
+    }
+
+    private fun calculateTodayHabitsCountInternal(habits: List<Habit>): TodayHabitsCount {
+        if (habits.isEmpty()) return TodayHabitsCount(0, 0)
+        val calendar = Calendar.getInstance()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val todayStr = dateFormat.format(calendar.time)
+
+        var totalHabitsToday = 0
+        var completedHabitsToday = 0
+
+        habits.forEach { habit ->
+            val habitCreatedDate = dateFormat.format(java.util.Date(habit.createdAt))
+            if (shouldHabitBeDoneOnDay(habit, calendar) && todayStr >= habitCreatedDate) {
+                totalHabitsToday++
+                if (habit.completedDates.contains(todayStr)) {
+                    completedHabitsToday++
+                }
+            }
+        }
+
+        return TodayHabitsCount(completedHabitsToday, totalHabitsToday)
     }
 
     private fun calculateCalendarDataInternal(habits: List<Habit>): CalendarData? {

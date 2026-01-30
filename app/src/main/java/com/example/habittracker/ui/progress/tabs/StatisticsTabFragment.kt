@@ -57,6 +57,16 @@ class StatisticsTabFragment : Fragment() {
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.todayHabitsCount.collect { habitsCount ->
+                binding.tvTodayHabitsCount.text = getString(
+                    R.string.habits_completed_today,
+                    habitsCount.completed,
+                    habitsCount.total
+                )
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.weeklyChartData.collect { weekData ->
                 currentWeekData = weekData
                 updateWeeklyChart(weekData)
